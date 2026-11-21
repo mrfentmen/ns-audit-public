@@ -22,6 +22,7 @@ The audit's two findings:
 | `PHASE2-FINDINGS.md` | Second-pass findings: the anisotropic weights, the three "free doors", the packets. |
 | `CAVEMAN.md` | The whole thing rewritten in caveman. Every finding, plus §13–15: the equation symbol by symbol, why 3D is the hard case, and the four Clay doors A–D. |
 | `CAVEMAN_1TO1.md` | The paper section for section in caveman: 8 sections, 33 subsections, appendix and bibliography. Nothing skipped. |
+| `LAYMAN.md` | The paper in plain English: same structure, no symbol left unexplained. For a reader who is not a mathematician. |
 | `BUZZWORDS.md` | Every invented label the paper uses (§A–G) and every real technical term it assumes you know (§H), each defined. |
 | `cone_weights.svg` | The diagram: the generalized cone and the two viscous weights, with the `2h` gap. |
 | `equation_terms.svg` | The four terms of the equation, one panel each: clock, advection, viscosity, pressure. |
