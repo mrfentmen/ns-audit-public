@@ -17,7 +17,7 @@ The audit's two findings:
 
 | File | What it is |
 |---|---|
-| `MANUSCRIPT.tex` | The audit paper, 1,555 lines. LuaLaTeX or XeLaTeX. |
+| `MANUSCRIPT.tex` | The audit paper, 1,573 lines. LuaLaTeX or XeLaTeX. |
 | `AUDIT_LOG.md` | The working log: entries E0–E66, every `path:line` citation behind the paper. |
 | `PHASE2-FINDINGS.md` | Second-pass findings: the anisotropic weights, the three "free doors", the packets. |
 | `CAVEMAN.md` | The whole thing rewritten in caveman. Every finding, plus §13–15: the equation symbol by symbol, why 3D is the hard case, and the four Clay doors A–D. |
@@ -30,7 +30,7 @@ The audit's two findings:
 
 ## The three-sentence summary
 
-The artifact is logically clean — no reachable `sorry`, no `axiom`, no `native_decide`, no `unsafe`, no `implemented_by`, and the force's global smoothness is *proved*, not assumed (trace in E65). But the kernel answers only "does this term inhabit this type", so constants and real exponents — which live in terms, not types — are never weighed or dimensioned. Separately, the repo's own derivative identities show the viscous term is two pieces with weights differing by `2h`, so no admissible member is isotropic, while the whole scale regime sits behind a single `Classical.choice`.
+The artifact is logically clean — no reachable `sorry`, no `axiom`, no `native_decide`, no `unsafe`, no `implemented_by`, and the force's global smoothness is *proved*, not assumed (trace in E65 and E66). But the kernel answers only "does this term inhabit this type", so constants and real exponents — which live in terms, not types — are never weighed or dimensioned. Separately, the repo's own derivative identities show the viscous term is two pieces with weights differing by `2h`, so no admissible member is isotropic, while the whole scale regime sits behind a single `Classical.choice`.
 
 ## What this audit did not do
 

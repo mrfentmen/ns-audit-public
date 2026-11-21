@@ -1,6 +1,6 @@
 # THE PAPER, ONE TO ONE, CAVEMAN
 
-This file is the audit paper said again in caveman. Same nine sections. Same subsections, same order, same appendix. Nothing skipped. Nothing invented. Where the paper says "we did not check this", this file says it too, because a caveman who hides the hole in his own cave is a caveman who gets eaten.
+This file is the audit paper said again in caveman. Eight main sections and two appendices. Same subsections, same order, same appendix. Nothing skipped. Nothing invented. Where the paper says "we did not check this", this file says it too, because a caveman who hides the hole in his own cave is a caveman who gets eaten.
 
 The other caveman file (`CAVEMAN.md`) is the tour: pictures, the equation, the four Clay doors. This file is the paper itself, walked end to end.
 

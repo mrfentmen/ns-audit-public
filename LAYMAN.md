@@ -36,7 +36,7 @@ So the question is not whether the project compiles. The question is what the co
 
 Stated without symbols: for every positive viscosity, there exist a velocity field, a pressure, an external push, and a bounded region, such that —
 
-- the velocity and pressure are smooth right up to a final time, and compactly supported in space;
+- the velocity and pressure are smooth at every time before the blow-up (not necessarily extendible through it), and compactly supported in space;
 - the push is smooth and only acts at positive times;
 - the fluid starts from rest and satisfies the Navier–Stokes equations exactly;
 - the total kinetic energy stays bounded on the whole time interval;
@@ -55,9 +55,9 @@ The statement is really two claims wearing one coat, and separating them is the 
 
 There is even a formal lemma recording the consequence: if a push of this kind rules out a global solution, then it cannot be zero everywhere at positive times. The result is forced by the push, not spontaneous.
 
-**Smoothing the push is not free.** This is the real work, and it is where the cost sits. Because the speed becomes unbounded, the time derivative of the velocity is singular at the final time. The leftover, being built from that derivative, is a sum of terms that each blow up, and the construction must arrange for them to cancel to every order. Producing a flow that blows up is easy. Producing one whose leftover does not blow up is the construction.
+**Smoothing the push is not free.** This is the real work, and it is where the cost sits. Because the speed becomes unbounded, the time derivative of the velocity is singular at the final time. The leftover, being built from that derivative, is a combination of singular terms whose sum must cancel to every order. Producing a flow that blows up is easy. Producing one whose leftover does not blow up is the construction.
 
-The repository pays this bill in the assembly of the force, not through the definition. Its final assembly step accepts "the push is smooth" as an assumption and passes it straight into the record. That assumption is then discharged earlier in the chain, as later sections of this audit trace.
+The repository pays this bill in the assembly of the force, not through the definition. Its final assembly step accepts "the push is smooth" as an assumption and passes it straight into the record. That assumption is not left hanging: it is discharged in two steps, traced in the audit log as E65 and E66 and summarised in Section 5.2.
 
 **The comparison half.** The second claim — that no global solution exists — is genuine mathematics, and it is the strongest part of the development. It is a uniqueness theorem. Its assumptions about the competing solution are close to minimal: smoothness, incompressibility, matching equations, and bounded energy. It does not assume anything about the pressure, nothing about decay at infinity, nothing about support or growth. Even the constant that appears in the argument is uniform in a way that is fixed at the outset rather than chosen later.
 
@@ -256,6 +256,16 @@ Two corrections to the premise of the task are recorded. The file the task named
 
 So no derivative is matched at the seam by computation. The seam is regular because both sides are eventually equal to zero, and smoothness is closed under that identification.
 
+**Where the smoothness of the force actually comes from.** This deserves its own paragraph, because it was the sharpest question an earlier review put to this audit.
+
+The final assembly receives "the force is smooth" as an assumption, which sounds like a gap. It is not, and the audit log traces why in entries E65 and E66.
+
+The first step is inheritance. Smoothness survives multiplication by the smooth spatial cutoff and by the smooth time switch, so the final force inherits its smoothness from the cut force. Nothing is assumed at that boundary; the property is passed along by theorems about multiplication.
+
+The second step is the limit data. Building the force requires the derivatives of the residual to converge locally uniformly at the final time, and that convergence has to come from somewhere. It is constructed, not assumed. The residual's tower of derivatives is proved to vanish at the singular spatial point; those vanishing jets yield boundary limits through smooth one-sided extensions; and those limits are exactly what the smooth extension consumes. The chain bottoms out not at a hypothesis but at the finite-stage estimates — the finite-stage quantitative bounds, which is where the real analytic work of the repository lives.
+
+So there is no unexplained smoothness assumption sitting at the final assembly boundary. What there is, instead, is a place where the audit stops: whether those finite-stage estimates themselves withstand detailed scrutiny is a separate and deeper question, and it is the natural next target.
+
 ### 5.3 Divergence-free cutoff corrections in the torus interface
 
 Cutting a flow to confine it damages incompressibility: the cut field develops a divergence defect.
@@ -374,7 +384,7 @@ The logical integrity of the repository is robust. There are no axioms, no short
 
 But the success is an achievement of statement design, not of fluid physics. The two findings mark what the artifact certifies.
 
-The first: every quantitative constant is existential or chosen, so the checker verifies existence and never size or dimension. The headline theorem is constant-free, so it is not threatened; but no effective bound is extracted, and no machine check of dimensional consistency is possible.
+The first: every constant in the analytic chain of inequalities is existential or chosen, so the checker verifies existence and never size or dimension. This is not a claim that nothing quantitative is checked: the exponent ledger works on exact rationals and its equalities are verified. The headline theorem is constant-free, so it is not threatened; but no effective bound is extracted, and no machine check of dimensional consistency is possible.
 
 The second: the viscous term on the generalized cone is a sum of two homogeneous pieces whose degrees differ by a parameter-dependent amount. Neither degree is the isotropic one except at the excluded endpoint, so no allowed member is isotropic. The cone's shape absorbs the mismatch, through the volume factor and the parameter-dependent critical weight.
 
