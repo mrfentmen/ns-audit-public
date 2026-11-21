@@ -6,6 +6,71 @@ The other caveman file (`CAVEMAN.md`) is the tour: pictures, the equation, the f
 
 ---
 
+## START HERE — THE PAPER IN SIXTY SECONDS
+
+One question holds this whole paper together: **when a computer says a proof is checked, what did it actually check?**
+
+A proof assistant is a very literal clerk. It checks that each line follows from the lines above it. It does **not** check that the definitions match the real world, that a number is the right size, or that a unit is the right unit. It cannot, because it was never given those things to check.
+
+The repository under audit proves a real thing: for every viscosity there is a smooth push, starting from rest, that makes the fluid speed run to infinity while the energy stays bounded, and for which no global finite-energy solution exists. That is a genuine theorem, and the clerk checked every step of it.
+
+The paper then makes two observations, and neither one says the proof is wrong.
+
+- **Observation one.** Every quantitative constant in the chain is introduced as "some number exists". The clerk confirms that a number exists. It never confirms that the number is small, or the right size for the next step, or dimensionally sane.
+- **Observation two.** The viscosity term splits into two pieces that shrink at different rates: one with the radius, one with the height. The difference is a factor of `q^{2h}`. The code proves this itself, in four theorems. What the code cannot do is object if a reader treats the two pieces as one.
+
+So the honest summary is: the artifact is logically clean, and "machine-checked" here means **structure-checked**, not **number-checked**.
+
+On the Clay problem, this result sits in alternative **(C)** — the forced-breakdown door, where a hand from outside is allowed. It says nothing about the unforced doors (A) or (B), and it is not a claim on the prize.
+
+---
+
+## HOW TO READ THIS FILE
+
+Three ways, depending on how much time you have.
+
+- **Sixty seconds.** Read the section above, then §8.1 and §8.2. That is the whole argument.
+- **One sitting.** §1 through §4, skipping the boxed code blocks. That is the two findings and why they are structural.
+- **Looking something up.** Use the glossary below, then Appendix A for exact file and line.
+
+Every `> **In human words.**` block is a plain-language restatement of the paragraph above it. They are the fastest way through a dense section.
+
+---
+
+## WORDS THAT LOOK SCARY
+
+Nothing below is a new claim. This is a translation table for symbols and Lean names that appear in the text.
+
+| Term | Plain meaning |
+|---|---|
+| `u`, `p`, `f`, `ν` | velocity, pressure, the push from outside, thickness of the fluid (viscosity) |
+| `w` | the difference between two velocity fields, used when proving uniqueness |
+| `τ` | time left before the bang: `τ = 1 − t` |
+| `q` | the shrinking factor near the bang; it solves `q − z²q^{2h} = τ` |
+| `D(h)` | how fast height shrinks compared with radius: `D = ½ − h` |
+| `η`, `X` | height and radius measured in shrinking units, so the cone stays still |
+| `b` | the power attached to a profile: bigger `b` means a faster-growing field |
+| `b_*(h)` | the power that keeps the energy from changing with scale: `−(3−2h)/4` |
+| `Δ_ax` | the viscous term written in cylinder coordinates |
+| `Z_{h,b}` | the bookkeeping factor that appears when you differentiate in the vertical direction |
+| `χ`, `∇χ_R` | a smooth fade-out function, and its gradient; it dies before the boundary |
+| `CandidateProperties` | the twelve-item checklist the theorem has to satisfy |
+| `GlobalFiniteEnergySolution` | a solution that exists for all time with finite energy |
+| `noncomputable` | Lean cannot run it; the object is only known to exist, not calculated |
+| `Classical.choice` | pick a witness out of an existence proof; there is no formula for it |
+| an `∃`-bound constant | "some number exists" instead of a number |
+| type index | a number baked into a type, so a wrong one fails to compile |
+| unification | the step where Lean decides two types are the same |
+| `native_decide` | a shortcut that trusts compiled code; not used here |
+| `sorry` | Lean's "trust me" hole; none is reachable here |
+| `ActualBounds` | the bundle of scale numbers the packets need |
+| `constructionScales` | the single sealed choice that produces those numbers |
+| `timeWidth` | how long one packet lasts in time |
+| `horizonTime` | the time at which a packet window ends |
+| `StageGuards` | the record that carries the proved halving from one stage to the next |
+
+---
+
 ## 1. INTRODUCTION
 
 ### 1.1 The artifact
@@ -65,6 +130,8 @@ The repo pays this in the force assembly, not through the identity: `of_localize
 **What is not free** (the paper's remark): two conjuncts carry cost. First `force_smooth` — a residual defined on the slab must be extended smoothly across the very time where its own `∂_t u` blows up. Second `¬ Nonempty (GlobalFiniteEnergySolution ν f)` — a real uniqueness theorem, `classical_uniqueness_on_Icc`. Its competitor class demands only smoothness, divergence-freeness, matching residuals, and uniform finite energy. No pressure norm. No decay of `p − q` at infinity. No support, growth, or derivative condition on the competitor. Pressure is killed by a Riesz pairing, and the Gronwall constant is uniform in the localization radius by binder order (`∃ D ≥ 0, ∀ R ≥ 1`).
 
 So the ledger has three lines, not two: **naming = free. smoothing = the construction. comparison = the mathematics.**
+
+> **In human words.** Three jobs, three bills. **Naming** the hand is free: pick a flow that already blows up, compute what is left over, and call that the force. Nobody solved anything. **Smoothing** the hand is the construction: the flow's own time derivative explodes at the bang, so the leftover is a pile of exploding terms and the construction has to make them cancel to every order. **Comparison** is the mathematics: proving that no other global solution exists for that same push. The repository pays all three, but only the third is the kind of thing a referee would call a theorem.
 
 ### 1.4 Two structural findings
 
@@ -210,6 +277,8 @@ At the quantitative level the formalization is a certificate that the exponent a
 
 ---
 
+> **In human words.** A recipe says "add some flour". The clerk checks that flour exists in the kitchen. It never checks the amount, and it cannot tell you whether the cake will work. That is fine if the recipe only promises "there is a cake". It is not fine if a reader takes "machine-checked" to mean "the amounts are right". The paper's claim is exactly this distinction, no stronger.
+
 ## 4. ANISOTROPIC VISCOUS SCALING UNDER THE GENERALIZED CONE
 
 ### 4.1 The coordinates
@@ -316,6 +385,8 @@ Neither degree is what an isotropic Laplacian would carry in `q`, which is `b �
 
 **What this does and does not say.** It is not a claim that the construction fails to be self-similar. It is a statement about the **operator**: on this family the viscous term is a sum of three homogeneous pieces with distinct degrees, and the axial degree depends on `h`. Any estimate written as "`νΔ` acts with weight `q^{b−2}`" is, on this family, an assertion about the radial part alone. Whether the accompanying manuscript makes that assertion is a question about the manuscript's text. What can be certified is that the code's own identities forbid the isotropic reading for every `h` the code uses.
 
+> **In human words.** Shrink the fluid towards the bang. The cone squeezes height by `q^D` and radius by `q`. The viscous term has two parts: one measures how the flow changes sideways, one how it changes vertically. They do not squeeze at the same rate — they differ by `q^{2h}`. Treating them as one number is like measuring a stretched photograph with a single ruler: the ruler is not wrong, it is just measuring only one direction.
+
 ### 4.4 The container absorbs the mismatch
 
 The anisotropy is not a defect of the coordinates. It is the cone's geometry doing its job. The inner domain is `|η| < 1`, with `X` in a bounded interval because the profile is compactly supported. So `dz` scales like `q^{D(h)}`, `ds` like `q`, and the physical measure element is
@@ -357,6 +428,10 @@ So the ledger's arithmetic is exact where it operates — on rationals, by `lina
 Sections 3 and 4 live inside the chain. A separate pass walked the three **seams** where a construction like this usually pays a visible bill: the edge of space at infinity (where a pressure-velocity pairing gets integrated by parts), the time seam at `t = 3/8` (where the field switches on), and the divergence defect you get from cutting a divergence-free field.
 
 In all three the same thing happened: **what disappears is a separate boundary, matching, or corrector estimate — not because the term is small, but because each one is replaced by an identity.** Each seam is closed by a germ equality, a case split, or a curl. That is why none of them adds a constant, an exponent, or a hypothesis to the ledger. They are not free, though: 5.3 records where the cutoff commutator is actually paid.
+
+> **In human words.** Three bills that never arrive. At infinity the pressure term would need a boundary integral; the proof never writes one, because the test function fades out before it reaches the boundary. At the switch-on time `t = 3/8` the join would need matching derivatives; both sides are identically zero there, so there is nothing to match. At the cut, divergence would need a repair field; the construction cuts the potential and takes a curl, so the repair is already inside the velocity. Each seam is closed by an identity, not by an estimate.
+
+
 
 ### 5.1 Pressure non-locality and the spatial decay boundary
 
@@ -446,6 +521,8 @@ timeWidth J X (n+1) ≤ timeWidth J X n / 2
 
 from `3 ≤ J`, `8 ≤ X`, an `ActualBounds` witness, and `δ ≤ 1/2`. The route is `actualTimeRatio_le`, which bounds the width ratio by `sourceTimeRatio` — one component of the `ActualBounds` series — after which `SmallSeries.term_le` gives ratio `≤ δ ≤ 1/2`, and `div_le_iff_0` turns that into halving. A finite series total, then arithmetic. No limit, no compactness, no asymptotic expansion.
 
+> **In human words.** The packets are a stack of time windows that shrink. Each window is at most half the one before it, and that is proved by adding up a finite series — not by taking a limit. A finite sum is something a clerk can actually add. This is why the compression is a theorem rather than a hope.
+
 ### 6.3 One link is a hypothesis, and the join is made elsewhere
 
 `horizonTime_antitone` carries
@@ -512,6 +589,8 @@ noncomputable def constructionScales : ConstructionScales :=
 
 5. **Top level.** `initialDatum_singularity` and `exists_compact_smooth_euler_singularity`. `Euler.lean` is one line, `import Euler.EulerSingularity`, so that file is the root.
 
+> **In human words.** One sealed envelope. All the numbers that set the scale — `J`, `D`, `X`, `δ` — are pulled out of a single envelope that is opened exactly once, and every packet inherits them. So the proof is logically closed: nothing is assumed. But nobody can read the numbers off the envelope. This is the same blindness as the constants, one level up: there it hid single numbers, here it hides the entire scale regime.
+
 ### 7.2 Where the compression is spent
 
 Each `Stage` carries `source_stage : StageGuards …`, obtained from `Scales.stage`, which passes `S.actual` into `stage_guards_at` → `stage_guards` → `actualWidths_contract`. That is the only place `next_width` is proved.
@@ -554,6 +633,8 @@ Both are one principle: the kernel audits arithmetic reflected into types and is
 A third observation is of another kind. The three seams of §5 need no separate boundary, matching, or corrector estimate: the pressure pairing has no boundary term at infinity because the test is compactly supported and the limit is taken on a vanishing bound; the time seam is a smooth scalar multiplier closed by a vanishing germ rather than a jet match; and the divergence defect of cutting is avoided by curling the cut potential, which keeps the commutator `∇χ × A` inside the velocity instead of correcting it away. None of the three appears as a constant, an exponent, or a hypothesis. **The seams of this construction are exact identities, and exactness is why the constant barrier never has to be crossed there.**
 
 The construction side has its own ledger, traced in §6 and §7. Packet time widths halve by theorem, not hypothesis — `actualWidths_contract` derives `timeWidth (n+1) ≤ timeWidth n / 2` from a finite series total — with one conditional link, `horizonTime_antitone`, joined not inside its own file but through the `StageGuards.next_width` field. And the whole scale regime `J, D, X, δ` enters through a single `Classical.choice` at `PacketInfiniteConstruction.lean:68`, from which the packet family, the limiting datum, and its lifespan are all built. That root is why the final theorem can be constant-free in its statement while opaque in its construction: the compression is spent to build the object, and the object definition is the only place the witness is ever named.
+
+> **In human words.** In one breath: the proof is honest and the clerk is honest. The gap is in what a clerk can be asked to do. It can check structure — that this line follows from that one, and that every case is covered. It cannot check size or shape: whether a constant is small enough, or whether an operator is the same in every direction. That is not a bug in Lean. It is a boundary of the job.
 
 ### 8.2 What the theorem says, in one sentence
 
@@ -659,3 +740,5 @@ Every unit of the paper, and where it is handled here.
 **33 of 33 subsections. 8 of 8 body sections. 2 of 2 appendix sections. 10 of 10 bibliography entries.**
 
 Nothing in the paper is skipped here. What is *added* is only caveman phrasing, plus the arithmetic in §6.3 that the paper states in words (`horizonTime (n+1) ≤ horizonTime n − timeWidth n / 3`), which is a restatement of constants already in the text, not a new claim.
+
+**Reading aids.** The START HERE block, the reading paths, the glossary and the `In human words` boxes are aids for human readers. They add no claims. The 33 subsections above are unchanged, and every one of them still corresponds to exactly one subsection of the paper.
