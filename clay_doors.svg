@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="740" viewBox="0 0 1000 740" role="img" aria-labelledby="t d">
+<title id="t">The four Clay alternatives as a decision diagram</title>
+<desc id="d">Two choices, arena and hand, produce four doors. The grey unforced doors demand a proof for every admissible start; the green and blue forced doors demand one counterexample pair. A and B are shut; the audited proof walks through C and reaches D by corollary.</desc>
+<rect width="1000" height="740" fill="#ffffff"/>
+<text x="60.0" y="36.0" font-family="Helvetica, Arial, sans-serif" font-size="21" fill="#1a202c" text-anchor="start" font-weight="bold">Four doors, one prize</text>
+<text x="60.0" y="58.0" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4a5568" text-anchor="start" font-weight="normal">Clay’s official statement is a menu, not a single question — proving any one alternative resolves it</text>
+<text x="60.0" y="82.0" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#4a5568" text-anchor="start" font-weight="normal">two choices — where the fluid lives, and whether a hand may push — generate all four</text>
+<rect x="40" y="331" width="200" height="136" rx="8" fill="#f7fafc" stroke="#4a5568" stroke-width="1.3"/>
+<text x="140.0" y="356.0" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1a202c" text-anchor="middle" font-weight="bold">THE CLAY QUESTION</text>
+<text x="140.0" y="374.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="middle" font-weight="normal">Fefferman’s official menu</text>
+<line x1="64" y1="388" x2="216" y2="388" stroke="#e2e8f0" stroke-width="1.2"/>
+<text x="140.0" y="410.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#2f855a" text-anchor="middle" font-weight="bold">prove any single door</text>
+<text x="140.0" y="427.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="middle" font-weight="normal">and the problem is resolved</text>
+<text x="140.0" y="443.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="middle" font-weight="normal">all four not required</text>
+<rect x="300" y="213" width="180" height="72" rx="8" fill="#ffffff" stroke="#718096" stroke-width="1.4" stroke-opacity="0.6"/>
+<text x="390.0" y="237.0" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#1a202c" text-anchor="middle" font-weight="bold">all of space</text>
+<text x="390.0" y="255.0" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#718096" text-anchor="middle" font-weight="normal">ℝ³</text>
+<text x="390.0" y="272.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#4a5568" text-anchor="middle" font-weight="normal">no edge, flow fades away</text>
+<rect x="300" y="513" width="180" height="72" rx="8" fill="#ffffff" stroke="#718096" stroke-width="1.4" stroke-opacity="0.6"/>
+<text x="390.0" y="537.0" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#1a202c" text-anchor="middle" font-weight="bold">repeating box</text>
+<text x="390.0" y="555.0" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#718096" text-anchor="middle" font-weight="normal">𝕋³</text>
+<text x="390.0" y="572.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#4a5568" text-anchor="middle" font-weight="normal">edge wraps onto edge</text>
+<line x1="240.0" y1="399.0" x2="300.0" y2="249.0" stroke="#718096" stroke-width="1.7" stroke-linecap="round" stroke-opacity="0.85"/>
+<polygon points="300.0,249.0 300.4,259.4 292.6,256.3" fill="#718096"/>
+<line x1="240.0" y1="399.0" x2="300.0" y2="549.0" stroke="#718096" stroke-width="1.7" stroke-linecap="round" stroke-opacity="0.85"/>
+<polygon points="300.0,549.0 292.6,541.7 300.4,538.6" fill="#718096"/>
+<line x1="480.0" y1="249.0" x2="700.0" y2="189.0" stroke="#4a5568" stroke-width="1.7" stroke-linecap="round" stroke-opacity="0.85"/>
+<polygon points="700.0,189.0 691.9,195.6 689.7,187.4" fill="#4a5568"/>
+<text x="587.1" y="208.4" transform="rotate(-15.26 587.1 208.4)" font-family="Helvetica, Arial, sans-serif" font-size="10" paint-order="stroke" stroke="#ffffff" stroke-width="3.2" stroke-linejoin="round" fill="#4a5568" text-anchor="middle" font-weight="normal">no hand  ·  f ≡ 0</text>
+<rect x="700" y="136" width="264" height="106" rx="8" fill="#ffffff" stroke="#4a5568" stroke-width="1.4" stroke-opacity="0.6"/>
+<rect x="702" y="146" width="4.5" height="86" rx="2" fill="#4a5568" fill-opacity="0.8"/>
+<rect x="716" y="150" width="30" height="30" rx="6" fill="#4a5568"/>
+<text x="731.0" y="170.5" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#ffffff" text-anchor="middle" font-weight="bold">A</text>
+<text x="756.0" y="170.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1a202c" text-anchor="start" font-weight="bold">unforced — all of space</text>
+<text x="716.0" y="198.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start"><tspan fill="#4a5568" font-weight="bold">EVERY</tspan><tspan fill="#4a5568" font-weight="normal"> admissible start stays smooth</tspan></text>
+<text x="716.0" y="214.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start" font-weight="normal">forever, with its energy capped.</text>
+<circle cx="719.5" cy="229.5" r="3.2" fill="#4a5568"/>
+<text x="728.0" y="233.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#4a5568" text-anchor="start" font-weight="bold">STILL SHUT — the real question</text>
+<line x1="480.0" y1="249.0" x2="700.0" y2="309.0" stroke="#2f855a" stroke-width="1.7" stroke-linecap="round" stroke-opacity="0.85"/>
+<polygon points="700.0,309.0 689.7,310.6 691.9,302.4" fill="#2f855a"/>
+<text x="587.1" y="289.6" transform="rotate(15.26 587.1 289.6)" font-family="Helvetica, Arial, sans-serif" font-size="10" paint-order="stroke" stroke="#ffffff" stroke-width="3.2" stroke-linejoin="round" fill="#4a5568" text-anchor="middle" font-weight="normal">hand allowed  ·  f smooth, fading</text>
+<rect x="700" y="256" width="264" height="106" rx="8" fill="#ffffff" stroke="#2f855a" stroke-width="1.4" stroke-opacity="0.6"/>
+<rect x="702" y="266" width="4.5" height="86" rx="2" fill="#2f855a" fill-opacity="0.8"/>
+<rect x="716" y="270" width="30" height="30" rx="6" fill="#2f855a"/>
+<text x="731.0" y="290.5" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#ffffff" text-anchor="middle" font-weight="bold">C</text>
+<text x="756.0" y="290.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1a202c" text-anchor="start" font-weight="bold">forced — all of space</text>
+<text x="716.0" y="318.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start"><tspan fill="#2f855a" font-weight="bold">ONE</tspan><tspan fill="#4a5568" font-weight="normal"> smooth start plus one smooth force</tspan></text>
+<text x="716.0" y="334.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start" font-weight="normal">with no smooth forever-solution.</text>
+<circle cx="719.5" cy="349.5" r="3.2" fill="#2f855a"/>
+<text x="728.0" y="353.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#2f855a" text-anchor="start" font-weight="bold">THIS REPO — the door it walks through</text>
+<line x1="480.0" y1="549.0" x2="700.0" y2="489.0" stroke="#718096" stroke-width="1.7" stroke-linecap="round" stroke-opacity="0.85"/>
+<polygon points="700.0,489.0 691.9,495.6 689.7,487.4" fill="#718096"/>
+<text x="587.1" y="508.4" transform="rotate(-15.26 587.1 508.4)" font-family="Helvetica, Arial, sans-serif" font-size="10" paint-order="stroke" stroke="#ffffff" stroke-width="3.2" stroke-linejoin="round" fill="#4a5568" text-anchor="middle" font-weight="normal">no hand  ·  f ≡ 0</text>
+<rect x="700" y="436" width="264" height="106" rx="8" fill="#ffffff" stroke="#718096" stroke-width="1.4" stroke-opacity="0.6"/>
+<rect x="702" y="446" width="4.5" height="86" rx="2" fill="#718096" fill-opacity="0.8"/>
+<rect x="716" y="450" width="30" height="30" rx="6" fill="#718096"/>
+<text x="731.0" y="470.5" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#ffffff" text-anchor="middle" font-weight="bold">B</text>
+<text x="756.0" y="470.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1a202c" text-anchor="start" font-weight="bold">unforced — the box 𝕋³</text>
+<text x="716.0" y="498.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start"><tspan fill="#718096" font-weight="bold">EVERY</tspan><tspan fill="#4a5568" font-weight="normal"> admissible periodic start stays</tspan></text>
+<text x="716.0" y="514.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start" font-weight="normal">smooth forever, energy capped.</text>
+<circle cx="719.5" cy="529.5" r="3.2" fill="#718096"/>
+<text x="728.0" y="533.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#718096" text-anchor="start" font-weight="bold">STILL SHUT — no decay to exploit</text>
+<line x1="480.0" y1="549.0" x2="700.0" y2="609.0" stroke="#2b6cb0" stroke-width="1.7" stroke-linecap="round" stroke-opacity="0.85"/>
+<polygon points="700.0,609.0 689.7,610.6 691.9,602.4" fill="#2b6cb0"/>
+<text x="587.1" y="589.6" transform="rotate(15.26 587.1 589.6)" font-family="Helvetica, Arial, sans-serif" font-size="10" paint-order="stroke" stroke="#ffffff" stroke-width="3.2" stroke-linejoin="round" fill="#4a5568" text-anchor="middle" font-weight="normal">hand allowed  ·  f smooth, fading</text>
+<rect x="700" y="556" width="264" height="106" rx="8" fill="#ffffff" stroke="#2b6cb0" stroke-width="1.4" stroke-opacity="0.6"/>
+<rect x="702" y="566" width="4.5" height="86" rx="2" fill="#2b6cb0" fill-opacity="0.8"/>
+<rect x="716" y="570" width="30" height="30" rx="6" fill="#2b6cb0"/>
+<text x="731.0" y="590.5" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#ffffff" text-anchor="middle" font-weight="bold">D</text>
+<text x="756.0" y="590.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1a202c" text-anchor="start" font-weight="bold">forced — the box 𝕋³</text>
+<text x="716.0" y="618.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start"><tspan fill="#2b6cb0" font-weight="bold">ONE</tspan><tspan fill="#4a5568" font-weight="normal"> periodic pair, force fading in time</tspan></text>
+<text x="716.0" y="634.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start" font-weight="normal">with no smooth forever-solution.</text>
+<circle cx="719.5" cy="649.5" r="3.2" fill="#2b6cb0"/>
+<text x="728.0" y="653.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#2b6cb0" text-anchor="start" font-weight="bold">BY COROLLARY — reaches the box too</text>
+<rect x="60" y="674" width="880" height="46" rx="8" fill="#f7fafc" stroke="#e2e8f0" stroke-width="1.2"/>
+<line x1="392" y1="684" x2="392" y2="710" stroke="#e2e8f0" stroke-width="1.2"/>
+<line x1="672" y1="684" x2="672" y2="710" stroke="#e2e8f0" stroke-width="1.2"/>
+<text x="84.0" y="694.0" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1a202c" text-anchor="start" font-weight="bold">any single door resolves it</text>
+<text x="84.0" y="712.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start" font-weight="normal">Clay accepts any one of the four</text>
+<text x="408.0" y="694.0" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1a202c" text-anchor="start" font-weight="bold">EVERY versus ONE</text>
+<text x="408.0" y="712.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start" font-weight="normal">A,B: all starts  ·  C,D: one pair</text>
+<text x="688.0" y="694.0" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1a202c" text-anchor="start" font-weight="bold">C does not disprove A</text>
+<text x="688.0" y="712.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#4a5568" text-anchor="start" font-weight="normal">different situations, no conflict</text>
+</svg>

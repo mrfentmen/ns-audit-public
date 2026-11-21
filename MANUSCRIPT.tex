@@ -1,0 +1,1572 @@
+% =====================================================================
+%  Statement-Design Arbitrage and Verification Limits:
+%  A Forensic Code Audit of the openai/NavierStokesAndEuler Repository
+%
+%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E66.
+%  All code citations are to commit f9e8bc5.
+% =====================================================================
+% Compile with LuaLaTeX or XeLaTeX: the Lean listings are quoted verbatim,
+% including Unicode connectives and blackboard-bold symbols.
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,citecolor=blue!55!black,
+            urlcolor=blue!55!black]{hyperref}
+
+% ---------------------------------------------------------------- macros
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\T}{\mathbb{T}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1\right\rvert}
+\newcommand{\supp}{\operatorname{tsupp}}
+\newcommand{\Ph}{\Phi}
+\newcommand{\ct}[1]{\texttt{#1}}
+\newcommand{\Lean}{\textsc{Lean}}
+\newcommand{\file}[1]{\texttt{\small #1}}
+\DeclareMathOperator*{\esssup}{ess\,sup}
+\DeclareMathOperator{\diver}{div}
+\DeclareMathOperator{\loc}{loc}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{claim}[theorem]{Claim}
+
+% ------------------------------------------------------------- listings
+\definecolor{leankw}{RGB}{20,80,150}
+\definecolor{leancom}{RGB}{90,110,90}
+\definecolor{leanbg}{RGB}{248,248,245}
+\lstdefinelanguage{Lean4}{
+  morekeywords={theorem,lemma,def,noncomputable,structure,namespace,end,open,
+    import,section,by,exact,apply,intro,refine,obtain,have,let,show,calc,
+    fun,forall,exists,Prop,Type,where,variable},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+\lstset{
+  language=Lean4,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{leankw}\bfseries,
+  commentstyle=\color{leancom}\itshape,
+  backgroundcolor=\color{leanbg},
+  frame=single, framesep=4pt, rulecolor=\color{black!25},
+  breaklines=true, breakatwhitespace=true,
+  columns=fullflexible, keepspaces=true,
+  xleftmargin=8pt, xrightmargin=4pt,
+  aboveskip=8pt, belowskip=8pt,
+  literate={←}{{$\leftarrow$}}1 {→}{{$\rightarrow$}}1 {≤}{{$\leq$}}1
+           {≥}{{$\geq$}}1 {≠}{{$\neq$}}1 {∀}{{$\forall$}}1 {∃}{{$\exists$}}1
+           {∈}{{$\in$}}1 {∧}{{$\wedge$}}1 {∨}{{$\vee$}}1 {¬}{{$\neg$}}1
+           {ℝ}{{$\mathbb{R}$}}2 {ℂ}{{$\mathbb{C}$}}2 {ℕ}{{$\mathbb{N}$}}2
+           {𝓢}{{$\mathcal{S}$}}2 {∞}{{$\infty$}}1 {ᵐ}{{$_{\mathrm{a.e.}}$}}2
+           {⁻¹}{{$^{-1}$}}2 {·}{{$\cdot$}}1 {ᶠ}{{$_{\mathrm{f}}$}}2
+}
+
+\title{\bfseries Statement-Design Arbitrage and Verification Limits:\\
+A Forensic Code Audit of the \texttt{openai/NavierStokesAndEuler} Repository}
+\author{Abdelrahman El Sayad \and John}
+\date{November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The repository \texttt{openai/NavierStokesAndEuler} (commit \texttt{f9e8bc5};
+$641{,}332$ lines across $2{,}659$ files) contains a machine-checked proof of a
+theorem asserting the existence, for every $\nu>0$, of a smooth divergence-free
+velocity field with compact spatial support, zero initial datum, bounded kinetic
+energy, and unbounded $L^\infty$ norm at $t=1$, together with the nonexistence
+of any global finite-energy solution of the same forced problem. Macroscopic
+caveats of that statement---the identically zero initial datum, and a forcing
+term defined as the residual of the constructed field---have been noted in
+public discussion and are consistent with the repository's own documentation;
+we do not re-litigate them here.
+
+This paper instead isolates two \emph{structural} mechanisms that explain how
+proof closure is achieved, and what that closure does and does not certify.
+The first is the \emph{Non-Evaluated Constant Barrier}: every quantitative
+constant in the analytic chain is introduced by an existential binder or by
+\ct{Classical.choose}, so the kernel verifies that some constant exists and
+never that it is the right size or dimension. The barrier is a consequence of
+which quantities are reflected into \emph{types}: exponents that appear as
+indices (the $\ell^p$ exponent, the differentiability order) are checked by
+unification and a wrong one is a type error, whereas a multiplicative constant
+inhabiting $\exists C\ge 0,\ \forall x,\ \norm{Tx}\le C\norm{Sx}$ is checked
+only for inhabitation. Unification decides agreement with the \emph{declared}
+type family, not the fitness of that family as a model of the intended problem:
+a consistently misspecified exponent elaborates without complaint, so the
+guarantee is internal consistency, not correspondence. We show this is
+epistemic, not logical: the headline
+theorem mentions no constant, so the barrier cannot make it false, but it
+forecloses effective bounds, machine dimension analysis, and any claim that the
+constants are small enough for a subsequent numerical step.
+
+The second is \emph{Anisotropic Viscous Scaling under the generalized cone}:
+the repository's own pullback identities show that $\partial_s^2$ multiplies the
+profile weight $q^{b}$ by $q^{-2}$ while $\partial_z^2$ multiplies it by
+$q^{-2D(h)}$ with $D(h)=\tfrac12-h$. Because $2D(h)\in(0,1)$ on the admissible
+range $0<h<\tfrac12$, the Laplacian acts on profile weights as a sum of
+\emph{two} distinct homogeneous pieces, of degrees $b-1$ (radial) and
+$b-2D(h)$ (axial). The radial degree is $b-1$, which is also the weight an
+isotropic Laplacian carries in $q$; the axial degree equals it only at $h=0$,
+and the two differ by $2h$.
+The viscous operator therefore cannot be treated as a single homogeneous
+degree-$(-2)$ object in the exponent ledger, and the geometric container
+$|z|<q^{D}$ is what absorbs the mismatch.
+
+Both mechanisms share one root: the kernel audits arithmetic that is reflected
+into types and is silent about arithmetic that is not. We state precisely what
+the artifact verifies (zero axioms, no \ct{native\_decide}, no \ct{unsafe}, no
+\ct{partial}, no \ct{implemented\_by}; exact exponent arithmetic; a
+comparison theorem whose hypotheses are nearly empty) and what it does not (any
+numerical size, any dimension, any physical realizability). The conclusion is a
+verdict about statement design and verification scope, not about soundness: the
+logical integrity of the artifact is robust, and the theorem it states holds
+\emph{if} the kernel accepts it. We did not recompile the repository, so that
+acceptance is reported here rather than reproduced, and no step of the upstream
+proof is shown to be false. The stated whole-space result matches the
+data and the conclusion of alternative (C) of the Clay statement---zero is an
+admissible datum, and a smooth compactly supported force is stronger than
+Clay's rapid-decay requirement---and it is silent on the unforced alternatives
+(A) and (B). The periodic Navier--Stokes and Euler developments in the same
+repository are outside the scope of this audit.
+\end{abstract}
+
+\medskip
+\noindent\textbf{Keywords:} formal verification, Navier--Stokes equations,
+similarity ansatz, dependent type theory, proof auditing, statement design.
+
+\noindent\textbf{Data availability:} commit \texttt{f9e8bc5} of
+\texttt{openai/NavierStokesAndEuler}; audit log
+\file{ns-audit/AUDIT\_LOG.md}, entries E0--E66. Every code citation below is a
+\file{path:line} pair in that commit. We did not recompile the repository; see
+\S\ref{sec:limits}.
+
+\tableofcontents
+
+% =====================================================================
+\section{Introduction}
+\label{sec:intro}
+
+\subsection{The artifact}
+
+The repository under audit is a \Lean{}~4 development, built on Mathlib~4, of a
+theorem about the three-dimensional incompressible Navier--Stokes equations. It
+is large: $641{,}332$ lines in $2{,}659$ files, excluding the transitive
+dependency closure (the frequently quoted figure of $28.6$ million lines is the
+\ct{lean4export} closure including Mathlib, not this repository). It is also
+unusually clean at the level of foundational hygiene: no \ct{axiom} declaration,
+no \ct{native\_decide}, no \ct{unsafe}, no \ct{partial def}, no
+\ct{@[implemented\_by]}, and no \ct{sorry} reachable from the proof roots. The
+single \ct{sorry}-bearing module, \file{ComparatorChallenges/NavierStokes.lean},
+is unreachable: a search for \ct{import ComparatorChallenges} over
+\file{NavierStokes/}, \file{Euler/}, \file{NavierStokes.lean} and
+\file{Euler.lean} returns nothing, and the module's own header states that
+neither the proof root nor the submission imports it. The repository reports
+acceptance by nine independent external checkers; we did not re-run them
+(\S\ref{sec:limits}).
+
+This is, by any measure, a serious piece of proof engineering. The question this
+paper asks is not whether it compiles. The question is what, precisely, the
+compiled object certifies.
+
+The audit is confined to that whole-space forced result. The repository also
+reports periodic Navier--Stokes and Euler theorems; they are outside the scope
+of this paper, and no claim made here applies to them.
+
+\subsection{What the artifact proves}
+
+The headline declaration is a five-line corollary of a longer construction.
+
+\begin{lstlisting}[caption={(\file{NavierStokes/R3/ProblemStatement.lean:150}) The
+statement the repository calls \ct{breakdownStatement}.},label={lst:breakdown}]
+def breakdownStatement : Prop :=
+  ∀ ν : ℝ, 0 < ν →
+    ∃ u : VelocityField, ∃ p : PressureField, ∃ f : VelocityField, ∃ K : Set Space,
+      CandidateProperties ν u p f K ∧ ¬ Nonempty (GlobalFiniteEnergySolution ν f)
+\end{lstlisting}
+
+The predicate \ct{CandidateProperties} (\file{NavierStokes/R3/ProblemStatement.lean:92})
+bundles twelve fields; the ones that matter here are
+\ct{velocity\_smooth} and \ct{pressure\_smooth} ($C^\infty$ on the pre-singular
+domain), \ct{speed\_unbounded} ($\limsup_{t\uparrow 1}\norm{u(t)}_\infty=\infty$),
+\ct{zero\_initial\_velocity} ($u(0,\cdot)\equiv0$), \ct{divergence\_free},
+\ct{force\_smooth} and \ct{force\_support} (smooth, with time support in
+$t>0$), compact spatial support for $u$ and $p$, and the equation itself:
+\[
+  \ct{navier\_stokes}:\qquad
+  \partial_t u+(u\cdot\nabla)u-\nu\Delta u+\nabla p=f
+  \quad\text{on }(0,1)\times\R^3 .
+\]
+The refined form actually proved adds a rest interval:
+\ct{theorem\_1\_1\_with\_initial\_rest} (\file{NavierStokes/R3/Theorem.lean:26})
+produces $u\equiv p\equiv0$ for $|t|\le 3/8$, and
+\ct{theorem\_1\_1} (\file{NavierStokes/R3/Theorem.lean:46}) is the
+constant-free restatement. In prose:
+
+\begin{quote}
+For every $\nu>0$ there exist $u,p,f$ and a compact $K\subset\R^3$ such that
+$u,p$ are smooth and divergence-free on the pre-singular domain with spatial
+support in $K$, $f$ is smooth with time support in $t>0$, the forced
+Navier--Stokes system holds identically, $u\equiv p\equiv0$ on $|t|\le3/8$ (so
+$u(0,\cdot)=0$), $\sup_{t\in[0,1)}\tfrac12\norm{u(t)}_2^2<\infty$,
+$\limsup_{t\uparrow1}\norm{u(t)}_\infty=+\infty$, and \emph{no} global smooth
+finite-energy solution of the same forced problem starting from the zero datum
+exists.
+\end{quote}
+
+\subsection{Two halves, of very different cost}
+\label{sec:twohalves}
+
+The statement is a conjunction, and the two conjuncts have almost nothing to do
+with each other. Separating them is the first step of any honest accounting.
+
+\begin{proposition}[Naming the force is free; smoothing it is not]
+\label{prop:free}
+Let $u\in C^\infty([0,1)\times\R^3;\R^3)$ be divergence-free on
+$[0,1)\times\R^3$, compactly supported in $x$ uniformly in $t$, with
+$u\equiv0$ for $t\le3/8$, with
+$\limsup_{t\uparrow1}\norm{u(t)}_\infty=\infty$, and with
+$\sup_{t\in[0,1)}\norm{u(t)}_2<\infty$. Put $p:=0$, let $K$ be the closure of
+$\bigcup_{t\in[0,1)}\supp\bigl(u(t,\cdot)\bigr)$, and set
+\[
+  f:=\partial_t u+(u\cdot\nabla)u-\nu\Delta u
+  \qquad\text{on }[0,1)\times\R^3 .
+\]
+Then
+\begin{enumerate}
+\item[(i)] $f$ is $C^\infty$ on $[0,1)\times\R^3$, satisfies
+$\supp f(t,\cdot)\subseteq K$ for every $t\in[0,1)$, and is identically zero
+for $t\le3/8$;
+\item[(ii)] $\ct{navier\_stokes}$ holds identically on $(0,1)\times\R^3$;
+\item[(iii)] every field of \ct{CandidateProperties} except
+\ct{force\_smooth} and \ct{force\_support} holds of the slab data.
+\end{enumerate}
+What does \emph{not} follow is the pair of global fields: a $C^\infty$
+extension of $f$ to $\R^4$, and the compact-support condition stated for a
+function on $\R^4$.
+\end{proposition}
+
+\begin{proof}
+For (i): $f$ is a finite combination of $C^\infty$ operations applied to $u$
+on an open slab on which every term is smooth, so it is $C^\infty$ there; its
+spatial support is inherited from $u$, and it vanishes near $t=0$ because $u$
+does. For (ii): the equation is an identity by the definition of $f$. For
+(iii): substitute (i) and (ii) into the field list. No step extends $f$ to
+$t=1$: $\ct{force\_smooth}$ is a statement about $\R^4$, and $f$ has been
+defined on a proper subset of it.
+\end{proof}
+
+Proposition~\ref{prop:free} isolates what is genuinely free: no fluid equation
+is solved, a field is chosen, and its residual is named ``force''. The
+repository does not conceal this: \ct{originalResidual A v p := navierStokesResidual
+(velocity A v) p} defines the force as the residual of the constructed fields,
+and \ct{force\_nonzero\_of\_no\_global\_solution}
+(\file{NavierStokes/R3/CandidateBreakdown.lean:53}) records, as a lemma, that
+any force in this class which excludes a global solution must be nonzero
+somewhere at positive time:
+\[
+  \ct{CompactPositiveTimeSupport}(f)\ \wedge\
+  \neg\,\exists\,\text{global finite-energy solution}(\nu,f)
+  \ \Longrightarrow\
+  \exists t>0\ \exists x,\ f(t,x)\neq0 .
+\]
+That is not an admission of a gap; it is a formal lower bound on the force,
+and it is the sharpest available statement that the result is \emph{forced}
+rather than spontaneous.
+
+The distance between Proposition~\ref{prop:free} and the theorem is not a gap in
+the argument; it is a second obligation, and it is the expensive one. Because
+\ct{speed\_unbounded} forces $\partial_t u$ to be singular at $t=1$, the residual
+is a sum of singular terms whose combination has to cancel to all orders there.
+Producing a field that blows up is easy; producing one whose residual does not
+is the construction. The repository discharges that obligation in the force
+assembly rather than through the identity: \ct{of\_localized\_fields}
+(\file{NavierStokes/R3/ActualCandidate.lean:76}) takes
+$h_f:\ct{ContDiff}\ \R\ \infty\ f$ as a \emph{hypothesis} and passes it
+straight into the \ct{force\_smooth} field. The ledger therefore has three
+entries, not two.
+
+\begin{remark}[What is \emph{not} free]
+\label{rem:notfree}
+Two conjuncts carry the cost. The first is \ct{force\_smooth}: a residual
+defined on the pre-singular slab must be extended smoothly across the time at
+which its own $\partial_t u$ term is singular. The second is
+$\neg\,\mathsf{Nonempty}(\ct{GlobalFiniteEnergySolution}\ \nu\ f)$, a genuine
+uniqueness theorem. It is proved by
+\ct{classical\_uniqueness\_on\_Icc} (\file{NavierStokes/R3/WholeSpaceUniqueness.lean:30}),
+whose competitor class imposes smoothness, divergence-freeness, agreement of
+residuals, and uniform finite energy---and nothing else: no pressure norm, no
+spatial decay of $p-q$ at infinity, no support, growth, or derivative
+hypothesis on the competitor. The pressure is eliminated through a Riesz
+pairing, and the Gronwall constant is uniform in the localization radius by
+binder order ($\exists D\ge0,\ \forall R\ge1$). A tautological force does not
+buy any of that; a wrong force class would destroy it. So the ledger reads:
+\emph{naming} $=$ free; \emph{smoothing} $=$ the construction;
+\emph{comparison} $=$ the mathematics.
+\end{remark}
+
+\subsection{Two structural findings}
+
+Section~\ref{sec:constants} isolates the \emph{Non-Evaluated Constant Barrier}:
+the analytic chain is quantitatively vacuous at the level of constants, and
+this is invisible to the kernel for a type-theoretic reason, not an accidental
+one. Section~\ref{sec:anisotropy} isolates \emph{Anisotropic Viscous Scaling}:
+the repository's own pullback identities show that the Laplacian is a sum of
+two homogeneous pieces in the similarity weight---the radial group of degree
+$1$, the axial group of degree $2D(h)=1-2h\in(0,1)$---so that no
+admissible member of the family is isotropically self-similar.
+
+The two findings are instances of one principle, stated in
+\S\ref{sec:index-vs-term}: \emph{the kernel audits arithmetic that is reflected
+into types, and is silent about arithmetic that is not.} Constants in
+existential binders and real exponents inside definitions are not reflected.
+
+\subsection{Relation to the macroscopic caveats}
+
+Public discussion of this repository has concentrated on two features: the zero
+initial datum, and the forcing term. Both are real, both are statement-level,
+and neither is the subject of this paper. We take them as given and ask a
+different question: given that statement, what does the proof \emph{certify}
+about it? The answer is not ``everything the compiler checked''. The
+distinction matters because ``machine-checked'' is routinely read as
+``numerically and dimensionally reliable'', and \S\ref{sec:constants} shows that
+reading is false here for a structural reason that will recur in any large
+formalization of a quantitative PDE estimate.
+
+\subsection{Method and reproducibility}
+\label{sec:method}
+
+The audit proceeds by reading proof terms and binder sequences, not by
+re-elaborating them. For each claim we record the declaring file and line, the
+binder order where it matters, the informal statement in standard notation, and
+a dimensional check. Where a matrix of review tasks named a file or declaration
+that does not exist at \texttt{f9e8bc5}, the log records the missing premise and
+points at the module that actually carries the content, rather than inventing a
+lemma. Of the thirty-five tasks in the final review matrix, nineteen were
+answered from declarations that exist under the names given; sixteen required
+premise correction (audit log, E46 and E47).
+
+% =====================================================================
+\section{Preliminaries: notation and the two spaces}
+\label{sec:prelim}
+
+We write $u$ for velocity, $p$ for pressure, $f$ for the forcing, $\nu>0$ for
+kinematic viscosity, $\omega=\nabla\times u$ for vorticity, and
+$w:=u-v$ for the difference of two velocity fields. $\tau:=1-t$ is the time to
+the singular time, $r=|x'|$ the cylindrical radius, $s:=r^2/2$, and $z:=x_3$
+the axial coordinate. $\T^3$ denotes the unit torus and
+$\ct{innerCube}(r):=\{x\in\R^3:\abs{x_i}<1-r\ \forall i\}$
+(\file{NavierStokes/PeriodicLocalization.lean:213}); at $r=1/4$ this is
+$(-\tfrac34,\tfrac34)^3$.
+
+Two facts about the whole-space/torus interface are worth recording because they
+were the target of an earlier hypothesis that the audit refuted. First, the
+whole-space development is primary and the torus is periodized \emph{from} it,
+by a lattice sum of the cut whole-space pressure, of the form
+$p_{\T^3}(t,x)=\sum_{k\in\mathbb{Z}^3}\chi(x+k)\,p(t,x+k)$, whose local finiteness
+is proved rather than assumed. Second, agreement between the periodic and cut
+residuals is an exact jet identity on the inner cube,
+\[
+  \ct{periodicResidual\_jets\_eq\_cut}:\quad
+  \partial^{\alpha}\ct{periodicResidual}\,A\,p\,(t,x)
+  =\partial^{\alpha}\ct{cutResidual}\,A\,p\,(t,x)
+  \qquad \bigl(x\in\ct{innerCube}(\tfrac14)\bigr),
+\]
+(\file{NavierStokes/PeriodicResidualLimits.lean:138}), obtained from a germ
+equality of the two residual functions rather than from a decay hypothesis. The
+support of the construction has radius at most $1/4$ while the inner cube has
+margin $1/2$, so the lattice sum has no overlap and no spectral truncation is
+involved.
+
+The relevance for this paper is narrow but real: the pressure entering the
+comparison is determined only up to a constant (the Riesz symbol is applied to
+the data and the constant is annihilated by $\nabla\cdot w=0$), so no pressure
+norm is ever assumed. That is a strength of the artifact, and it is why the
+comparison survives the statement-design objections. It is also why the
+\emph{quantitative} content has to be examined separately: with the pressure
+eliminated, everything that remains is a chain of inequalities, and that chain
+is where \S\ref{sec:constants} bites.
+
+\subsection{Alternative (D) and the pressure-periodicity clause}
+\label{sec:pressure-periodic}
+
+The repository also formalizes a periodic corollary, corresponding to
+alternative (D) rather than (C). Its candidate \emph{and competitor} structures
+carry a clause with no whole-space counterpart
+(\file{NavierStokes/PeriodicPaperTheorem.lean:36}, \file{:54}):
+\begin{lstlisting}
+pressure_periodic : UnitSpatialPeriodsOn (Ico 0 1) p
+\end{lstlisting}
+Read against a statement that imposes periodicity on the velocity alone, this
+would narrow the competitor class, and narrowing that class is exactly how a
+breakdown claim can be made to look easier than it is. That is the objection,
+and it does not apply here: the official problem description carries an erratum
+making explicit that in the periodic case equation~(8) requires both the
+velocity and the pressure to be periodic. The repository's clause is the
+published hypothesis, not an addition to it.
+
+The clause is inert for everything in this paper, which concerns alternative
+(C) on $\R^3$ and never invokes pressure periodicity; the whole-space
+comparison eliminates the pressure through a Riesz pairing instead
+(\S\ref{sec:interfaces}). We record one limitation in the same breath as the
+claim: the erratum was not read at first hand for this audit. The attribution
+rests on the repository's own reference and on secondary descriptions, so the
+clause is correctly attributed rather than independently verified.
+
+% =====================================================================
+\section{The Non-Evaluated Constant Barrier}
+\label{sec:constants}
+
+\subsection{Three exhibits}
+
+\begin{example}[A Sobolev constant inherited from Mathlib]
+\label{ex:sobolev}
+\file{NavierStokes/R3/WeightedSobolev.lean:25} defines
+\begin{lstlisting}
+def sobolevConstant : ℝ :=
+  (eLpNormLESNormFDerivOfEqInnerConst (volume : Measure Space) 2 : ℝ)
+\end{lstlisting}
+and \file{:42} uses it in the sharp Gagliardo--Nirenberg--Sobolev inequality for
+$C^1_c$ fields,
+\[
+  \norm{f}_{L^6(\R^3)}\ \le\ \ct{sobolevConstant}\cdot
+  \norm{\nabla f}_{L^2(\R^3)} .
+\]
+The constant is \ct{noncomputable}: it is whatever Mathlib's proof of the
+inequality produced. A derived constant, \ct{weightedSobolevConstant :=
+4 * sobolevConstant + 1} (\file{:210}), is likewise opaque.
+\end{example}
+
+\begin{example}[A witness extracted from an existence proof]
+\label{ex:choose}
+\file{NavierStokes/R3/LocalizedFluxEstimates.lean:176} proves
+\[
+  \exists C>0,\ \forall x\in\R^3,\quad
+  \norm{D^2\ct{baseWeight}(x)}\le C,
+\]
+by compactness of the support and continuity of the second iterated derivative,
+taking $C=\max(1,C_0)$. Line \file{:184} then \emph{names} the witness:
+\begin{lstlisting}
+def weightSecondDerivativeConstant : ℝ :=
+  Classical.choose exists_weight_second_derivative_bound
+\end{lstlisting}
+with \file{:186} and \file{:190} recording only positivity and the bound. The
+term is definitionally opaque: it is not a reducible definition, it has no
+computable content, and it is not characterized by any equation beyond the
+inequality it was chosen to satisfy.
+\end{example}
+
+\begin{example}[A pressure functional bounded by an existential constant]
+\label{ex:pressure}
+\file{NavierStokes/R3/PressureFunctionals.lean:169} establishes
+\[
+  \exists C\ge0,\ \forall \psi\in\mathcal{S}(\R^3;\mathbb{C}),\quad
+  \bigl\lvert \ct{averagedPressureDifferenceValue}\,W_0\,W_1\,G\,k\,\psi
+  \bigr\rvert
+  \ \le\ C\,\sqrt{\ct{fourierHNormSq}\ 3\ \psi},
+\]
+and \file{:279} restates it for the linear functional actually consumed by the
+flux estimate. The witness is assembled from an explicit expression in the data,
+\[
+  M=3\sqrt{\ct{l2Sq}\,W_0}+\sqrt{\ct{l2Sq}\,W_1}
+   +\sum_i\int\norm{G_{ki}}
+   +\sum_{i,j}\int\norm{G_{ij}},
+\]
+\emph{times} an operator-norm constant $B$ supplied by
+\ct{exists\_uniform\_test\_bound}. So the dependence on the data is explicit;
+the numerical size is not. This is the most favourable of the three cases, and
+it still does not evaluate.
+\end{example}
+
+\subsection{Why the kernel cannot see it: indices versus terms}
+\label{sec:index-vs-term}
+
+The three examples share a mechanism, and it is worth stating in
+type-theoretic rather than rhetorical terms.
+
+\paragraph{Indices are checked.} In dependent type theory a family such as
+$\ct{Lp}\ \mathbb{C}\ p$ with $p:\mathbb{R}_{\ge0}\cup\{\infty\}$, or
+$\ct{ContDiff}\ \R\ n$ with $n:\mathbb{N}\cup\{\infty\}$, is a \emph{type
+family}. A term of type $\ct{Lp}\ \mathbb{C}\ 6$ is not a term of type
+$\ct{Lp}\ \mathbb{C}\ 4$. To use one where the other is expected, the
+elaborator must solve the unification problem $6\stackrel{?}{=}4$, which fails.
+Hence: \emph{any exponent reflected into an index is checked by unification, and
+changing it by a nonzero amount is a type error.} For such exponents the kernel
+is a complete decision procedure---\emph{relative to the declared type family}.
+It decides whether a term inhabits the type it was given, not whether that type
+is the one the physics requires; a development that consistently encodes the
+wrong exponent in an index elaborates exactly as smoothly as a correct one. The
+guarantee is internal consistency with the specification, not correspondence
+between the specification and the problem.
+
+\paragraph{Terms are only inhabited.} By contrast
+\[
+  \exists C:\R,\ 0\le C\ \wedge\ \forall x,\ \norm{Tx}\le C\norm{Sx}
+  \tag{$\star$}
+\]
+is a proposition. A proof term is checked against $(\star)$ by verifying that
+the witness inhabits it. There is no second, independent specification of $C$
+against which the witness could be compared; the proposition \emph{is} the
+specification. And once $C$ is produced by \ct{Classical.choose} from an
+existence proof, it is not merely unknown but \emph{inaccessible}: not
+reducible, not computable (\ct{noncomputable}), not inspectable by
+\ct{norm\_num} or \ct{decide}, and with no defining equation.
+
+\paragraph{Consequence.} An error in an exponent that reaches an index becomes a
+compile failure. An error in a multiplicative constant does not: the
+proposition $(\star)$ remains true for $C$ replaced by $10^{6}C$, and every use
+in the repository is monotone in $C$ (each occurrence is of the form
+``$\le C\cdot(\text{norm})$'' with $C$ in positive position), so the inflated
+witness inhabits the same statements. The artifact therefore cannot distinguish
+a correct constant from an inflated one. We emphasize that this monotonicity
+observation is a meta-argument about the proof scripts, not a machine-checked
+statement; it is the reason the audit had to verify dimensions by hand
+(audit log, E10.7).
+
+\subsection{Epistemic, not logical}
+\label{sec:epistemic}
+
+It is essential not to overstate the finding. The barrier does not create
+unsoundness and does not threaten the truth of the theorem.
+
+\begin{proposition}[The barrier cannot falsify the headline]
+\label{prop:constantfree}
+The type of \ct{theorem\_1\_1} contains no numerical constant: it is
+$\forall\nu>0,\ \exists u\,\exists p\,\exists f\,\exists K,\
+\ct{CandidateProperties}\ \nu\,u\,p\,f\,K\wedge\neg\mathsf{Nonempty}(\dots)$.
+Consequently no assignment of values to the constants appearing in auxiliary
+lemmas can change the truth value of the statement proved.
+\end{proposition}
+
+\begin{proof}
+Immediate from the shape of the type in Listing~\ref{lst:breakdown} and
+\file{NavierStokes/R3/Theorem.lean:46}. No constant occurs in the binders or in
+the body except through \ct{CandidateProperties}, whose fields are qualitative
+(smoothness, support, divergence-freeness, an identity, an unboundedness
+statement, and a negated existential).
+\end{proof}
+
+What the barrier does foreclose is a specific and frequently assumed class of
+claims:
+
+\begin{center}
+\begin{tabular}{@{}p{0.52\textwidth}p{0.40\textwidth}@{}}
+\toprule
+Claim & Status under the artifact \\
+\midrule
+The proof yields an explicit bound & \textbf{No}: every constant is
+$\exists$-bound or \ct{choose}n. \\
+The bound is dimensionally consistent & \textbf{Not machine-checked}:
+dimensions are a semantic layer absent from the type theory. \\
+The constant is small enough for the next step & \textbf{No}: no step
+instantiates a constant by a numeral. \\
+The exponent bookkeeping is correct & \textbf{Yes}, where the exponent reaches
+a type index or a reducible definition (\S\ref{sec:ledger}). \\
+The theorem itself holds & \textbf{Yes}, subject to kernel acceptance. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{The contrast case: exponents that \emph{are} checked}
+\label{sec:ledger}
+
+It would be wrong to conclude that the formalization checks nothing
+quantitative. The exponent ledger does real work, and it does it precisely
+because its objects are reducible definitions rather than existential witnesses.
+
+\file{NavierStokes/ExponentLedger.lean} fixes the manuscript's residual-order
+budget. Its header is explicit that it ``checks the arithmetic of those
+assignments, conditional on the estimates being valid'' and that it ``does not
+define the analytic classes, construct a correction, or prove an estimate for a
+PDE''. Within that scope the results are exact. The particular-correction gain is
+defined by a nested minimum,
+\[
+  \ct{particularGain}(\sigma,\kappa)
+  =\min\bigl(\min(\min(\tfrac12-3\kappa,\ \tfrac12-\kappa),\ \tfrac12+\sigma-\kappa),\ \tfrac25\bigr),
+\]
+and \ct{particular\_gain\_eq} proves
+\[
+  \ct{particularGain}(\sigma,\kappa)=\tfrac25
+  \qquad\text{for }\ \sigma\ge\tfrac15,\ \kappa\le10^{-5},
+\]
+by \ct{linarith} on exact rationals. The signed correction's gain is
+$\ct{signedGain}(\sigma,\kappa)=\tfrac25-\kappa$ under the same hypotheses, so
+the binding gain is $\tfrac25-\kappa$ and the first listed entry
+$\tfrac12-4\kappa$ is slack by $\tfrac1{10}-3\kappa$.
+
+This is the sharpest possible contrast with \S\ref{sec:index-vs-term}. The gain
+is a \emph{definition} of a real number built from rationals; equality with a
+numeral is decidable by linear arithmetic, and the kernel checks it. The Sobolev
+constant is a \emph{witness} of an existential; no numeral is available, and the
+kernel checks only that the witness exists.
+
+Two further consequences of the ledger deserve record. First, $\kappa$ is
+\emph{never defined} in the repository: every theorem is stated for
+$\kappa\le1/100000$, and \ct{manuscript\_kappa\_admissible} merely checks the
+numeral $10^{-5}$ against that bound. The artifact therefore verifies a
+\emph{range}, not the manuscript's choice; \ct{smaller\_kappa\_admissible}
+records that $10^{-6}$ works as well. Second, the most restrictive numerical
+margin is the $\tfrac{17}{100}$ bar-residual bound, whose exact threshold is
+$\kappa<\tfrac1{200}$ (\ct{old\_difference\_bar\_margin\_iff}), three orders of
+magnitude above the value used. The ledger is thus not tight, and its
+correctness is a statement about consistency, not optimality.
+
+\subsection{Consequence for the ``fully verified'' reading}
+
+The natural reading of ``machine-checked'' is that the quantitative content of
+the paper has been checked. On this artifact that reading fails, and it fails
+structurally: not because a constant is wrong, but because the proof assistant
+has no mechanism by which a constant could be \emph{right} in a checkable sense.
+The repository's formalization is, at the quantitative level, a certificate of
+\emph{consistency of the exponent algebra and the implication structure}. That is
+a real and non-trivial achievement---it is what catches an off-by-one in a
+derivative count, and such errors are the common failure mode in this
+literature---but it is not a certificate of numerical or dimensional
+correctness.
+
+% =====================================================================
+\section{Anisotropic Viscous Scaling under the Generalized Cone}
+\label{sec:anisotropy}
+
+\subsection{The coordinates}
+
+The similarity coordinates are those of the manuscript, formalized in
+\file{NavierStokes/SimilarityCoordinates.lean}. With
+$a=2h\in(0,1)$ and $\tau=1-t>0$, the quantity $q=q(\tau,z)$ is the unique
+positive solution of
+\begin{equation}
+  q-z^{2}q^{2h}=\tau ,
+  \label{eq:q}
+\end{equation}
+(\ct{forwardScalar}, \ct{coordinateQ\_spec}); the inner coordinates are
+\begin{equation}
+  \eta:=\frac{z}{q^{D(h)}},\qquad X:=\frac{s}{q},
+  \qquad D(h):=\frac12-h,
+  \label{eq:inner}
+\end{equation}
+matching \ct{coordinateEta} (\file{SimilarityCoordinates.lean:340}) and
+\ct{coordinateX} (\file{:500}), with $D$ at
+\file{CoordinateAlgebra.lean:19}. Eliminating $\eta$ from \eqref{eq:q} using
+$z=q^{D}\eta$ gives the identity
+$q(1-\eta^{2})=q-z^{2}q^{2h}=\tau$, i.e.\ $\tau=q\,d(\eta)$ with
+$d(\eta)=1-\eta^{2}$; and since $a=2h$,
+\[
+  (q^{D})^{2}q^{2h}=q^{2D+2h}=q ,
+\]
+so that \eqref{eq:q} is exactly
+\begin{equation}
+  q\,d(\eta)=\tau .
+  \label{eq:qeta}
+\end{equation}
+
+The geometric content is in \eqref{eq:inner}: the level set $\eta=\pm1$, i.e.\
+\begin{equation}
+  \abs{z}=q^{D(h)},
+  \label{eq:cone}
+\end{equation}
+is the boundary of the \emph{generalized cone}. For $h\in(0,\tfrac12)$ one has
+$D(h)\in(0,\tfrac12)$, so \eqref{eq:cone} is a paraboloid-like surface
+$|z|\sim\tau^{D}$ with $D=h$-dependent opening; the classical parabolic case is
+the opposite endpoint $h=0$, where $D(0)=\tfrac12$ and $\eta=z/\sqrt{q}$
+recovers the ordinary parabolic variable. The admissible range $h\in(0,\tfrac12)$
+excludes that endpoint, and at $h=\tfrac12$ one has $D=0$, so the axial scale
+ceases to contract. The scaling
+group is
+\begin{equation}
+  (\tau,z,s,q)\ \longmapsto\
+  (Q\tau,\ Q^{D(h)}z,\ Q\,s,\ Q\,q),
+  \label{eq:scaling}
+\end{equation}
+which leaves $\eta$ and $X$ invariant. That this group acts by \emph{proved}
+homogeneity rather than by postulation is the content of
+\ct{forwardScalar\_scale}, \ct{coordinateQ\_scale\_h},
+\ct{coordinateEta\_scale\_h} and \ct{coordinateX\_scale\_h}
+(\file{NavierStokes/SimilarityHomogeneity.lean}); the last three derive the
+scaling of the coordinate from the defining equation \eqref{eq:q} and
+uniqueness of its positive branch, not from an assumed ansatz.
+
+\subsection{The pullback and its four exact derivative identities}
+
+\begin{definition}[Profile pullback]
+\label{def:pullback}
+For $h\in(0,\tfrac12)$, $b\in\R$ and an inner profile
+$f:\R^2\to\R$, the physical profile is
+\[
+  \bigl(\Ph_{h,b}f\bigr)(t,s,z):=q^{b}\,f\bigl(X,\eta\bigr),
+  \qquad (X,\eta)\ \text{as in }\eqref{eq:inner},
+\]
+(\file{NavierStokes/SimilarityProfile.lean:45}). The physical partial
+derivatives are genuine Fréchet derivatives along the coordinate directions:
+$\partial_tF:=DF\,(1,0,0)$, $\partial_sF:=DF\,(0,1,0)$,
+$\partial_zF:=DF\,(0,0,1)$ (\file{:48}--\file{:50}).
+\end{definition}
+
+\begin{lemma}[Exact weight transport]
+\label{lem:pullback}
+Let $h\in(0,\tfrac12)$, $b\in\R$, $f\in C^{2}$ near $(X,\eta)$, and
+$p=(t,s,z)$ with $t<1$. Then
+\begin{align}
+  \partial_s\bigl(\Ph_{h,b}f\bigr) &= \Ph_{h,b-1}\bigl(\partial_X f\bigr),
+  \label{eq:ds}\\[2pt]
+  \partial_z\bigl(\Ph_{h,b}f\bigr) &= \Ph_{h,b-D(h)}\bigl(Z_{h,b}f\bigr),
+  \label{eq:dz}\\[2pt]
+  \partial_s^{2}\bigl(\Ph_{h,b}f\bigr) &= \Ph_{h,b-2}\bigl(\partial_X^{2}f\bigr),
+  \label{eq:dss}\\[2pt]
+  \partial_z^{2}\bigl(\Ph_{h,b}f\bigr) &=
+  \Ph_{h,b-2D(h)}\bigl(Z_{h,b-D(h)}Z_{h,b}f\bigr),
+  \label{eq:dzz}
+\end{align}
+where $Z_{h,b}$ is the explicit first-order coefficient
+\[
+  Z_{h,b}f=\frac{2\eta\,b\,f+d(\eta)\,\partial_\eta f-2\eta X\,\partial_X f}
+              {L(h,\eta)},
+  \qquad L(h,\eta)=1-2h\eta^{2},
+\]
+(\file{CoordinateAlgebra.lean:21} and \file{:184}).
+\end{lemma}
+
+\begin{proof}[Proof]
+Equations \eqref{eq:ds} and \eqref{eq:dz} are
+\ct{partialS\_pullback} (\file{SimilarityProfile.lean:224}) and
+\ct{partialZ\_pullback} (\file{:233}); \eqref{eq:dss} and \eqref{eq:dzz} are
+\ct{partialS\_partialS\_pullback} (\file{:279}) and
+\ct{partialZ\_partialZ\_pullback} (\file{:296}). Each is proved by
+differentiating the pullback along the relevant coordinate using the chain and
+product rules, then identifying the derivative with the stated pullback of the
+corresponding inner expression; the chain coefficients are the explicit
+rational functions \ct{qTime}, \ct{etaTime}, \ct{xTime}, \ct{qAxial},
+\ct{etaAxial}, \ct{xAxial} of \file{CoordinateAlgebra.lean:138}--\file{:143},
+and the identifications are \ct{time\_chain\_coefficient},
+\ct{axial\_chain\_coefficient}. The second-order cases require the local
+$C^2$ hypothesis to differentiate the first-order identity in a neighbourhood,
+which is why they are stated with \ct{ContDiffAt} rather than pointwise
+differentiability.
+\end{proof}
+
+\begin{remark}
+The asymmetry between \eqref{eq:dss} and \eqref{eq:dzz} is the whole point:
+$\partial_s$ transports the weight by exactly $-1$, while $\partial_z$
+transports it by $-D(h)$. The former is a consequence of $X=s/q$; the latter of
+$\eta=z/q^{D}$, and it is the cone's opening exponent that appears.
+\end{remark}
+
+\subsection{The Laplacian is a sum of two homogeneous weights}
+
+In the axisymmetric variables $(s,z)$ the Laplacian is
+\begin{equation}
+  \Delta_{\mathrm{ax}}
+  = 2s\,\partial_s^{2}+2\,\partial_s+\partial_z^{2},
+  \label{eq:lap}
+\end{equation}
+(the factor $2$ is the Jacobian of $s=r^{2}/2$; only the \emph{weights} matter
+below). Applying Lemma~\ref{lem:pullback} termwise requires one care: the
+multiplicative factor $s=qX$ in front of $\partial_s^{2}$ is not constant in
+the inner variables, so it travels with the derivative and consumes one power
+of $q$.
+
+\begin{proposition}[Two weights, not one]
+\label{prop:three}
+For $h\in(0,\tfrac12)$, $b\in\R$ and $f\in C^{2}$,
+\begin{equation}
+  \Delta_{\mathrm{ax}}\bigl(\Ph_{h,b}f\bigr)
+  =
+  \Ph_{h,b-1}\bigl(2X\,\partial_X^{2}f+2\,\partial_X f\bigr)
+  +\Ph_{h,b-2D(h)}\bigl(Z_{h,b-D(h)}Z_{h,b}f\bigr).
+  \label{eq:laplace-weights}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+By \eqref{eq:dss}, $\partial_s^{2}(\Ph_{h,b}f)=\Ph_{h,b-2}(\partial_X^{2}f)
+=q^{b-2}\,\partial_X^{2}f$; multiplying by $2s=2qX$ gives
+$2q^{b-1}X\,\partial_X^{2}f=\Ph_{h,b-1}(2X\,\partial_X^{2}f)$. By
+\eqref{eq:ds}, $2\partial_s(\Ph_{h,b}f)=\Ph_{h,b-1}(2\,\partial_X f)$. By
+\eqref{eq:dzz}, the axial term is $\Ph_{h,b-2D(h)}(Z_{h,b-D(h)}Z_{h,b}f)$.
+Adding the three contributions in \eqref{eq:lap} and collecting the two radial
+ones gives \eqref{eq:laplace-weights}.
+\end{proof}
+
+The radial group closes on a \emph{single} weight, $b-1$: the second-order
+radial derivative loses two powers through $\partial_s^{2}$ and recovers one
+through the Jacobian factor $s=qX$. The axial group does not: its degree is
+\begin{equation}
+  b-2D(h)=b-(1-2h),
+  \label{eq:degrees}
+\end{equation}
+and the two degrees differ by
+\begin{equation}
+  (b-2D(h))-(b-1)=1-2D(h)=2h\ \in\ (0,1).
+  \label{eq:deficit}
+\end{equation}
+Neither degree is the weight an isotropic Laplacian would carry in $q$, which is
+$b-1$: that is the radial degree itself, and the axial degree equals it only at
+$h=0$. For $q\in(0,1)$ the axial coefficient is the \emph{smaller} of the two by
+the factor $q^{2h}$, so the axial term is the more damped of the two and the
+radial term is the more singular near the apex. Which contribution dominates a given
+expression also depends on the inner factors $Z_{h,b-D}Z_{h,b}f$; the weight
+alone does not decide it, and a bound that treats $\nu\Delta$ as a single
+homogeneous object of degree $b-1$ mis-assigns the axial piece.
+
+\begin{corollary}[No admissible member is isotropic]
+\label{cor:noiso}
+Let $h\in(0,\tfrac12)$. Then $2D(h)=1-2h\in(0,1)$. Consequently the axial
+degree $b-2D(h)$ differs from the radial degree $b-1$ for every admissible $h$:
+the coincidence $2D(h)=1$ holds exactly at $h=0$, and $2D(h)=2$ at
+$h=-\tfrac12$, both outside the admissible range of every declaration in
+\file{SimilarityProfile.lean}, which all carry $0<h$ and $h<\tfrac12$.
+\end{corollary}
+
+\begin{proof}
+$D(h)=\tfrac12-h$ gives $2D(h)=1-2h$; the bounds follow from $0<h<\tfrac12$.
+The equations $1-2h=1$ and $1-2h=2$ are $h=0$ and $h=-\tfrac12$.
+\end{proof}
+
+\begin{remark}[What this does and does not say]
+\label{rem:scoping}
+Corollary~\ref{cor:noiso} is not a claim that the construction fails to be
+self-similar; it is a statement about the \emph{operator}: on this family the
+viscous term is a sum of three homogeneous pieces with distinct degrees, and the
+degree of the axial piece is $h$-dependent. Any estimate written as
+``$\nu\Delta$ acts with weight $q^{b-2}$'' is, on this family, an assertion about
+the radial part alone. Whether the accompanying manuscript makes that assertion
+is a question about the manuscript's text; what we can certify is that the code's
+own identities \eqref{eq:dss}--\eqref{eq:dzz} forbid the isotropic reading for
+every $h$ in the range the code uses.
+\end{remark}
+
+\subsection{The container absorbs the mismatch}
+\label{sec:container}
+
+The anisotropy is not a defect of the coordinates; it is the geometry of the
+cone doing its job. The inner domain is $\{\abs{\eta}<1\}$ with $X$ ranging over
+a bounded interval for a compactly supported profile, so by \eqref{eq:inner} the
+physical support satisfies
+\[
+  \dd z\ \text{scales as}\ q^{D(h)},\qquad \dd s\ \text{scales as}\ q ,
+\]
+and the physical measure element is
+\begin{equation}
+  \dd z\,\dd s\ =\ q^{\,1+D(h)}\,\frac{L(h,\eta)}{d(\eta)}\ \dd X\,\dd\eta ,
+  \label{eq:measure}
+\end{equation}
+because $z=q^{D}\eta$ with $q\,d(\eta)=\tau$ gives
+$\dd z=q^{D}(L/d)\,\dd\eta$ at fixed $\tau$, while $\dd s=q\,\dd X$. Hence
+\begin{equation}
+  \bigl\lVert \Ph_{h,b}f\bigr\rVert_{L^{2}(\dd z\,\dd s)}^{2}
+  \ =\ q^{\,2b+1+D(h)}\int_{\abs{\eta}<1}\frac{L(h,\eta)}{d(\eta)}\,
+  \abs{f(X,\eta)}^{2}\,\dd X\,\dd\eta ,
+  \label{eq:l2}
+\end{equation}
+so the weight that makes the \emph{scaling} of the norm cancel is
+\begin{equation}
+  b_{*}(h):=-\frac{1+D(h)}{2}=-\frac{3-2h}{4}.
+  \label{eq:bcrit}
+\end{equation}
+At $b=b_{*}$ the pullback is scale-invariant but not an isometry: the inner
+integral still carries the weight $L/d$. On a profile supported in
+$\abs{\eta}\le1-\varepsilon$ that weight is bounded between two positive
+constants, since $L(h,\eta)=1-2h\eta^{2}\ge1-2h$ and
+$d(\eta)=1-\eta^{2}\ge2\varepsilon-\varepsilon^{2}$; without that separation
+from the cone boundary the equivalence fails as $\abs{\eta}\to1$.
+
+At $h\to\tfrac12$ this is $-\tfrac12$ and at $h\to0$ it is $-\tfrac34$; the
+critical weight moves with the cone's opening. The viscous losses sit at
+$b_{*}-1$ (the radial group) and $b_{*}-2D(h)$ (the axial group), so the axial
+term is the more damped of the two, and the radial term is correspondingly the
+more singular.
+
+\begin{remark}
+Equations \eqref{eq:measure}--\eqref{eq:bcrit} are not stated in the repository;
+they are immediate consequences of \eqref{eq:inner}, \eqref{eq:scaling} and
+Definition~\ref{def:pullback}, and we label them as derived. They are included
+because they make the geometric reading of Proposition~\ref{prop:three}
+explicit: the generalized cone is a container whose axial opening $D(h)$
+determines both which derivative loses least and which weight is $L^2$-critical.
+An exponent ledger that assigns a single viscous exponent is, in this geometry,
+assigning the wrong bookkeeping to one of the three terms.
+\end{remark}
+
+\subsection{Why the exponent ledger cannot see this}
+\label{sec:ledger-cannot}
+
+There is a precise reason this anisotropy survives the formalization, and it is
+the same reason the constants do (\S\ref{sec:index-vs-term}). The weight $b$ in
+Definition~\ref{def:pullback} is a \emph{real number argument} of a definition;
+it occurs in the term $q^{b}$ via \ct{Real.rpow}, whose type is
+$\R\to\R\to\R$ regardless of $b$. Changing $b$ to $b-2h$ does not change any
+type, does not create a unification problem, and cannot be detected by the
+kernel. Likewise $D(h)$ is a \emph{definition} (\ct{CoordinateAlgebra.D}), and
+the identity $2D(h)=1-2h$ is proved by \ct{ring}; but no declaration asserts
+$2D(h)\neq2$, because that is a statement about the geometry, not about the
+algebra the file sets out to check.
+
+So the ledger's arithmetic is exact where it operates---on rationals, by
+\ct{linarith} and \ct{ring}---and silent where the geometry enters. The
+anisotropy of \eqref{eq:laplace-weights} is visible in the code, in four
+theorems with explicit weights; what is absent is any declaration that would
+\emph{fail} if one treated those weights as equal. That absence is structural: to
+make $b$ an index one would have to reflect it into a type, and the repository
+does not.
+
+% =====================================================================
+\section{Three interface audits}
+\label{sec:interfaces}
+
+The findings of \S\ref{sec:constants} and \S\ref{sec:anisotropy} concern the
+\emph{interior} of the analytic chain. A separate pass audited the three
+\emph{interfaces} at which a construction of this kind normally pays a visible
+price: the boundary at spatial infinity (where a pressure--velocity pairing is
+integrated by parts), the temporal junction at the rest margin $t=3/8$ (where a
+field switches on), and the divergence defect produced by cutting a
+divergence-free field. In each case the audit found the same pattern: \textbf{what disappears is a
+separate boundary, matching, or corrector estimate---not because the relevant
+term is small, but because each is replaced by an identity.} Each interface is
+closed by a germ equality, a case split, or a curl rather than by an inequality,
+which is why none of the three contributes a constant, an exponent, or a
+hypothesis to the ledger. The three are not free: \S\ref{sec:divergence-corrector}
+records where the cutoff commutator is actually paid for.
+
+\subsection{Pressure non-locality and the spatial decay boundary}
+\label{sec:riesz-decay}
+
+Pressure is the non-local solution of $\Delta p=\partial_i\partial_j(u_iu_j)$.
+Any argument that integrates $\nabla p$ against a field must therefore either
+assume decay at infinity,
+$\lim_{R\to\infty}\int_{\partial B_R}p\,(w\cdot n)=0$, or restrict the
+competitor class to fields of compact support. The audit asked which of the two
+the repository does.
+
+\textbf{Neither.} The declaration \ct{classical\_uniqueness\_on\_Icc}
+(\file{NavierStokes/R3/WholeSpaceUniqueness.lean:30}) contains no boundary term
+to evaluate. Its hypotheses are smoothness of $u,v,p,q$ on the slab $[0,T]$;
+\emph{compact spatial support of the reference $u$ only} (\ct{hK},
+\ct{hsupp}); divergence-freeness of both fields; equality of the two residuals;
+equality of the data; and a uniform finite-energy bound on the competitor $v$
+(\ct{hev}). There is no support, decay, growth, or derivative hypothesis on $v$,
+and no bound, decay, or growth hypothesis on $q$.
+
+Two mechanisms make the surface term vacuous. First, the pressure never appears
+alone: it is paired with $\nabla\chi_R$,
+\[
+  \int_{\R^3}(p-q)\,\nabla\chi_R\cdot w ,
+\]
+and $\chi_R$ is compactly supported for every finite $R$, so no integral over
+$\partial B_R$ is ever written. Second, the Riesz identity
+\ct{actual\_flux\_eq\_canonicalCutoffFlux} rewrites that pairing as the canonical
+Riesz functional of the tensor $u\otimes v$, after which
+\ct{PressureFlux.exists\_uniform\_actual\_pressure\_flux\_bound} bounds it by a
+constant that is fixed before $R$ is quantified. Every remaining $R$-dependence
+in the comparison is explicit and vanishes:
+\[
+  \frac{C_0}{R^2},\qquad \frac{C_1}{R}B^{3/2},\qquad
+  C_2\Bigl[\bigl(B^{1/2}+1\bigr)\Bigl(\frac{A}{R}+\frac1{R^2}\Bigr)
+  +R^{-7/4}B^{3/4}\Bigr],
+\]
+(\file{NavierStokes/R3/ComparisonRateBound.lean:130}); the closure
+\ct{eq\_of\_pressure\_flux\_bound} then drives $\norm{w(t)}_2^2\to0$ by
+dominated convergence.
+
+So the boundary term is neither assumed away nor bypassed by a qualitative
+support predicate on the competitor: it is \emph{never formed}. Spatial decay at
+infinity is replaced by two weaker and checkable inputs---finite energy of the
+competitor, compact support of the reference---and the limit $R\to\infty$ is
+taken on a bound, not on an integral identity. This is a stronger conclusion
+than the one the audit task anticipated, and it is the reason no decay lemma
+exists to be found: \file{WholeSpaceUniqueness.lean} contains no such statement
+because the proof never needs one.
+
+\subsection{Temporal interface regularity at the initial rest margin}
+\label{sec:temporal-bump}
+
+The second interface is the junction at $t=3/8$, where the constructed field
+passes from identically zero to active. The audit asked whether smoothness there
+is carried by a global \ct{ContDiff} statement or by a piecewise conditional that
+delegates smoothness to sub-intervals, and whether the force's time derivatives
+are evaluated explicitly at $t=3/8$.
+
+\textbf{Neither.} There is no \ct{if-then-else}, and no derivative is evaluated
+at a point. The junction is a scalar multiplier in time alone:
+\ct{activatedVelocity}\,$u:=\lambda(t)\,u$ and
+\ct{activatedPressure}\,$p:=\lambda(t)\,p$
+(\file{NavierStokes/TimeLocalization.lean:27}--\file{:31}), together with
+\ct{PositiveTimeForce.force}\,$f:=\theta(t)\,f$
+(\file{NavierStokes/R3/PositiveTimeForce.lean:46}). Smoothness is inherited by
+closure of $C^\infty$ under multiplication and composition:
+\ct{activatedVelocity\_smooth} and \ct{force\_contDiff} are one-line
+applications of \ct{ContDiffOn.smul} and \ct{ContDiff.smul}. The two branches
+agree because the field itself vanishes on the early slab.
+\ct{activatedVelocity\_zero\_early} and \ct{activatedPressure\_zero\_early} give
+$u=p=0$ for $|t|\le3/8$; \ct{localized\_residual\_zero\_early} then gives a
+vanishing residual there, and the equation across the junction is closed by a
+two-branch case split on $t<3/8$
+(\file{NavierStokes/R3/ActualCandidate.lean}): on the early side both residual
+and force are zero, on the late side \ct{PositiveTimeForce.force\_eq} applies on
+$[3/8,1]$.
+
+Two clarifications correct the premise of the task. The declaration it named,
+\file{NavierStokes/R3/CandidateBreakdown.lean}, contains no smoothness proof of
+$f$ at all: its four theorems are the uniqueness transfer, the force-nonzero
+lower bound, and an $L^2$ bound. Force smoothness is established elsewhere, as
+\ct{compactForce\_smooth} (a smooth spatial outer cutoff times $f$,
+\file{NavierStokes/R3CompactCandidate.lean:90}) followed by
+\ct{PositiveTimeForce.force\_contDiff}. And the force's time support is not
+asserted near the junction but bounded away from it:
+\ct{force\_tsupport\_subset} gives
+$\operatorname{tsupp}f\subseteq[1/16,21/16]\times K$, which is what supplies the
+\ct{CompactPositiveTimeSupport} field.
+
+Consequently no jet of $f$ is matched at $t=3/8$ by computation. The junction is
+regular because both sides are eventually equal to the zero germ, and
+$C^\infty$ is closed under that identification.
+
+\subsection{Divergence-free cutoff corrections in the torus interface}
+\label{sec:divergence-corrector}
+
+Cutting a divergence-free field creates a defect:
+$\nabla\cdot(\chi u)=u\cdot\nabla\chi\neq0$. The standard repair is a
+corrector field, obtained by solving a divergence equation and subtracting a
+gradient. The audit asked whether such a corrector exists, whether its spatial
+derivatives consume powers of $q$ missing from the exponent ledger, and whether
+its residual is added to $f$ or majorized by an existential constant.
+
+\textbf{There is no corrector, and none is needed.} The construction cuts the
+\emph{potential}, not the velocity:
+\[
+  \ct{cutPotential}\,A:=\chi\,A,\qquad
+  \ct{cutVelocity}\,A:=\nabla\times(\chi A)
+\]
+(\file{NavierStokes/SpatialLocalization.lean:165}--\file{:172}), and a curl is
+divergence-free identically, \ct{spatialDivergence\_spatialCurl\_on}
+(\file{NavierStokes/SpatialLocalization.lean:260}). The periodized velocity is
+the curl of the periodized potential,
+\ct{periodicVelocity}\,$A:=\nabla\times\ct{periodicPotential}\,A$
+(\file{:213}), with \ct{periodicVelocity\_divergence\_free} giving
+$\nabla\cdot u=0$ exactly. The quantity $\nabla\cdot(\chi u)$, for which a
+corrector would be required, therefore never appears in the development.
+
+The price is paid elsewhere and is visible. The cutoff gradient is not removed;
+it is \emph{retained inside the velocity}, by the product rule
+\[
+  \nabla\times(\chi A)=\chi\,\nabla\times A+\nabla\chi\times A .
+\]
+The second term is precisely the commutator $[\nabla,\chi]$ that a corrector
+would have been introduced to cancel. Here it is part of the field, which is why
+the cut velocity is exactly divergence-free while being only germ-equal to
+$\chi\,\nabla\times A$: on the plateau, where $\chi\equiv1$, the commutator
+vanishes, and \ct{periodicVelocity\_eventuallyEq}
+(\file{NavierStokes/SpatialLocalization.lean:318}) upgrades the plateau identity
+to equality of all jets. Off the plateau the commutator is carried by
+$\nabla\chi\times A$, supported in the annulus
+$\ct{supportCylinder}\setminus\ct{plateau}$
+(\file{:72} and \file{:134}), and it enters the residual as an exact term of the
+equation.
+
+Both ledger questions therefore have vacuous answers, and that is the finding:
+\file{ExponentLedger.lean} has no corrector entries because there is no
+corrector, so no powers of $q$ can be missing from it; and the corrector's
+residual is not absorbed into $f$ by a majorization, because there is no
+corrector residual to absorb. The force remains, as established in
+\S\ref{sec:twohalves}, the exact residual of the fields actually used, and the
+equation holds by case split rather than by estimate.
+
+% =====================================================================
+\section{Packet time-width compression: derived, with one conditional link}
+\label{sec:packets}
+
+The findings of \S\ref{sec:constants} and \S\ref{sec:anisotropy} concern the
+\emph{statement} of the theorem and the \emph{homogeneity class} of its
+operator. Neither says anything about how the existence half is assembled:
+\S\ref{sec:twohalves} takes a field, names its residual, and stops there,
+leaving the provenance of the field and the smoothness of its residual to
+the assembly. This section and the next close that
+gap in the repository's own terms, on the Euler side of the development
+(\file{Euler/}), where the packet family is built and where the top-level
+singular datum is defined (audit log, E53).
+
+\subsection{The object is a packet, not a pulse}
+
+A scan keyed to the vocabulary of oscillatory pulses returns nothing: a
+recursive search of \file{Euler/} and \file{NavierStokes/} for the strings
+\ct{pulse} and \ct{oscillat} is empty, and no file name in either tree contains
+either word. The construction
+is named \emph{packet}. The subtree is large---\file{Euler/} holds $1{,}839$
+files against $816$ in \file{NavierStokes/}, of which $110$ are
+\file{Euler/Packet*.lean} mentioning compact support or a support
+inclusion---so the naming question is not cosmetic. A scan for ``pulse'' reports
+the absence of a name, not the absence of a mechanism, and the distinction is
+the difference between a negative audit result and a false one. What is proved
+here is a construction, not a continuation: the packets' time windows halve, and
+the datum they define is the limit. Nothing in this section asserts smooth
+continuation of an evolving solution through $t=1$; the smoothness proved is
+that of the limiting initial datum (E57).
+
+\subsection{The halving is a theorem about one geometric sequence}
+
+The object that shrinks is \ct{timeWidth} (\file{Euler/PacketSourceScaleSequence.lean:42}):
+\begin{equation}
+  \ct{timeWidth}\ J\ X\ n =
+  \frac{3\cdot\ct{scaleSequence}\ J\ X\ (n+1)\cdot\ct{scaleSequence}\ J\ X\ n}
+       {\sqrt{\ct{previousShear}\ J\ X\ n}}\,,
+\end{equation}
+where \ct{scaleSequence} is geometric with $\ct{scaleSequence}\ J\ X\ 0 = X$ and
+$\ct{scaleSequence}\ J\ X\ (n+1) = ((J+n:\mathbb{N}):\R)^{2}\cdot\ct{scaleSequence}\ J\ X\ n$
+(\file{Euler/PacketSourceScaleChoice.lean:226--232}), and \ct{previousShear} is
+exponential in \ct{scaleSequence} at exponent $7$. The numerator is a product of
+consecutive terms; the denominator is super-exponential. Nothing asymptotic is
+required to see the ratio fall.
+
+\ct{actualWidths\_contract} (\file{Euler/PacketSourceScaleGuards.lean:69})
+concludes
+\[
+  \ct{timeWidth}\ J\ X\ (n+1)\;\le\;\ct{timeWidth}\ J\ X\ n\,/\,2
+\]
+from $3\le J$, $8\le X$, an \ct{ActualBounds} witness, and $\delta\le 1/2$. The
+route is \ct{actualTimeRatio\_le} (\file{:16}), which bounds the width ratio by
+\ct{sourceTimeRatio}---one component of the \ct{ActualBounds} series---after
+which \ct{SmallSeries.term\_le} yields ratio $\le\delta\le 1/2$ and
+\ct{div\_le\_iff\_0} converts that into halving. A finite series total, then
+arithmetic: no limit, no compactness, no asymptotic expansion.
+
+\subsection{One link is a hypothesis, and the join is made elsewhere}
+
+\ct{horizonTime\_antitone} (\file{Euler/PacketNestedHorizons.lean:90}) carries
+\[
+  (hw : \forall n,\ \ct{timeWidth}\ J\ X\ (n+1) \le \ct{timeWidth}\ J\ X\ n/2)
+\]
+as a binder, and that file does not import the guards file. Read alone, the
+nesting theorem is therefore conditional, and citing it as an unconditional
+compression result overstates by one import. The join is made through the guard
+structure: \ct{StageGuards.next\_width}
+(\file{Euler/PacketSourceScaleGuards.lean:129}) is a structure field,
+\ct{stage\_guards} fills it with \ct{actualWidths\_contract}, and
+\ct{exists\_guarded\_sequence} produces $J$, $X_0$, $\delta$ uniformly. The
+compression closes through \ct{StageGuards}, not through
+\file{PacketNestedHorizons.lean} alone. Section~\ref{sec:root} shows where that
+field is consumed.
+
+The arithmetic the nesting consumes is \ct{nested\_horizon\_of\_width\_ratio}
+(\file{Euler/EulerProof.lean:19529}): from $\Delta\le 2W/3$ and
+$W_{\mathrm{next}}\le W/2$ it yields $t+\Delta+2W_{\mathrm{next}}\le t+2W$, with
+$\Delta$ bounded by \ct{stepLength\_bounds}
+(\file{Euler/PacketNestedHorizons.lean:82}). Those constants give a strict drop
+that the library does not state: since $2/3+1-2=-1/3$,
+\[
+  \ct{horizonTime}\ (n+1)\;\le\;\ct{horizonTime}\ n-\ct{timeWidth}\ n/3\,.
+\]
+The library records only $\le$, which is all the nesting argument needs.
+
+\subsection{Grade is the derivative order}
+
+Whether ``the time-supports compress as the derivative index rises'' is true of
+\emph{this} construction depends on whether the grade index $n$ is the jet order
+rather than a bare stage counter. It is, in the operative sense. \ct{velocityJet}
+is assembled from \ct{slicedJet} applied to \ct{(a i).high}, \ct{(a i).mean} and
+\ct{(a (i-1)).corrector} (\file{Euler/PacketProfileRecursion.lean});
+\ct{knownJets}\ O\ p\ a is \ct{history}\ p of that jet family, so grade $p$ is
+exactly the order-$p$ jet being cancelled; \ct{profiles\_step} for $p\ge 2$
+depends only on the strict prefix, which is the well-founded recursion; and
+\ct{tail\_grade\_bound} (\file{Euler/PacketProfileTailGrade.lean:29}) carries
+$N+1\le n$, i.e.\ tail grades indexed beyond the required order $N$.
+
+The literal theorem is nevertheless about consecutive \emph{grades} $n$ and
+$n+1$. \ct{timeWidth} has no separate derivative-order parameter; the two
+indices coincide by construction, not by definition. A reader who takes the
+sentence as a statement about $\partial^{k}$ for arbitrary $k$ is reading one
+step further than the code does.
+
+\subsection{Three things the compression is not}
+
+\begin{enumerate}
+\item \textbf{Not a dimensional law.} Both the grading and the shrinking come
+from the same \ct{scaleSequence}; the ratio is controlled by a summable cost
+series, not by differentiating a scaling ansatz and reading off exponents. It
+is therefore not evidence for or against the isotropy question of
+\S\ref{sec:anisotropy}.
+\item \textbf{Not the spatial support.} The spatial radius is \ct{supportScale},
+exponential at exponent $7/2$, and \ct{scale\_support} and \ct{high\_scaled\_support}
+(\file{Euler/PacketInitialSupport.lean:24}, \file{:48}) dilate a fixed ball by
+$\ell$. Time width and spatial radius are distinct objects with distinct
+exponents, $7$ and $7/2$; a claim about one is not a claim about the other.
+\item \textbf{Not collapse to a point.} \ct{activationTime} is strictly
+increasing while \ct{horizonTime} is antitone, so the intervals nest from both
+ends---but \ct{common\_positive\_interval} proves
+$\ct{baseHorizon}\ J\ X/12 < \ct{horizonTime}\ J\ X\ n$, so the intersection
+has positive length. Nesting is used to keep one common interval available, not
+to squeeze it shut.
+\end{enumerate}
+
+% =====================================================================
+\section{The \texorpdfstring{\ct{Classical.choice}}{Classical.choice} that selects the scale regime}
+\label{sec:root}
+
+The compression theorems of \S\ref{sec:packets} are polymorphic in a scale
+record \ct{S : Scales c B} and consume its \ct{ActualBounds} field. That raises a
+question the local proofs cannot answer: does such a record actually reach the
+top-level theorem, or is the field merely asserted somewhere adjacent to it? The
+answer is that the chain closes through a single opaque selection of the scale
+regime (audit log, E54). The lifespan is a second \ct{choose}, downstream of
+that selection (\file{Euler/PacketFiniteLifespan.lean:54}), not a competing root.
+
+\subsection{The five links}
+
+\begin{enumerate}
+\item \textbf{Existence.} \ct{exists\_scales}
+(\file{Euler/PacketInductionScales.lean:123}):
+\[
+  \ct{theorem exists\_scales}\ (c\ B:\R)\ (hc: 0\le c) : \ct{Nonempty}\ (\ct{Scales}\ c\ B)
+\]
+Its proof takes \ct{exists\_base\_power}, then
+\ct{exists\_common\_guards}, then assembles the record with
+\ct{actual := hdata.1}. An \ct{ActualBounds} witness is \emph{produced}, for some
+$J,D,X,\delta$, from nothing but $0\le c$.
+\item \textbf{Selection.} \ct{constructionScales}
+(\file{Euler/PacketInfiniteConstruction.lean:68}):
+\begin{lstlisting}
+noncomputable def constructionScales : ConstructionScales :=
+  Classical.choice (exists_scales (requiredExponent : ℝ)
+    (commonThreshold gradientConstant hessianConstant) (Nat.cast_nonneg _))
+\end{lstlisting}
+\item \textbf{Packets.} \ct{packets}\ n = \ct{stages}\ \ct{constructionScales}\ \ct{le\_rfl}\ \ct{le\_rfl}\ n
+(\file{:72}). The two reflexivity arguments discharge the \ct{stages} hypotheses
+$\ct{requiredExponent}\le q$ and $\ct{commonThreshold}\le B$, so neither is
+carried downstream.
+\item \textbf{Datum and lifespan.} \ct{initialDatum} =
+\ct{Stage.initialDataLimit}\ \ct{packets} (\file{Euler/PacketFiniteLifespan.lean:18});
+\ct{lifespan} = \ct{initialDatum\_finite\_lifespan.choose} (\file{:54}), with
+\ct{lifespan\_le\_base} bounding its duration by
+\ct{baseHorizon}\ \ct{constructionScales.J}\ \ct{constructionScales.X}.
+\item \textbf{Top level.} \ct{initialDatum\_singularity}
+(\file{Euler/EulerSingularity.lean:115}) and
+\ct{exists\_compact\_smooth\_euler\_singularity} (\file{:133}).
+\file{Euler.lean} is one line, \ct{import Euler.EulerSingularity}, so that file
+is the root.
+\end{enumerate}
+
+\subsection{Where the compression is spent}
+
+Each \ct{Stage} carries \ct{source\_stage : StageGuards}\ \dots
+(\file{Euler/PacketInductionStage.lean:123}), obtained from \ct{Scales.stage},
+which passes \ct{S.actual} into \ct{stage\_guards\_at} $\to$ \ct{stage\_guards}
+$\to$ \ct{actualWidths\_contract}. That is the only place
+\ct{next\_width} is proved. \ct{PacketStageRestriction.nextHorizon\_lt}
+(\file{Euler/PacketStageRestriction.lean:49}) consumes it
+(\ct{have hwidth := P.source\_stage.next\_width}) to place the next horizon
+strictly below the parent's terminal time; without the halving that inequality
+does not close. The remaining containment comes from
+\ct{Stage.horizon\_eq}, which reads
+$\ct{parent.T}=\ct{time}+2\cdot\ct{timeWidth}\ n$; from \ct{Stage.horizon\_le},
+which reads $\ct{parent.T}\le\ct{baseHorizon}$; and from \ct{Scales.time\_small},
+which reads $\ct{baseHorizon}\le 1$. Together they keep every packet inside
+$[0,1]$.
+
+\subsection{Instrumental, not constitutive}
+
+The exact statement of \ct{initialDatum\_singularity} is worth quoting, because
+it settles what the choice is \emph{for}. The theorem asserts smoothness
+(\ct{ContDiff} at order $\infty$), compact support, non-vanishing, vanishing divergence at
+every point, a positive duration bounded by $1$, the equivalence ``smooth
+solution at $T$ $\iff$ $0<T<\ct{lifespan.duration}$'', a $C^{1}$ limsup equal
+to $\top$, and a maximal-vorticity integral equal to $\top$. Nothing in that
+list mentions \ct{timeWidth}, \ct{ActualBounds}, or any scale parameter. The
+halving is used instrumentally, to build the \ct{packets} sequence whose limit
+the datum is; it is not a conjunct of the conclusion. So the chain closes in the
+construction and not in the statement, which is precisely why a reader who opens
+only \file{EulerSingularity.lean} cannot see it, and why the trace is worth
+recording.
+
+\subsection{Logical closure, numerical opacity}
+
+Because \ct{constructionScales} is a \ct{Classical.choice}, the parameters
+$J$, $D$, $X$, $\delta$ have no computable content, and every downstream
+quantity---\ct{timeWidth}, \ct{scaleSequence}, \ct{baseHorizon}, every
+frequency---is defined from that opaque witness. The halving theorem is
+nevertheless \emph{about the actual object}: every lemma is polymorphic in
+\ct{S : Scales c B} and uses only fields, so nothing is assumed of a
+hypothetical record. What is lost is recoverability, not correctness: no
+explicit bound on the first width, on $J$, or on \ct{baseHorizon} follows from
+the statement.
+
+This is the barrier of \S\ref{sec:constants} at a coarser grain. There the
+opacity sits behind individual constants; here it covers the entire scale
+regime---chosen once at the root and inherited by every packet. The difference
+is that this opacity is structural rather than incidental: the choice
+\emph{is} the construction, and no rewriting of the proof would expose the
+witness without also exposing which witness was chosen.
+
+Two incidental checks are worth recording. First, the record's
+\ct{delta\_small} ($\delta\le 1/16$) and \ct{delta\_geometry}
+($10^{6}\cdot\ct{geometryConstant}\cdot\delta\le 1$) are stronger than the
+$\delta\le 1/2$ that \ct{actualWidths\_contract} requires, so the halving has
+slack to spare. Second, \ct{ActualBounds} has further producers, at
+\file{Euler/PacketSourceScaleActual.lean:230} and
+\file{Euler/PacketSourceScaleFromCosts.lean:70}; both are theorems, and no path
+enters \ct{ActualBounds} as an axiom or a bare hypothesis.
+
+Both questions this trace originally left open are now closed. The import path
+is four hops---\file{EulerSingularity} $\to$ \file{EulerC1Limsup} $\to$
+\file{EulerC1Breakdown} $\to$ \file{EulerFiniteLifespan} $\to$
+\file{PacketFiniteLifespan}---and \ct{PacketFiniteLifespan} has exactly one
+direct importer inside the root's reachable set, so the final edge is forced
+(E55). The chosen $D$ does not constrain the derivative order: it enters
+\ct{previousFrequency} only at index zero, as $X^{D}$, and every later term is
+$D$-free. Its one degrading effect is the index-zero instance of
+\ct{neighborError}, which carries $X^{cD}$ and is absorbed by enlarging $X$;
+there is no upper bound on $D$ anywhere in \ct{ActualBounds}, so no ceiling on
+the order follows (E56, corrected in E59~\S3). The width argument never reads
+it.
+
+% =====================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+\subsection{The verdict}
+
+The logical integrity of \texttt{openai/NavierStokesAndEuler} is robust. There
+are no axioms, no \ct{native\_decide}, no \ct{unsafe}, no \ct{partial}
+definitions, no \ct{implemented\_by} hooks, and no reachable \ct{sorry}; the
+exponent ledger is exact rational arithmetic; and the comparison theorem that
+supplies the nonexistence conjunct is a genuine uniqueness result whose
+hypotheses are nearly empty---no pressure norm, no decay of $p-q$ at infinity, no
+support, growth, or derivative condition on the competitor, with the Gronwall
+constant uniform in the localization radius by binder order and closure by an
+interior-derivative argument that uses $E(0)=0$ at a single point. That is not a
+proof that has been padded into shape.
+
+But its success is an achievement of \emph{statement design}, not of fluid
+physics, and the structural findings of this paper delimit what the artifact
+certifies:
+
+\begin{enumerate}
+\item \textbf{The Non-Evaluated Constant Barrier.} Every quantitative constant
+is $\exists$-bound or \ct{choose}n, so the kernel verifies existence and never
+size or dimension (\S\ref{sec:constants}). The headline theorem is
+constant-free, so it is not threatened; but no effective bound is extracted, and
+no machine check of dimensional consistency is possible.
+\item \textbf{Anisotropic viscous scaling.} The Laplacian on the generalized
+cone is a sum of two homogeneous pieces with degrees $b-1$ (radial) and
+$b-2D(h)$ (axial), where $2D(h)=1-2h\in(0,1)$, differing by $2h$; neither
+degree is the isotropic weight $b-1$ except at $h=0$, no admissible member is isotropic, and the axial
+term is the more damped of the two
+(\S\ref{sec:anisotropy}). The container $|z|<q^{D(h)}$ is what absorbs the
+mismatch, through the measure factor $q^{1+D(h)}$ and the $h$-dependent
+critical weight $b_{*}(h)=-(3-2h)/4$.
+\end{enumerate}
+
+Both are instances of one principle: \emph{the kernel audits arithmetic
+reflected into types and is silent about arithmetic that is not.} Exponents that
+reach an index are checked by unification; constants in existential binders and
+real exponents inside definitions are not. A reader who takes ``machine-checked''
+to mean ``numerically and dimensionally reliable'' is therefore misreading the
+artifact---not because the artifact is defective, but because that is not what
+type checking is.
+
+A third observation is of a different kind. The three interfaces audited in
+\S\ref{sec:interfaces} require no separate boundary, matching, or corrector
+estimate: the pressure pairing has no boundary
+term at infinity because the test is compactly supported and the limit is taken
+on a vanishing bound; the temporal junction is a smooth scalar multiplier closed
+by a vanishing germ rather than by a jet match; and the divergence defect of
+cutting is avoided by curling the cut potential, which retains the commutator
+$\nabla\chi\times A$ inside the velocity instead of correcting it away. None of
+the three appears as a constant, an exponent, or a hypothesis. The interfaces of
+this construction are exact identities, and exactness is why the
+constant barrier of \S\ref{sec:constants} never has to be crossed there.
+
+The construction side carries its own ledger, and Sections~\ref{sec:packets} and
+\ref{sec:root} trace it. Packet time widths halve by theorem rather than by
+hypothesis---\ct{actualWidths\_contract} derives
+$\ct{timeWidth}\,(n+1)\le \ct{timeWidth}\,n/2$ from a finite series total---with
+one conditional link, \ct{horizonTime\_antitone}, joined not inside its own file
+but through the \ct{StageGuards.next\_width} field. And the entire scale regime
+$J$, $D$, $X$, $\delta$ enters the development through a single
+\ct{Classical.choice} at \file{Euler/PacketInfiniteConstruction.lean:68}, from
+which the packet family, the limiting datum and its lifespan are all built.
+That root is why the final theorem can be constant-free in its statement while
+being opaque in its construction: the compression is spent to build the object,
+and the object's definition is the only place the witness is ever named.
+
+\subsection{What the theorem says, in one sentence}
+
+The theorem proves that a smooth compactly supported force can drive a fluid from
+rest to unbounded speed with no global finite-energy solution. That is the data
+and the conclusion of alternative (C) of the Clay statement: zero is an
+admissible initial datum, and a smooth compactly supported force is stronger
+than Clay's rapid-decay requirement. If the proof is correct, it resolves (C).
+It does not establish the unforced alternatives (A) or (B), and the repository's
+own \ct{force\_nonzero\_of\_no\_global\_solution} is the formal witness that the
+result cannot be restated with $f\equiv0$---which is exactly why it bears on (C)
+and not on (A). Whether the proof is correct, and how CMI evaluates it, are
+separate questions that this audit does not decide.
+
+\subsection{Scope and limitations}
+\label{sec:limits}
+
+We did not recompile the repository. There is no \Lean{} toolchain on the audit
+host, so every claim above is by inspection of proof terms, binder sequences and
+definitions, not by re-elaboration. Independent kernel evidence exists for the
+artifact as a whole---the repository reports acceptance by nine external
+checkers---but such evidence verifies \emph{terms}, not \emph{statements}, and
+the statement-level caveats (zero datum, force-as-residual, similarity in $\nu$)
+are exactly what kernel acceptance cannot test. The derived identities
+\eqref{eq:measure}--\eqref{eq:bcrit} are ours, not the repository's, and are
+labelled as such. One entry of the audit log (E36, on
+\ct{SchwartzCompactApproximation.continuous\_zero\_of\_compactSupport}) is
+recorded as provisional: the call site and the approximation estimates were
+verified, the exact binder was not opened. Finally, the claim in
+\S\ref{sec:index-vs-term} that every use of a constant is monotone in that
+constant is a meta-argument about the scripts and is not machine-checked.
+
+\subsection{Implications beyond this repository}
+
+Large formalizations of quantitative PDE estimates are becoming feasible, and
+this artifact is a preview of their characteristic failure mode. The kernel will
+faithfully audit the combinatorial and exponent-theoretic skeleton, which is
+where human error is most common and most damaging. It will not audit the two
+things a numerical analyst cares most about: the size of constants and the
+homogeneity class of the operator. If such developments are to support claims of
+the form ``the constant is explicit'' or ``the estimate is dimensionally
+correct'', those claims need to be reflected into the types---as explicit
+numerals, as rational bounds, or as homogeneity statements stated as theorems
+about the pullback---because otherwise no amount of compilation will bear on
+them.
+
+% =====================================================================
+\appendix
+\section{Artifact index}
+
+All paths relative to commit \texttt{f9e8bc5}. ``E'' references are entries of
+\file{ns-audit/AUDIT\_LOG.md}.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Path & Declaration & Line & Used in \\
+\midrule
+\file{R3/ProblemStatement.lean} & \ct{breakdownStatement} & 150 & \S1.2 \\
+\file{R3/ProblemStatement.lean} & \ct{CandidateProperties} & 92 & \S1.2 \\
+\file{R3/Theorem.lean} & \ct{theorem\_1\_1\_with\_initial\_rest} & 26 & \S1.2 \\
+\file{R3/Theorem.lean} & \ct{theorem\_1\_1} & 46 & \S1.3, Prop.~\ref{prop:constantfree} \\
+\file{R3/CandidateBreakdown.lean} & \ct{force\_nonzero\_of\_no\_global\_solution} & 53 & \S1.3, \S5.2 \\
+\file{R3/WholeSpaceUniqueness.lean} & \ct{classical\_uniqueness\_on\_Icc} & 30 & Rem.~\ref{rem:notfree}; used at 60, 64 \\
+\file{R3/WeightedSobolev.lean} & \ct{sobolevConstant} & 25 & Ex.~\ref{ex:sobolev} \\
+\file{R3/WeightedSobolev.lean} & \ct{lpNorm\_six\_le} & 42 & Ex.~\ref{ex:sobolev} \\
+\file{R3/WeightedSobolev.lean} & \ct{weightedSobolevConstant} & 210 & \S3.1 \\
+\file{R3/LocalizedFluxEstimates.lean} & \ct{exists\_weight\_second\_derivative\_bound} & 176 & Ex.~\ref{ex:choose} \\
+\file{R3/LocalizedFluxEstimates.lean} & \ct{weightSecondDerivativeConstant} & 184 & Ex.~\ref{ex:choose} \\
+\file{R3/PressureFunctionals.lean} & \ct{averagedPressureDifferenceValue\_bound} & 169 & Ex.~\ref{ex:pressure} \\
+\file{R3/PressureFunctionals.lean} & \ct{averagedPressureDifference\_bound} & 279 & Ex.~\ref{ex:pressure}, E27 \\
+\file{ExponentLedger.lean} & \ct{particularGain}, \ct{particular\_gain\_eq} & --- & \S3.5 \\
+\file{ExponentLedger.lean} & \ct{manuscript\_kappa\_admissible} & --- & \S3.5 \\
+\file{CoordinateAlgebra.lean} & \ct{D}, \ct{d}, \ct{L} & 19--21 & \S4.1 \\
+\file{CoordinateAlgebra.lean} & \ct{timeCoeff}, \ct{axialCoeff} & 180--185 & Lem.~\ref{lem:pullback} \\
+\file{SimilarityCoordinates.lean} & \ct{coordinateQ}, \ct{coordinateEta}, \ct{coordinateX} & 124, 340, 500 & \S4.1 \\
+\file{SimilarityHomogeneity.lean} & \ct{coordinateQ\_scale\_h} et seq. & --- & \S4.1 \\
+\file{SimilarityProfile.lean} & \ct{pullback} & 45 & Def.~\ref{def:pullback} \\
+\file{SimilarityProfile.lean} & \ct{partialS\_pullback}, \ct{partialZ\_pullback} & 224, 233 & Lem.~\ref{lem:pullback} \\
+\file{SimilarityProfile.lean} & \ct{partialS\_partialS\_pullback} & 279 & \eqref{eq:dss} \\
+\file{SimilarityProfile.lean} & \ct{partialZ\_partialZ\_pullback} & 296 & \eqref{eq:dzz} \\
+\file{PeriodicLocalization.lean} & \ct{innerCube} & 213 & \S2 \\
+\file{PeriodicResidualLimits.lean} & \ct{periodicResidual\_jets\_eq\_cut} & 138 & \S2 \\
+\file{R3/ComparisonRateBound.lean} & \ct{exists\_uniform\_rate\_bound} & 127 & \S1.3, \S5.1 \\
+\file{SpatialLocalization.lean} & \ct{cutPotential}, \ct{cutVelocity} & 165--172 & \S5.3 \\
+\file{SpatialLocalization.lean} & \ct{periodicPotential}, \ct{periodicVelocity} & 210--216 & \S5.3 \\
+\file{SpatialLocalization.lean} & \ct{spatialDivergence\_spatialCurl\_on} & 260 & \S5.3 \\
+\file{SpatialLocalization.lean} & \ct{periodicVelocity\_eventuallyEq} & 318 & \S5.3 \\
+\file{TimeLocalization.lean} & \ct{activatedVelocity}, \ct{activatedPressure} & 27--31 & \S5.2 \\
+\file{R3/PositiveTimeForce.lean} & \ct{force}, \ct{force\_eq}, \ct{force\_contDiff} & 46--55 & \S5.2 \\
+\file{R3CompactCandidate.lean} & \ct{compactForce\_smooth} & 90 & \S5.2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Non-claims}
+
+For the avoidance of doubt, this paper does not claim, and its evidence does not
+support, any of the following.
+
+\begin{enumerate}
+\item That the repository is unsound, contains a hidden axiom, or proves a false
+statement. The verifications reported here point the other way.
+\item That \Lean{} or Mathlib is responsible for the statement-design choices.
+The same theorem, written in prose, would admit the same objections; and the
+kernel is the component that behaved exactly as specified.
+\item That the comparison theorem is weak or circular. It is, in our assessment,
+the strongest part of the development, and its hypotheses are close to minimal.
+\item That the anisotropy of \S\ref{sec:anisotropy} is an error in the code. The
+code's identities are correct; the finding is that an isotropic reading of the
+viscous term is incompatible with them.
+\item That the whole repository is $641{,}332$ lines of comparison argument. That
+figure is the whole tree; the comparison chain is a small fraction of it, and we
+do not attribute the total to any single module.
+\end{enumerate}
+
+% =====================================================================
+\begin{thebibliography}{99}
+
+\bibitem{repo}
+OpenAI, \emph{NavierStokesAndEuler}, GitHub repository, commit
+\texttt{f9e8bc5} (code, formalization manifest, and accompanying manuscript).
+
+\bibitem{audit}
+A.~El Sayad and John, \emph{Forensic audit log for
+\texttt{openai/NavierStokesAndEuler}}, \file{ns-audit/AUDIT\_LOG.md}, entries
+E0--E66 (companion document).
+
+\bibitem{lean}
+L.~de~Moura and S.~Ullrich, \emph{The \Lean{}~4 theorem prover and programming
+language}, Proc.\ CADE-28, Lecture Notes in Comput.\ Sci.\ \textbf{12699}
+(2021), 625--635.
+
+\bibitem{mathlib}
+The Mathlib Community, \emph{The \Lean{} mathematical library}, Proc.\ CPP
+2020, ACM, 2020.
+
+\bibitem{leray}
+J.~Leray, \emph{Sur le mouvement d'un liquide visqueux emplissant l'espace},
+Acta Math.\ \textbf{63} (1934), 193--248.
+
+\bibitem{hopf}
+E.~Hopf, \emph{\"Uber die Anfangswertaufgabe f\"ur die hydrodynamischen
+Grundgleichungen}, Math.\ Nachr.\ \textbf{4} (1951), 213--231.
+
+\bibitem{kato}
+T.~Kato, \emph{Strong $L^p$-solutions of the Navier--Stokes equation in
+$\R^m$, with applications to weak solutions}, Math.\ Z.\ \textbf{187} (1984),
+471--480.
+
+\bibitem{bkm}
+J.~T.~Beale, T.~Kato and A.~Majda, \emph{Remarks on the breakdown of smooth
+solutions for the 3-D Euler equations}, Comm.\ Math.\ Phys.\ \textbf{94}
+(1984), 61--66.
+
+\bibitem{ckn}
+L.~Caffarelli, R.~Kohn and L.~Nirenberg, \emph{Partial regularity of suitable
+weak solutions of the Navier--Stokes equations}, Comm.\ Pure Appl.\ Math.\
+\textbf{35} (1982), 771--831.
+
+\bibitem{fefferman}
+C.~L.~Fefferman, \emph{Existence and smoothness of the Navier--Stokes
+equation}, in: The Millennium Prize Problems, Clay Math.\ Inst., 2006,
+57--67.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,16 @@
+.DS_Store
+
+# machine-specific setup and scratch output
+.setup/
+.build/
+
+# the audited upstream repository is NOT vendored here (641k lines, MIT,
+# owned by OpenAI). Clone it instead: see README.md
+NavierStokesAndEuler/
+
+# LaTeX intermediates
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
