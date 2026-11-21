@@ -3250,3 +3250,59 @@ so off the admissible domain they return the zero field silently, and every fact
 - The review's recommendation to trace `meanSolve`/`highSolve` is answered by §3: they are not on the path, and the time is better spent on `StageEstimates`/`RawStageBounds`, which is where the quantitative content genuinely sits.
 
 *Log only. No Lean declaration is contradicted by this entry; every claim above is a `path:line` reading, not a recompilation.*
+
+---
+
+## E67 — `StageEstimates` traced to its bottom: constructed, with three existential bound fields (2026-11-21)
+
+*Intuition.* E66 walked the paperwork down to the office marked "finite-stage estimates" and stopped at the door. This entry opens the door. Inside there is no pile of unchecked assumptions. There is a clerk who says: for each stage, some constants and some logarithmic exponents make these derivative bounds true — and then hands over a sealed envelope with the constants inside.
+
+### 1. The question
+
+E66 ended at `StageEstimates`. The review that prompted it named the next target explicitly: `ActualStageEstimates`, `GluedStageEstimates`, `ActualCycleResidualBounds`, `ActualPhysicalPrefixFields`, traced to their foundational hypotheses. The question is whether the quantitative content of the whole-space theorem is *proved* at this level, merely *assumed*, or something in between.
+
+### 2. The chain
+
+| step | declaration | what it does |
+|---|---|---|
+| 1 | `NavierStokes/ActualCandidateAssembly.lean:1090` | `estimates` is `GluedStageEstimates.actualStageEstimates (runData …) (meanCycleInput …) …` — a definition, not a hypothesis |
+| 2 | `NavierStokes/GluedStageEstimates.lean:684` | `actualStageEstimates` builds `StageEstimates` from: coherence `C`, the three field sequences, representations `e`, and `d : ∀ J, PhysicalData B (N+1) …` |
+| 3 | `NavierStokes/MixedCandidateAssembly.lean:29` | `StageEstimates` is a **structure of obligations**: smoothness of the three sequences; a gain function with monotonicity and divergence; loss, constant and log functions; three `RawStageBounds`; `finite_background`; `finite_residual` |
+| 4 | `NavierStokes/CutStageEstimates.lean:199` | `RawStageBounds` is an explicit pointwise bound: for `j ≥ 1`, on `q ≤ 1`, `‖iteratedFDeriv m (A j) x‖ ≤ C j m · (1+|log q|)^{p j m} · q^{g j − L m}` |
+| 5 | `NavierStokes/ActualStageEstimates.lean` (`stageEstimates_of_representations`) | constructs the record; the three raw bounds come from `Cyc.represented_raw_bounds`, and the witnesses are taken by `hraw.choose`, `…choose_spec.choose`, `…choose_spec.choose_spec.choose` |
+| 6 | same file, `finite_residual` field | discharged by `ActualCycleResidualBounds.finite_residual_rates`, not by a fresh hypothesis |
+| 7 | `NavierStokes/ActualCycleResidualBounds.lean:1190` | `finite_residual_rates` needs `H : ∀ J, Invariant σ (iterate …)` and `d : ∀ J, PhysicalData B N …`, and yields the `JetRate` statement for every `J, m` |
+| 8 | `NavierStokes/ActualCycleResidualBounds.lean:1142` | `PhysicalData` is an `abbrev` for `PhysicalFields …`; its consumer says plainly that the local fields are "only identified, never bounded, by `d`" |
+| 9 | `NavierStokes/ActualPhysicalPrefixFields.lean:488` | `physicalFields_all` **produces** `∀ J, PhysicalData …` from `StageRealizations`, `ExteriorStages`, a geometric floor, smoothness of the three sequences, and `∀ J, CycleRepresentation …` |
+
+### 3. What is actually at the bottom
+
+Two different objects, and the difference matters.
+
+**The identification layer is proved.** `PhysicalData` carries realizations: the actual fields agree with the chart formulas, the exterior prefixes vanish, the germs match. `physicalFields_of_stages` assembles those from `StageRealizations`, `ExteriorStages` and `CycleRepresentation`. None of these is a numeric estimate; they say *which function this is*, not how large it is. This is the same pattern as the seams of E50-era entries: an obligation that looks analytic turns out to be an identity.
+
+**The quantitative layer is existential.** The three `RawStageBounds` fields are the real content, and they are propositions of the form "there exist constants and log exponents such that this pointwise derivative bound holds". In the constructor, those witnesses are extracted with `Classical.choose`. So the values are not opaque by accident: the record literally stores chosen witnesses of an existence statement.
+
+**A useful negative check.** `RunData` (`ActualStageEstimates.lean:97`) is explicitly *not* an estimate oracle — its own header says the step record "contains native wave constructions; it is not a physical stage-bound or residual-bound oracle". So the quantitative content is not smuggled in through the run data. It arrives only through the three `RawStageBounds` fields and the residual `JetRate`.
+
+### 4. Verdict
+
+`StageEstimates` is **constructed, not assumed**. No axiom, no `sorry`, and no bare hypothesis sits at this boundary: the record is built by a definition that consumes only produced objects.
+
+But the quantitative content is **existence, not evaluation**. At the bottom of the chain are three derivative bounds whose constants and logarithmic exponents are chosen witnesses. This is E65's constant barrier appearing for the third time — first behind individual constants, then behind the whole scale regime (E66), now behind the stage-by-stage estimates. The pattern is consistent: each layer is logically closed, and each layer stores witnesses rather than numbers.
+
+Consequences, stated narrowly:
+
+- the theorem does not rest on an unproved estimate at this boundary — the record is built;
+- but no stage constant, log exponent, or loss function in this chain is ever evaluated to a numeral;
+- and the monotonicity argument of E10.7 therefore still carries the burden of saying why inflated witnesses would not break downstream steps.
+
+### 5. What remains unopened
+
+Recorded so the next pass does not have to rediscover it:
+
+- `Cyc.represented_raw_bounds` — the producer of the three existential bounds. Its statement is consumed here; its body was not read.
+- the producers of `StageRealizations` and `CycleRepresentation` — the identification layer is constructed, but the construction was not followed.
+- whether the chosen constants depend on the stage index `J` in a way that interacts with the schedule selection. The schedule is chosen from `gain` and the loss functions, not from `C` and `p`, which is a reason to expect no interaction — an expectation, not a verified fact.
+
+*Log only. No Lean declaration is contradicted by this entry; every claim above is a `path:line` reading, not a recompilation.*
