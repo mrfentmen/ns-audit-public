@@ -1,0 +1,168 @@
+name: comparator-check
+
+# The check kernel-check cannot do. `#print axioms` says which axioms a proof
+# term names; Comparator says whether the solution proves the *same statement*
+# the challenge poses, under an export re-checked in a second kernel.
+#
+# The upstream README asks for `landrun`, `lean4export` and `nanoda_bin` on PATH.
+# None are on a stock runner, so all three are built here from source. The
+# builtin-kernel run is the one whose result stands on its own; nanoda is a
+# second opinion and is allowed to fail without taking the statement check down
+# with it. Both are uploaded either way.
+#
+# Manual only. Public repository: no runner minutes are charged.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  comparator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          df -h /
+
+      - name: Clone upstream at the audited commit
+        run: |
+          git clone --filter=blob:none https://github.com/openai/NavierStokesAndEuler.git upstream
+          cd upstream
+          git checkout f9e8bc5
+          git log -1 --format='%H %ci'
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      # Same key as kernel-check, so this run inherits the compiled NavierStokes
+      # oleans instead of spending 28 minutes rebuilding them.
+      - name: Restore compiled build
+        uses: actions/cache@v4
+        with:
+          path: upstream/.lake/build
+          key: lake-build-ubuntu-f9e8bc5-v1
+
+      - name: Fetch mathlib cache
+        working-directory: upstream
+        run: lake exe cache get
+
+      - name: Build NavierStokes
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          lake build NavierStokes 2>&1 | tee "$GITHUB_WORKSPACE/navierstokes-build.log"
+
+      # lean4export is already a pinned Lake dependency; the comparator driver
+      # comes from the Comparator package the lakefile requires at v4.34.0-rc2.
+      - name: Build comparator and lean4export
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          lake build lean4export 2>&1 | tee "$GITHUB_WORKSPACE/lean4export-build.log"
+          (lake build comparator || lake build Comparator:exe:comparator) 2>&1 \
+            | tee "$GITHUB_WORKSPACE/comparator-build.log"
+          echo "== binaries =="
+          ls -l .lake/packages/lean4export/.lake/build/bin/ 2>/dev/null || true
+          ls -l .lake/build/bin/ 2>/dev/null || true
+
+      # Both are unpinned `main` clones; the commit each one landed on is written
+      # into the log so the run can be reproduced after the fact.
+      - name: Build landrun and nanoda
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          if ! command -v cargo >/dev/null 2>&1; then
+            curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+            echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          fi
+          export PATH="$HOME/.cargo/bin:$PATH"
+          {
+            echo "== rust =="; cargo --version
+            echo "== landrun =="
+            git clone --depth 1 https://github.com/Zouuup/landrun.git /tmp/landrun
+            git -C /tmp/landrun rev-parse HEAD
+            cargo build --release --manifest-path /tmp/landrun/Cargo.toml
+            /tmp/landrun/target/release/landrun --version 2>&1 || true
+            echo "== nanoda =="
+            git clone --depth 1 https://github.com/ammkrn/nanoda_lib.git /tmp/nanoda
+            git -C /tmp/nanoda rev-parse HEAD
+            cargo build --release --manifest-path /tmp/nanoda/Cargo.toml
+            ls -l /tmp/nanoda/target/release/nanoda_bin
+          } 2>&1 | tee "$GITHUB_WORKSPACE/rust-tools.log"
+
+      # The primary run. `enable_nanoda` is stripped so this config asks only for
+      # the builtin kernel: a statement check that does not depend on a second
+      # kernel having compiled.
+      - name: Comparator (builtin kernel)
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          src = pathlib.Path("ComparatorChallenges/NavierStokes.json")
+          cfg = json.loads(src.read_text())
+          cfg.pop("enable_nanoda", None)
+          out = pathlib.Path("ComparatorChallenges/NavierStokesBuiltin.json")
+          out.write_text(json.dumps(cfg, indent=2) + "\n")
+          print(out.read_text())
+          PY
+          export COMPARATOR_LEAN4EXPORT="$PWD/.lake/packages/lean4export/.lake/build/bin/lean4export"
+          export COMPARATOR_LANDRUN=/tmp/landrun/target/release/landrun
+          ls -l "$COMPARATOR_LEAN4EXPORT" "$COMPARATOR_LANDRUN"
+          # The README wraps its own invocation in `systemd-run --user` to guard a
+          # landrun escape fixed in Linux 7.1. Runners have no user systemd
+          # session, so that wrapper is usually unavailable; the log records which
+          # mode ran instead of implying the stronger one.
+          if systemd-run --user --pty -- true >/dev/null 2>&1; then
+            echo "sandbox wrapper: systemd-run --user AVAILABLE"
+            WRAP=(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pty
+                  -E "PATH=$PATH" --working-directory "$PWD" --)
+          else
+            echo "sandbox wrapper: systemd-run --user UNAVAILABLE; running comparator directly"
+            echo "consequence: no guard against the known landrun escape in this run"
+            WRAP=()
+          fi
+          "${WRAP[@]}" bash -c \
+            "lake exe comparator ComparatorChallenges/NavierStokesBuiltin.json" 2>&1 \
+            | tee "$GITHUB_WORKSPACE/comparator-builtin.log"
+
+      # The second opinion. Its failure is a finding about the toolchain, not a
+      # reason to discard the statement check above.
+      - name: Comparator (nanoda as second kernel)
+        working-directory: upstream
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          export COMPARATOR_LEAN4EXPORT="$PWD/.lake/packages/lean4export/.lake/build/bin/lean4export"
+          export COMPARATOR_LANDRUN=/tmp/landrun/target/release/landrun
+          export COMPARATOR_NANODA=/tmp/nanoda/target/release/nanoda_bin
+          WRAP=()
+          if systemd-run --user --pty -- true >/dev/null 2>&1; then
+            WRAP=(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pty
+                  -E "PATH=$PATH" --working-directory "$PWD" --)
+          fi
+          "${WRAP[@]}" bash -c \
+            "lake exe comparator ComparatorChallenges/NavierStokes.json" 2>&1 \
+            | tee "$GITHUB_WORKSPACE/comparator-nanoda.log"
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: comparator-check-logs
+          path: |
+            navierstokes-build.log
+            lean4export-build.log
+            comparator-build.log
+            rust-tools.log
+            comparator-builtin.log
+            comparator-nanoda.log
+            upstream/lake-manifest.json

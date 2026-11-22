@@ -211,7 +211,9 @@ And whole space → torus is a real scale change, not a word change. Time is str
 
 One word to watch: **support.** A periodic pattern that is not all zero cannot sit in a bounded box in all of space. The statement says instead: inside each box, the part that is not zero sits in a smaller box. That is honest torus talk, and the repo says it itself.
 
-What caveman did **not** do: print axioms for the torus theorems. Only the whole-space four got that. But the print is **in the source already**: `ComparatorSolution.lean` ends with `#print axioms` on both C and D, and `ComparatorChallenges/NavierStokes.json` names both theorems, allows only the three harmless stones, and asks for nanoda. That is a claim, not a receipt. Located, unrun (E72).
+What caveman did **not** do at first: print axioms for the torus theorems. Only the whole-space four got that. The print turned out to be **in the source already** (E72), and then it got run on a rented Linux box, on a clean copy, start to finish, no leftovers: build green, 9,580 jobs, and all **five** stamps came back with the same three harmless stones — `propext`, `Classical.choice`, `Quot.sound` — and **no** `sorryAx` (E73). That is now a receipt, not a claim.
+
+What caveman still did **not** do: let the second, independent rock (nanoda) check the same proof. The JSON asks for it. It is a different tool from Lean and it did not run. So: one kernel checked it, a second was told to, and has not.
 
 ---
 
@@ -668,7 +670,7 @@ That is the data and the conclusion of alternative **(C)** of the Clay statement
 
 ### 8.3 Scope and limitations
 
-The findings are by inspection of proof terms, binder sequences, and definitions. Kernel acceptance was reproduced separately, on Linux: `lake build NavierStokes` finished 9,580 jobs with exit 0 across 817 modules, and `#print axioms` on the four R3 theorems reports only `propext`, `Classical.choice`, `Quot.sound`. The pinned toolchain's `lake` aborts in `libmalloc` on current macOS, hence the Linux VM. That reproduces acceptance of the **terms**; it does not re-run the nine external checkers, and it does not check the statements.
+The findings are by inspection of proof terms, binder sequences, and definitions. Kernel acceptance was reproduced separately, on Linux: `lake build NavierStokes` finished 9,580 jobs with exit 0 across 817 modules, and `#print axioms` on the four R3 theorems reports only `propext`, `Classical.choice`, `Quot.sound`. The pinned toolchain's `lake` aborts in `libmalloc` on current macOS, hence the Linux VM; a later GitHub Actions run from a pristine clone repeated the build and printed five more footprints, the periodic theorem and its adapters among them (E73). That reproduces acceptance of the **terms**; it does not re-run the nine external checkers, and it does not check the statements.
 
 Independent kernel evidence exists for the artifact as a whole (nine external checkers are reported), but such evidence verifies **terms**, not **statements**; the statement-level caveats — zero datum, force-as-residual, similarity in `ν` — are exactly what kernel acceptance cannot test.
 
@@ -731,7 +733,7 @@ So nobody misquotes the cave. This paper does **not** claim, and its evidence do
 ## WHERE TO LOOK (the paper bibliography, in caveman)
 
 - **The repo itself**: OpenAI, `NavierStokesAndEuler`, commit `f9e8bc5`.
-- **This audit**: A. El Sayad and John, the audit log, entries E0–E72.
+- **This audit**: A. El Sayad and John, the audit log, entries E0–E73.
 - **Lean 4**: de Moura and Ullrich, CADE-28, 2021.
 - **Mathlib**: the Mathlib community, CPP 2020.
 - **Leray 1934**: the original weak-solution construction for viscous flow in all of space.

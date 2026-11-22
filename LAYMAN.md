@@ -133,7 +133,9 @@ And the move from whole space to the torus is a real change of scale, not a chan
 
 The one phrase to read carefully is "support". A periodic pattern that is not identically zero cannot be confined to a bounded region of all of space. The statement instead says: inside each box, the part of the flow that is nonzero sits in a smaller box. That is the honest torus version, and the source says as much itself.
 
-What was not done: the axiom check was run on the whole-space theorems only, not on the periodic ones. The command that would run it is already in the source — `NavierStokes/ComparatorSolution.lean` ends with `#print axioms` on both the whole-space and the periodic theorem, and `ComparatorChallenges/NavierStokes.json` names both while permitting only the three harmless axioms, with an independent re-check requested. That is a claim, not a receipt: the check is located, and still unrun (E72).
+What was done later: the axiom check was run on the periodic side too, on a clean clone, on a rented Linux machine. All five declarations that matter — the periodic theorem, its paper corollary, and both adapters between them — depend only on `propext`, `Classical.choice` and `Quot.sound`, exactly the set the configuration permits, with no `sorryAx` (E73). Before that run the answer was inferred rather than seen (E70, E72).
+
+What is still not done: the configuration also asks a second, independent checker to re-verify the exported proof. That is a different tool from Lean, and it was not run. So the periodic result is now verified by one kernel and declared acceptable to a second, not verified by two.
 
 ---
 

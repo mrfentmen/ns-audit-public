@@ -482,7 +482,7 @@ Caveman respects a paper that lists its own weak spots.
 - **Nine external checkers were reported by the repo, not re-run.** And even if they had been: external checking verifies **terms**, not **statements**. The statement-level objections (zero datum, force-as-leftover, similarity in ν) are exactly what kernel acceptance **cannot** test.
 - **Two identities in §5 are the auditors' own** — the measure scaling and the critical weight `b*`. Not in the repo. Labelled as derived.
 - **One early log entry (E36) is provisional.** Call site and estimates checked; exact binder not opened. Later entries walked the same estimate chain from the other end (E67–E71) and found no assumed field, but they did not reopen that binder.
-- **Since this file was first written, the audit got further.** The smooth-force question is answered (E65–E66), the estimate chain is walked to its floor (E67–E71), the ring-world is audited (E70), and the print that would confirm its harmless stones is found in the source but never run (E72). What is left is one run on a rented machine, not one unread proof.
+- **Since this file was first written, the audit got further.** The smooth-force question is answered (E65–E66), the estimate chain is walked to its floor (E67–E71), the ring-world is audited (E70), and the print that confirms its harmless stones was found in the source (E72) and then actually run on a rented machine (E73). Nothing is left unread, and nothing is left unrun except the second rock (nanoda), which is a different tool.
 - **The monotonicity argument in §4 is not machine-checked.** It is a human claim about the scripts.
 - **One erratum was not read at first hand.** The pressure-periodicity attribution rests on the repo's reference and secondary descriptions. Correctly attributed, not independently verified.
 
@@ -860,7 +860,7 @@ Caveman: **A** — no hand, all goo safe. **B** — same, ring-world. **C** — 
 
 ---
 
-## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E72)
+## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E73)
 
 Caveman wrote this file first. Then the audit kept digging. Four things got better. Caveman writes them down so the two papers do not disagree.
 
@@ -880,10 +880,14 @@ Caveman: the floor is poured, not painted on. The numbers sitting on the floor a
 
 "The periodic corollary follows" used to be a sentence. Now it is read: same theorem, clock squished, box repeated, and the competitor class is even **bigger** (it asks for no energy bound at all), bridged to the official Comparator statement in both directions. One honest footnote: in a repeating box nothing can be compactly supported, so the file says "support inside the box" — and it says so out loud, in the header.
 
-### 16.4 The stone-print — found, not run (E72)
+### 16.4 The stone-print — found, then run (E72, E73)
 
-First paper said: the periodic axioms were never printed. Still true on this machine. But the print is **already in the source**: `ComparatorSolution.lean` ends with `#print axioms` on both C and D, and `ComparatorChallenges/NavierStokes.json` names both theorems, allows only the three harmless stones, and asks for nanoda — an independent rock. That is a claim, not a receipt. So: located, still unrun, and now a CI workflow would run it on a rented Linux box instead of this Mac.
+First paper said: the periodic axioms were never printed. Then the print was found **already in the source**: `ComparatorSolution.lean` ends with `#print axioms` on both C and D, and `ComparatorChallenges/NavierStokes.json` names both theorems and allows only the three harmless stones. That was a claim, not a receipt, and a CI workflow was written to run it on a rented Linux box instead of this Mac.
+
+Then it ran. Clean copy of the tree, nothing left over, 9,580 jobs, green. All five stamps came back the same — `propext`, `Classical.choice`, `Quot.sound` — and no `sorryAx` anywhere (E73). The three stones are the ones the config allows, so nothing had to be waved through. Caveman's receipt is in the artifact called `kernel-check-logs`.
+
+One thing still not done: the config also asks a **second** rock, nanoda, to check the same proof with a different tool. That rock did not get thrown. So: one rock checked it, one rock was asked to.
 
 ---
 
-*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E72. If this file and the paper disagree, the paper is right and caveman is wrong.*
+*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E73. If this file and the paper disagree, the paper is right and caveman is wrong.*

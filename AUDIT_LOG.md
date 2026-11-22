@@ -3561,3 +3561,73 @@ Until it is run, the correct sentence in the manuscript and README remains "not 
 **Verdict.** E70's empirical gap is smaller than recorded and precisely located: the command is in `ComparatorSolution.lean`, the acceptance condition is in `ComparatorChallenges/NavierStokes.json`, and the only missing thing is a run on a machine that can hold the oleans. No claim about the periodic axiom footprint is upgraded by this entry.
 
 *Log only. No Lean declaration is contradicted by this entry; every claim above is a `path:line` reading, not a recompilation.*
+
+---
+
+## E73 — The periodic axiom print, executed: (D)'s footprint is the permitted set (2026-11-22)
+
+*Execution, not reading. This is the first entry whose evidence is a kernel run rather than a `path:line` reading. It closes the gap E70 §5 recorded and E72 §5 localized.*
+
+### 1. What was run
+
+`.github/workflows/kernel-check.yml` on a GitHub Actions `ubuntu-24.04` runner, from a pristine clone of upstream: no vendored code, no local state, no reused oleans.
+
+| item | value |
+|---|---|
+| run | `44987195620`, attempt 1, head `21f174b` of this repository |
+| upstream | `openai/NavierStokesAndEuler` at `f9e8bc5` |
+| toolchain | `leanprover/lean4:v4.34.0-rc2`, installed by elan |
+| started / completed | `04:56:18Z` / `05:28:55Z` (32 min 37 s wall) |
+| build | `lake build NavierStokes`, 9,580 jobs, exit 0, "Build completed successfully", 817 modules, 28 min 35 s |
+| axioms step | exit 0, 4 s |
+| artifact | `kernel-check-logs` (11,501 B): `build.log` (820 lines), `axioms.log` (7 lines), `upstream/lake-manifest.json` |
+| cache | `lake-build-ubuntu-f9e8bc5-v1`, 372,015,715 B (0.35 GiB), saved post-job; restore was a miss on this first run |
+
+Dependency closure actually used, from the uploaded manifest: `mathlib 85e3a25e`, `Comparator 19e111e2`, `lean4export cacf989b`, `plausible d9598f07`, `LeanSearchClient ba67e212`, `importGraph d8823026`, `proofwidgets a8acbfd8`, `aesop 18889deb`, `Qq 507746ab`, `batteries d54dddc5`, `Cli ab3a82db`. Nothing else is in the build, and the step that clones upstream pins the commit explicitly, so the audited tree is the audited tree.
+
+### 2. The answer
+
+`axioms.log`, verbatim, all five declarations:
+
+```
+'NavierStokes.Comparator.navier_stokes_breakdown_R3' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NavierStokes.Comparator.navier_stokes_breakdown_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NavierStokes.PeriodicPaper.periodic_corollary' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NavierStokes.ComparatorBridge.option_D_of_paper_candidate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NavierStokes.ComparatorBridge.periodicPaperSolution_of_comparator' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+```
+
+Three things follow, each narrower than it looks:
+
+1. **No `sorryAx`.** A `sorry` anywhere in the transitive proof term is listed by name in this output. It is absent from all five.
+2. **No axiom outside the permitted set.** The printed set is `ComparatorChallenges/NavierStokes.json`'s `permitted_axioms` member for member. The configuration would have rejected anything else; this run shows there was nothing else to reject.
+3. **(D) now stands where (C) stands.** E70 recorded (D)'s footprint as inferred, E72 found the command, E73 executes it. The inference was right, which is the least interesting part: what changed is that the claim is now a receipt.
+
+### 3. The same run confirms upstream's own self-report
+
+`NavierStokes/ComparatorSolution.lean` ends with two literal `#print axioms` commands (E72 §2). Building that module elaborates them, so `build.log` carries upstream's own answer as `info:` lines, independent of the probe file:
+
+```
+info: NavierStokes/ComparatorSolution.lean:31:0: 'NavierStokes.Comparator.navier_stokes_breakdown_R3' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: NavierStokes/ComparatorSolution.lean:32:0: 'NavierStokes.Comparator.navier_stokes_breakdown_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+Two lines of the same run agree. Neither is an external checker.
+
+### 4. What this does not establish
+
+- **No independent kernel.** `enable_nanoda: true` asks Comparator to re-check the exported proof term in a second implementation. This workflow builds and prints footprints; it does not run Comparator. The nanoda re-check remains a request, not a receipt — E72 §4 is unchanged by this entry, and it is now the only empirical item left on the Navier--Stokes side.
+- **No statement review.** A footprint is a fact about the proof term. It says nothing about whether the encoded statement is the Clay statement. §3 of the manuscript is about exactly that gap; this entry does not narrow it.
+- **No finding is upgraded.** Every finding of E0–E72 comes from reading. This run confirms that the terms elaborate under the printed axiom set; it does not confirm that any estimate inside them is true.
+- **The Euler development was not built.** The workflow targets `NavierStokes` only.
+- **`build.log` is a job log, not a transcript of every declaration.** It records 817 module builds and 9,580 jobs; it does not re-state the source of each.
+
+### 5. Cost, and what the cache bought
+
+Public repository, so the run draws no private minutes; the only budget that mattered is the 300-minute job timeout, and the run used 32 of them. Of the 32 min 37 s, 28 min 35 s is the compile and 242 s is overhead (disk cleanup 133 s, mathlib cache 86 s, clone 2 s, elan 1 s, setup 2 s, axiom step 4 s, upload and post-job 9 s). `.lake/build` for this project is 0.35 GiB, which fits the per-repository cache limit with room to spare: the earlier concern that a whole-`.lake` cache would exceed 10 GB was correct, and caching `.lake/build` only was the fix. A second run should restore that cache in seconds and land near 5 minutes.
+
+**Verdict.** (D)'s axiom footprint is no longer inferred. It was printed on a clean clone at `f9e8bc5`, together with its paper corollary and both adapters, and it is the permitted set with no `sorryAx`. What remains empirical for this development is the external Comparator/nanoda re-check — a different tool answering a different question — and what remains at statement level is untouched by any of it.
+
+*Execution evidence: run `44987195620`, artifact `kernel-check-logs`. The findings of E0–E72 remain textual; this entry does not re-derive any of them.*
