@@ -58,6 +58,8 @@ All citations are `path:line` pairs into that commit.
 
 ## Scope
 
-The audit examines one result: the whole-space forced Navier–Stokes theorem behind `breakdownStatement`. The repository's periodic Navier–Stokes and Euler developments are not audited here, and no claim is made about them.
+The audit examines one result in depth: the whole-space forced Navier–Stokes theorem behind `breakdownStatement`.
+
+Alternative (D), the periodic corollary, is in scope for the statement and the architecture of its proof: E70 reads the compression, the periodization and the comparator bridge in both directions, and finds the excluded class *weaker* than (C)'s (it imposes no energy bound at all). What is missing for (D) is one unrun axiom print, not an unread proof (E72). The periodic development's own machinery — the periodization lemmas and periodic uniqueness — was sampled rather than audited line by line, and the Euler development is outside this audit entirely. Neither carries a claim here.
 
 Independent commentary, not affiliated with OpenAI. The upstream repository's own licence governs its code; the audit documents are the authors' own work.

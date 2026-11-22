@@ -3516,7 +3516,7 @@ E69's conclusion now rests on the body, not on a signature: the new invariant is
 
 ---
 
-## E72 — The periodic axiom question is already posed in the source, in execable form (2026-11-21)
+## E72 — The periodic axiom question is already posed in the source, in executable form (2026-11-21)
 
 *Reading only; no build. Refines the framing of E70 §5 without changing its conclusion.*
 
