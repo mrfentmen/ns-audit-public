@@ -37,21 +37,31 @@ jobs:
             | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
-      - name: Restore .lake
+      # Cache only this project's build output, never all of `.lake`: Mathlib's
+      # source plus its oleans push that directory past GitHub's 10 GB per-repo
+      # cache limit, so a whole-`.lake` cache fails to save without failing the
+      # job and every run stays cold. `.lake/build` holds the NavierStokes
+      # oleans and the trace files Lake compares against, so a hit skips the
+      # 25-45 minute compile. The key is pinned to the audited commit; bump the
+      # suffix to invalidate a bad cache.
+      - name: Restore compiled build
         uses: actions/cache@v4
         with:
-          path: upstream/.lake
-          key: lake-ubuntu-f9e8bc5-v1
+          path: upstream/.lake/build
+          key: lake-build-ubuntu-f9e8bc5-v1
 
       - name: Fetch mathlib cache
         working-directory: upstream
         run: lake exe cache get
 
+      # Full log, not a tail: the artifact is the evidence. `pipefail` keeps the
+      # step's status equal to `lake`'s, so a failed build still fails the job,
+      # and `tee` streams as it goes so a cancelled run leaves a partial log.
       - name: Build NavierStokes (817 modules)
         working-directory: upstream
         run: |
           set -euo pipefail
-          lake build NavierStokes 2>&1 | tail -40
+          lake build NavierStokes 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
 
       - name: Print axioms
         working-directory: upstream
@@ -73,11 +83,12 @@ jobs:
           EOF
           lake env lean AxiomsProbe.lean | tee "$GITHUB_WORKSPACE/axioms.log"
 
-      - name: Upload log
+      - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: axioms-log
+          name: kernel-check-logs
           path: |
+            build.log
             axioms.log
             upstream/lake-manifest.json
