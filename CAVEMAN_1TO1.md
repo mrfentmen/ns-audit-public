@@ -153,6 +153,16 @@ We read proof terms and binder sequences. We did not re-elaborate them. For ever
 
 Where a review task named a file or declaration that does not exist at `f9e8bc5`, the log records the missing premise and points at the module that really carries the content. It does not invent a lemma. Of thirty-five tasks in the final review matrix, nineteen were answered from declarations that exist under the names given; sixteen needed premise correction (E46, E47).
 
+### 1.7 Three kinds of claim
+
+Caveman learns to keep three piles apart. Mix them and a careful audit turns into a loud wrong one.
+
+1. **Fact about the code.** "This line comes first." "This identity is proved outright." "This number was grabbed, not computed." Caveman reads and points at file and line. Solid pile.
+2. **Limit on what the machine checked.** "No number came out." "No unit was weighed." This can be true even when the theorem is true. This is the pile both findings go in.
+3. **Real math mistake.** "This estimate is false." "This exponent is wrong." "This step does not follow." Only this pile can hurt the theorem. To put a rock in this pile, caveman must point at the bad step and at the inequality that fails.
+
+The paper puts rocks in pile one, says what pile two means, and puts **nothing** in pile three. One time caveman nearly dropped a rock in pile three — said the two viscous weights allowed no order-by-order build. The code said otherwise. Caveman took the rock back out and wrote it down (E63). That is the rule: pile three needs a bad step you can point at, not a bad feeling.
+
 ---
 
 ## 2. PRELIMINARIES: NOTATION AND THE TWO SPACES
@@ -190,6 +200,18 @@ pressure_periodic : UnitSpatialPeriodsOn (Ico 0 1) p
 Read against a statement that makes only the velocity periodic, that clause would shrink the competitor class — and shrinking the competitors is exactly how a breakdown claim can be made to look easier than it is. **The objection does not land here.** The official problem description carries an erratum saying plainly that in the periodic case equation (8) requires both velocity and pressure to be periodic. The repo's clause is the published hypothesis, not an addition to it.
 
 The clause is dead weight for this paper, which is about (C) on `ℝ³` and never invokes pressure periodicity; whole-space comparison kills pressure by Riesz pairing instead. One limitation said in the same breath: **we did not read that erratum at first hand.** The attribution rests on the repo's own reference and on secondary descriptions. Correctly attributed, not independently verified.
+
+### 2.2 The torus version, and why it is the stronger claim
+
+Repo also prove torus version — the fourth Clay door. It say: for every thick goo, there is a setup inside a box that runs away at time one, and **no** smooth periodic solution exists for that same hand.
+
+Two things make it **stronger** than the whole-space version, not weaker. The rivals it kills only have to be smooth, periodic, no bunching, start from rest, and solve forever. They do **not** need bounded energy. No pressure size. No decay. Killing a bigger herd is the harder job, so torus version is not cheating by picking weak rivals.
+
+And whole space → torus is a real scale change, not a word change. Time is stretched so the bang still lands at one. Space is squeezed. Hand and pressure are rescaled to match. Goo thickness untouched. Equation re-checked after the swap. Squeeze factor is chosen so everything fits in the middle box. Then the pattern is stamped across the grid.
+
+One word to watch: **support.** A periodic pattern that is not all zero cannot sit in a bounded box in all of space. The statement says instead: inside each box, the part that is not zero sits in a smaller box. That is honest torus talk, and the repo says it itself.
+
+What caveman did **not** do: print axioms for the torus theorems. Only the whole-space four got that. But the print is **in the source already**: `ComparatorSolution.lean` ends with `#print axioms` on both C and D, and `ComparatorChallenges/NavierStokes.json` names both theorems, allows only the three harmless stones, and asks for nanoda. That is a claim, not a receipt. Located, unrun (E72).
 
 ---
 
@@ -463,6 +485,8 @@ Two corrections to the premise of the task. The declaration it named, `R3/Candid
 
 So no jet of `f` is matched at `t = 3/8` by computation. The seam is regular because both sides are eventually equal to the zero germ, and `C^∞` is closed under that identification.
 
+Inheriting the smoothness is only half of the bill, and the other half is where the outside review pressed hardest. The last gate also needs the leftover's derivatives to converge locally uniformly at the bad point (`hlim`, `CandidateFromLimits.lean:39`). That is not a wish either. Jets that vanish at the bad point, a common schedule carrying flatness (`exists_schedule_all_jetRates`), and boundary limits that come out locally uniform (`boundaryLimits_locallyUniform`) build it out of the finite-stage estimates. The chain, and the fact that `meanSolve` and `highSolve` are Euler-only and not on this path at all, is E65–E66. And the estimates themselves get read below `RawStageBounds` to one wave-class fact about the actual source (E67, E68); that fact is proved for the starting state and rebuilt every cycle (E69); and the thing that rebuilds it is a structure literal with no assumed field (E71).
+
 ### 5.3 Divergence-free cutoff corrections in the torus interface
 
 Cutting a divergence-free field makes a defect: `∇·(χu) = u·∇χ ≠ 0`. The standard repair is a corrector field, found by solving a divergence equation and subtracting a gradient. The audit asked three things: does such a corrector exist, do its spatial derivatives eat powers of `q` missing from the exponent ledger, and is its residual added to `f` or majorized by an existential constant.
@@ -644,7 +668,7 @@ That is the data and the conclusion of alternative **(C)** of the Clay statement
 
 ### 8.3 Scope and limitations
 
-We did not recompile. There is no Lean toolchain on the audit host, so every claim is by inspection of proof terms, binder sequences, and definitions — not by re-elaboration.
+The findings are by inspection of proof terms, binder sequences, and definitions. Kernel acceptance was reproduced separately, on Linux: `lake build NavierStokes` finished 9,580 jobs with exit 0 across 817 modules, and `#print axioms` on the four R3 theorems reports only `propext`, `Classical.choice`, `Quot.sound`. The pinned toolchain's `lake` aborts in `libmalloc` on current macOS, hence the Linux VM. That reproduces acceptance of the **terms**; it does not re-run the nine external checkers, and it does not check the statements.
 
 Independent kernel evidence exists for the artifact as a whole (nine external checkers are reported), but such evidence verifies **terms**, not **statements**; the statement-level caveats — zero datum, force-as-residual, similarity in `ν` — are exactly what kernel acceptance cannot test.
 
@@ -707,7 +731,7 @@ So nobody misquotes the cave. This paper does **not** claim, and its evidence do
 ## WHERE TO LOOK (the paper bibliography, in caveman)
 
 - **The repo itself**: OpenAI, `NavierStokesAndEuler`, commit `f9e8bc5`.
-- **This audit**: A. El Sayad and John, the audit log, entries E0–E67.
+- **This audit**: A. El Sayad and John, the audit log, entries E0–E72.
 - **Lean 4**: de Moura and Ullrich, CADE-28, 2021.
 - **Mathlib**: the Mathlib community, CPP 2020.
 - **Leray 1934**: the original weak-solution construction for viscous flow in all of space.

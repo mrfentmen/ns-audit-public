@@ -477,10 +477,12 @@ Caveman should be very careful here. The paper has an explicit non-claims append
 
 Caveman respects a paper that lists its own weak spots.
 
-- **Not recompiled.** No Lean toolchain on the audit host. Every claim is from reading proof terms, binder order, and definitions — **not** from re-elaborating.
+- **Findings not recompiled.** Every finding is from reading proof terms, binder order, and definitions.
+- **But the proof was.** On Linux: `lake build NavierStokes` finished 9,580 jobs, exit 0, 817 modules. The four whole-space theorems lean only on `propext`, `Classical.choice`, `Quot.sound`. On this Mac the build tool dies inside Apple's memory allocator, so the build ran in a Linux box. That checks **terms**, not **statements** — the findings above are still read, not machine-checked.
 - **Nine external checkers were reported by the repo, not re-run.** And even if they had been: external checking verifies **terms**, not **statements**. The statement-level objections (zero datum, force-as-leftover, similarity in ν) are exactly what kernel acceptance **cannot** test.
 - **Two identities in §5 are the auditors' own** — the measure scaling and the critical weight `b*`. Not in the repo. Labelled as derived.
-- **One log entry (E36) is provisional.** Call site and estimates checked; exact binder not opened.
+- **One early log entry (E36) is provisional.** Call site and estimates checked; exact binder not opened. Later entries walked the same estimate chain from the other end (E67–E71) and found no assumed field, but they did not reopen that binder.
+- **Since this file was first written, the audit got further.** The smooth-force question is answered (E65–E66), the estimate chain is walked to its floor (E67–E71), the ring-world is audited (E70), and the print that would confirm its harmless stones is found in the source but never run (E72). What is left is one run on a rented machine, not one unread proof.
 - **The monotonicity argument in §4 is not machine-checked.** It is a human claim about the scripts.
 - **One erratum was not read at first hand.** The pressure-periodicity attribution rests on the repo's reference and secondary descriptions. Correctly attributed, not independently verified.
 
@@ -524,7 +526,7 @@ Caveman respects a paper that lists its own weak spots.
 
 ## 12. THE WHOLE PAPER IN FIVE LINES
 
-1. The repo is **logically clean** and the theorem it proves is **true**.
+1. The repo is **logically clean**, and the theorem it proves is **true if the rock said yes to it**. This audit read the proof; it did not re-prove it from scratch.
 2. But the rock only audits arithmetic that is **in the types**. Constants and real exponents are **not** in the types, so the rock is **blind** to their size and dimension.
 3. So: no explicit bound, no dimension check, no "small enough" claim — and the construction hides its whole scale regime behind one `Classical.choice`.
 4. Separately, the repo's own derivative identities prove the viscous term is **two pieces with different weights**, differing by 2h, and **no allowed member is isotropic** — even though the code is correct and the ledger never notices.
@@ -856,4 +858,32 @@ Caveman: **A** — no hand, all goo safe. **B** — same, ring-world. **C** — 
 
 ---
 
-*Source: `MANUSCRIPT.tex` (1,555 lines) and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`. If this file and the paper disagree, the paper is right and caveman is wrong.*
+---
+
+## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E72)
+
+Caveman wrote this file first. Then the audit kept digging. Four things got better. Caveman writes them down so the two papers do not disagree.
+
+### 16.1 The smooth hand — it is built, not wished for (E65, E66)
+
+First paper said: the last assembly gate takes "hand is smooth" as a given. True that the gate takes it. But caveman had not walked upstream. Upstream: the cut hand is smooth because smooth times smooth is smooth (`compactForce_smooth`), the time switch is smooth the same way (`force_contDiff`), and the limit data the gate really needs (`hlim`) is **built**, not handed over — jets vanish at the bad point, the boundary limits come out locally uniform, and that is what feeds the gate. Nobody stamped the parcel at the door. It came up from the basement.
+
+Caveman also had one wrong idea: caveman thought `meanSolve` and `highSolve` were the basement. They are not in this tower at all. They belong to Euler. Different building, no door between them.
+
+### 16.2 The estimate chain — walked to the floor (E67–E71)
+
+First paper said: the numbers are existential and never weighed. Still true. What changed is everything under it. The chain is now read all the way down: `StageEstimates` ← `RawStageBounds` ← current mode bounds ← native jet bounds ← **one wave-class fact about the actual source**. And that fact is not assumed — it is proved for the starting state and **rebuilt** every cycle by `assemble`, which caveman opened and found to be a structure literal: every field built, carried with a reason, or already proved before the call. No `sorry`. No field that quietly means "trust me bro".
+
+Caveman: the floor is poured, not painted on. The numbers sitting on the floor are still "some number, somewhere" — that is finding one, and finding one did not move.
+
+### 16.3 The ring-world got its own audit (E70)
+
+"The periodic corollary follows" used to be a sentence. Now it is read: same theorem, clock squished, box repeated, and the competitor class is even **bigger** (it asks for no energy bound at all), bridged to the official Comparator statement in both directions. One honest footnote: in a repeating box nothing can be compactly supported, so the file says "support inside the box" — and it says so out loud, in the header.
+
+### 16.4 The stone-print — found, not run (E72)
+
+First paper said: the periodic axioms were never printed. Still true on this machine. But the print is **already in the source**: `ComparatorSolution.lean` ends with `#print axioms` on both C and D, and `ComparatorChallenges/NavierStokes.json` names both theorems, allows only the three harmless stones, and asks for nanoda — an independent rock. That is a claim, not a receipt. So: located, still unrun, and now a CI workflow would run it on a rented Linux box instead of this Mac.
+
+---
+
+*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E72. If this file and the paper disagree, the paper is right and caveman is wrong.*

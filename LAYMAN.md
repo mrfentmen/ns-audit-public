@@ -67,7 +67,9 @@ So the ledger has three lines, not two. Naming the push is free. Smoothing it is
 
 The paper makes two observations about the formalization, and neither says the proof is wrong.
 
-The first is the **constant barrier**. Every numerical constant in the chain of estimates is introduced by a phrase of the form "there exists a number such that". The proof assistant confirms that such a number exists. It never confirms that the number is small, or the right size for the next step, or measured in the right units. Section 3 explains why this is not an oversight but a consequence of what the tool checks.
+The first is the **constant barrier**. Every constant in the analytic chain of inequalities is introduced by a phrase of the form "there exists a number such that". The proof assistant confirms that such a number exists. It never confirms that the number is small, or the right size for the next step, or measured in the right units. Section 3 explains why this is not an oversight but a consequence of what the tool checks.
+
+The barrier is about the estimates, not about all arithmetic. The exponent ledger works on exact rationals and its equalities are checked; every exponent in the argument is verified to be the one that was intended. What is unweighed is the size of the constants multiplying those powers.
 
 The second is **anisotropic scaling**. The viscosity term, viewed through the change of coordinates used in the construction, splits into two pieces that shrink at different rates: one with the radius, one with the height. The difference between the rates depends on a parameter of the construction. Section 4 explains what that means and what it does not.
 
@@ -81,9 +83,19 @@ This audit takes them as given and asks a different question: given that stateme
 
 ### 1.6 Method and reproducibility
 
-The audit reads proofs and definitions. It does not recompile them. For every claim, the log records the exact file and line, the order in which assumptions are introduced where that matters, the statement in ordinary notation, and a check of units.
+The findings in this document come from reading proofs and definitions, not from recompiling them. Kernel acceptance was tested separately: the `NavierStokes` library builds (9,580 jobs, exit 0, 817 modules) and the four whole-space theorems depend only on Lean's three standard axioms. That confirms the terms; it does not confirm the statements, and it does not machine-check any finding here. For every claim, the log records the exact file and line, the order in which assumptions are introduced where that matters, the statement in ordinary notation, and a check of units.
 
 Where a review task named a file or declaration that does not exist at the audited commit, the log records the missing premise and points at the module that actually contains the content, rather than inventing a lemma to fill the gap. Of thirty-five tasks in the final review matrix, nineteen were answered from declarations that exist under the names given; sixteen needed their premise corrected.
+
+### 1.7 Three kinds of claim
+
+Findings are easy to over-read, so the paper separates three kinds of statement.
+
+1. **A fact about the code.** This binder comes first, this identity is proved outright, this value was chosen rather than computed, this file is not imported by the root. Facts of this kind are settled by reading, and every one is cited to a file and a line.
+2. **A limit on what the formalization establishes.** A fact about the *type* rather than the *term*: no number comes out, no unit is checked. Such a limit can hold of a development whose theorem is also true. Both of this audit's findings are of this kind.
+3. **A mathematical error.** A false estimate, a wrong exponent, an inference that does not follow. Only this kind bears on whether the theorem is true, and it requires naming the step and the inequality that fails.
+
+The paper makes claims of the first kind, draws consequences of the second, and makes none of the third. The one time the audit briefly asserted the third — that the anisotropic weights allowed no order-by-order expansion — the source contradicted it and the claim was withdrawn in the log (E63). That is the standard: a claim of the third kind survives only if the bad step can be pointed at.
 
 ---
 
@@ -110,6 +122,18 @@ Its structures impose a condition with no counterpart in the whole-space version
 The objection does not apply here. The official problem description carries an erratum stating that in the periodic case the equation requires both velocity and pressure to be periodic. The repository's clause is the published hypothesis, not an addition to it.
 
 The clause plays no role in the result this paper audits, which concerns the whole-space forced problem and never invokes pressure periodicity. One limitation is recorded alongside the claim: the erratum was not read at first hand for this audit. The attribution rests on the repository's own reference and on secondary descriptions, so it is correctly attributed rather than independently verified.
+
+### 2.2 The periodic corollary, and why it is the stronger statement
+
+The repository also proves a version on the torus, corresponding to the fourth Clay alternative. It says: for every positive viscosity there is a setup, confined to a box, whose speed runs away at time one, and for which no global smooth periodic solution exists.
+
+Two things about it are stronger than the whole-space version this audit concentrates on, not weaker. The competing solutions it rules out need only be smooth, periodic, divergence-free, start from rest, and solve the equation forever; they are not required to have bounded energy or a normalised pressure. Ruling out a larger class is a harder claim, so the periodic result is not obtained by weakening its opponents.
+
+And the move from whole space to the torus is a real change of scale, not a change of notation. Time is stretched so the blow-up still happens at exactly one, space is squeezed, the force and pressure are rescaled to match, viscosity is untouched, and the equation is re-checked after the substitution. The squeeze factor is chosen so that everything fits inside the central box; only then is the pattern repeated across the grid.
+
+The one phrase to read carefully is "support". A periodic pattern that is not identically zero cannot be confined to a bounded region of all of space. The statement instead says: inside each box, the part of the flow that is nonzero sits in a smaller box. That is the honest torus version, and the source says as much itself.
+
+What was not done: the axiom check was run on the whole-space theorems only, not on the periodic ones. The command that would run it is already in the source — `NavierStokes/ComparatorSolution.lean` ends with `#print axioms` on both the whole-space and the periodic theorem, and `ComparatorChallenges/NavierStokes.json` names both while permitting only the three harmless axioms, with an independent re-check requested. That is a claim, not a receipt: the check is located, and still unrun (E72).
 
 ---
 
@@ -266,6 +290,8 @@ The second step is the limit data. Building the force requires the derivatives o
 
 So there is no unexplained smoothness assumption sitting at the final assembly boundary. What there is, instead, is a place where the audit stops: whether those finite-stage estimates themselves withstand detailed scrutiny is a separate and deeper question, and it is the natural next target.
 
+That next target was taken up, and the result narrows the caveat without removing it. The stage estimates were traced below their own interface (E67, E68); the single fact they rest on — a membership statement about the source of the flow — turned out to be proved for the starting state and rebuilt at every cycle (E69); and the assembly that rebuilds it was read field by field, every field constructed, carried for a reason, or discharged before the call (E71). So the audit's stopping point is not a place where something was assumed and left there. It is a place where the numbers are still existential: the kernel agreed that suitable constants exist, never that any particular constant is small, or dimensionally right. That is finding one, and none of this touches it.
+
 ### 5.3 Divergence-free cutoff corrections in the torus interface
 
 Cutting a flow to confine it damages incompressibility: the cut field develops a divergence defect.
@@ -404,9 +430,7 @@ It does not establish the unforced alternatives (A) or (B), and the repository's
 
 ### 8.3 Scope and limitations
 
-The repository was not recompiled. There is no Lean toolchain on the audit machine, so every claim rests on reading proofs, definitions, and the order of assumptions — not on re-running the checker.
-
-Independent kernel evidence exists for the artifact as a whole, since nine external checkers are reported. But that evidence verifies terms, not statements, and the statement-level caveats are exactly what kernel acceptance cannot test.
+The findings rest on reading proofs, definitions, and the order of assumptions. Kernel acceptance was reproduced afterwards on Linux — the `NavierStokes` library built with exit 0, and the four whole-space theorems use only Lean's three standard axioms — because the pinned toolchain's build tool crashes on current macOS. That reproduces acceptance; it does not re-run the nine external checkers, and it verifies terms, not statements. The statement-level caveats are exactly what kernel acceptance cannot test.
 
 Some formulas in Section 4.4 are the auditors' own derivation, immediate consequences of definitions in the repository, and are labelled as derived. One log entry is provisional: the call site and the approximation estimates were verified, but the exact assumption was not opened. And the monotonicity claim behind Section 3.2 is an argument about the scripts, not a machine-checked fact.
 

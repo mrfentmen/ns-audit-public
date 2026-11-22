@@ -17,11 +17,11 @@ The audit's two findings:
 
 | File | What it is |
 |---|---|
-| `MANUSCRIPT.tex` | The audit paper, 1,573 lines. LuaLaTeX or XeLaTeX. |
-| `AUDIT_LOG.md` | The working log: entries E0–E67, every `path:line` citation behind the paper. |
+| `MANUSCRIPT.tex` | The audit paper. LuaLaTeX or XeLaTeX. |
+| `AUDIT_LOG.md` | The working log: entries E0–E72, every `path:line` citation behind the paper. |
 | `PHASE2-FINDINGS.md` | Second-pass findings: the anisotropic weights, the three "free doors", the packets. |
 | `CAVEMAN.md` | The whole thing rewritten in caveman. Every finding, plus §13–15: the equation symbol by symbol, why 3D is the hard case, and the four Clay doors A–D. |
-| `CAVEMAN_1TO1.md` | The paper section for section in caveman: 8 sections, 33 subsections, appendix and bibliography. Nothing skipped. |
+| `CAVEMAN_1TO1.md` | The paper section for section in caveman: 8 sections, every subsection, appendix and bibliography. Nothing skipped. |
 | `LAYMAN.md` | The paper in plain English: same structure, no symbol left unexplained. For a reader who is not a mathematician. |
 | `BUZZWORDS.md` | Every invented label the paper uses (§A–G) and every real technical term it assumes you know (§H), each defined. |
 | `cone_weights.svg` | The diagram: the generalized cone and the two viscous weights, with the `2h` gap. |
@@ -32,14 +32,17 @@ The audit's two findings:
 
 The artifact is logically clean — no reachable `sorry`, no `axiom`, no `native_decide`, no `unsafe`, no `implemented_by`, and the force's global smoothness is *proved*, not assumed (trace in E65 and E66). But the kernel answers only "does this term inhabit this type", so constants and real exponents — which live in terms, not types — are never weighed or dimensioned. Separately, the repo's own derivative identities show the viscous term is two pieces with weights differing by `2h`, so no admissible member is isotropic, while the whole scale regime sits behind a single `Classical.choice`.
 
-## What this audit did not do
+## What this audit did and did not establish
 
-- **Did not recompile.** No Lean toolchain was available. Every claim comes from reading proof terms, binder order, and definitions — not from re-elaborating.
+- **Findings are source-read.** Every finding comes from reading proof terms, binder order, and definitions. The build below did not machine-check the findings themselves.
+- **Kernel acceptance was reproduced**, on Linux: `lake build NavierStokes` completed 9,580 jobs with exit 0 (817 modules, 20 min 17 s), and `#print axioms` on the four R3 theorems reports only `propext`, `Classical.choice`, `Quot.sound`. The pinned toolchain's `lake` aborts with `SIGTRAP` in `libmalloc` on current macOS (3/3), so the build ran in an Ubuntu VM.
+- **Periodic alternative (D) was audited by reading** (E70): the corollary follows from the whole-space theorem by parabolic compression and periodization, its competitor class imposes no energy bound at all, and it is bridged to the comparator in both directions. Its axiom footprint was **not** printed — only the four whole-space theorems were. The command that would print it ships in the source itself: `NavierStokes/ComparatorSolution.lean` ends with `#print axioms` on both the (C) and (D) theorems, and `ComparatorChallenges/NavierStokes.json` names both with `permitted_axioms` fixed and `enable_nanoda: true` (E72). `.github/workflows/kernel-check.yml` runs that print in CI; until it is run, the footprint is upstream's self-report, not ours.
+- **The estimate chain is closed by reading** (E68, E69, E71): the source wave class that the stage estimates consume is proved for the initial state, rebuilt by every step, and the assembly that rebuilds it is a structure literal with no assumed field.
 - **Did not re-run the nine external checkers** the repository reports.
 - The monotonicity argument behind finding 1 is a human argument about the scripts, not machine-checked.
 - Two identities in §5 of the paper (the measure scaling and the critical weight `b* = −(3−2h)/4`) are the auditors' own derivation, labelled as such.
 
-Truth here is conditional on kernel acceptance. The correct phrasing is "the theorem is true **if** the kernel accepts it", not "is true".
+Kernel acceptance is now reproduced for the `NavierStokes` library, not merely reported. That settles the terms; it does not settle the statement. The theorem remains true **if** the kernel accepts it — and Clay's (C) is what the encoded statement says — neither of which the kernel tests.
 
 ## Reproducing
 
@@ -50,6 +53,8 @@ cd NavierStokesAndEuler && git checkout f9e8bc5
 ```
 
 All citations are `path:line` pairs into that commit.
+
+`.github/workflows/kernel-check.yml` does the build in CI (Actions → kernel-check → Run workflow): clone at `f9e8bc5`, `lake exe cache get`, `lake build NavierStokes`, then the axiom probe. It exists because this host cannot run the toolchain; it does not run automatically.
 
 ## Scope
 

@@ -5,7 +5,7 @@
 **Target commit:** `f9e8bc5` (`main`, shallow clone, 2026-09-08 repo creation, last push 2026-09-10).
 **Toolchain declared:** `leanprover/lean4:v4.34.0-rc2`, Mathlib `v4.34.0-rc2`, Comparator `v4.34.0-rc2`.
 
-> Scope limitation, stated up front and not to be quietly dropped later: **no local recompilation was performed.** No `elan`/`lean`/`lake` exists on the audit host, and the project's export closure is ~28.6M lines / 1.5 GB per Lean Kernel Arena. All findings below are (i) static forensics over the clone, and (ii) reported kernel acceptance by the Lean Kernel Arena, whose checkers (`sokonanoda`, `mathgraph`, `nanoclo`, `con-ron`, `nanobruijn`, `nanoda`, `ind-models`, `lean4lean`, `tenet`) accept the export in 34 s – 18.6 min. Kernel acceptance is *not* statement review.
+> Scope limitation, stated up front and not to be quietly dropped later: **every finding below is source-read, not obtained by elaboration.** No `elan`/`lean`/`lake` existed on the audit host when the findings were made, and the project's export closure is ~28.6M lines / 1.5 GB per Lean Kernel Arena. Kernel acceptance was reproduced **afterwards**, on Linux: `lake build NavierStokes` completed 9,580 jobs with exit 0 (817 modules, 20 min 17 s), and `#print axioms` on the four R3 theorems reports only `propext`, `Classical.choice`, `Quot.sound`. The pinned toolchain's `lake` aborts with `SIGTRAP` in `libmalloc` on current macOS (E50; 3/3 reproductions), so the build ran in an Ubuntu VM. That build verifies terms, not statements; the findings below remain textual. Kernel acceptance is *not* statement review.
 
 ---
 
@@ -1678,6 +1678,14 @@ image is the indicated environment.
 
 ### E50.5 Net effect on this audit
 
+> **Status note added 2026-11-21:** this section records what was true of that
+> attempt. The crash is real and was reproduced again (3/3) with a fresh install of
+> the pinned toolchain. The conclusion that no build is possible on this host stands;
+> the conclusion that no build is possible **at all** does not. A Linux VM built the
+> `NavierStokes` library successfully (9,580 jobs, exit 0, 817 modules) and the four
+> R3 theorems depend only on `propext`, `Classical.choice`, `Quot.sound`. See the
+> corrected scope note at the top of this log.
+
 - **No oleans, no Mathlib cache, no build.** `lake exe cache get` never reached a download.
 - Therefore E49.4 stands unchanged and is now load-bearing rather than a caveat: **every signature,
   binder order and line number in E0–E49 was obtained by reading source, not by elaboration.**
@@ -3304,5 +3312,252 @@ Recorded so the next pass does not have to rediscover it:
 - `Cyc.represented_raw_bounds` — the producer of the three existential bounds. Its statement is consumed here; its body was not read.
 - the producers of `StageRealizations` and `CycleRepresentation` — the identification layer is constructed, but the construction was not followed.
 - whether the chosen constants depend on the stage index `J` in a way that interacts with the schedule selection. The schedule is chosen from `gain` and the loss functions, not from `C` and `p`, which is a reason to expect no interaction — an expectation, not a verified fact.
+
+*Log only. No Lean declaration is contradicted by this entry; every claim above is a `path:line` reading, not a recompilation.*
+
+---
+
+## E68 — The load-bearing chain followed to its floor; comparator fidelity and pressure flux closed (2026-11-21)
+
+*Reading pass only; no build during this entry. Sources read at `f9e8bc5`. The build referred to below is the Linux run already recorded, not a new one.*
+
+### 1. Statement fidelity against the comparator — closed by reading
+
+`ComparatorSolution.navier_stokes_breakdown_R3` is a three-line adapter to `ComparatorBridge.navier_stokes_breakdown_R3`, which applies `comparator_of_breakdown` to `theorem_1_1`. The bridge fixes `u0 := 0` and `f := toComparator f`, and **proves** both admissibility conditions the challenge demands rather than assuming them:
+
+- `zero_initial_condition_decay` — the zero datum satisfies "every derivative decays faster than any polynomial" by vanishing;
+- `forceConditionDecay_of_compact h.force_smooth h.force_support.1` — spatial and temporal decay is **derived** from `C^∞` plus compact spacetime support.
+
+The translation lemmas were read one by one (`divergence_eq`, `gradient_eq`, `laplacian_eq`, `temporalDerivative_eq`, `comparator_equation_Rn`, `fromComparator_smooth`). Each is a proved identity between the paper's operators and Mathlib's, not an estimate. The one boundary subtlety — the comparator quantifies over `t ≥ 0` with `derivWithin (Ici 0)` — is discharged by `temporalDerivative_eq`: at `t > 0`, `Ici 0` is a neighbourhood, so the one-sided derivative is the ordinary one. In the refutation direction, `globalSolutionOfComparator` converts any comparator solution into a `GlobalFiniteEnergySolution ν f`, contradicting the non-existence clause.
+
+What this does **not** establish is the fidelity of the Formal Conjectures encoding to the Clay PDF. That is a property of the challenge file, not of the bridge.
+
+### 2. `StageEstimates` — the live branch, followed to its floor
+
+E67 stopped at the three existential `RawStageBounds` fields. This pass followed them one layer lower and pinned down which branch is load-bearing:
+
+```
+ActualCandidateAssembly.lean:1094
+  -> GluedStageEstimates.actualStageEstimates               :684
+  -> GluedStageEstimates.stageEstimates_of_component_bounds :402
+  -> GluedStageEstimates.represented_raw_bounds             :350
+```
+
+`represented_raw_bounds` consumes smoothness (`hsA`/`hsP`) and pointwise derivative bounds (`hbA`/`hbP`) of the particular components. Both families are **discharged**, by `current_potential_bound` and `current_pressure_bound` (`:640+`), which are themselves built from `glued_bound_of_local` plus the per-mode bounds. The exponents are `linarith` consequences of the iteration ledger (`gain_le_current_exponent`, `current_potential_loss_le`, `current_pressure_loss_le`), not chosen numbers.
+
+`current_potential_mode_bound` (`:873`) and `current_pressure_mode_bound` (`:939`) each produce `∃ C ≥ 0` bounding every physical jet of the literal current mode by
+
+```
+C * physicalQ(w) ^ (h*((1/2 + sigma) + 1/2) - currentLoss(...) m)
+```
+
+uniformly over every label, every dyadic band `n >= 4`, and every point of the band. The route is `actual_native_potential_bound` (`:543`) / `actual_native_pressure_re_bound` (`:599`) for the native chart jet, then `vector_chart_physical_bound` / `scalar_chart_physical_bound` for the transfer, then the germ identity `localPotentialMode_germ` to land on the physical mode.
+
+**The floor.** `actual_native_potential_bound` takes exactly one quantitative hypothesis:
+
+```
+H : LabelSumBounds.UniformWaveClass nativeStrip nativeEnvelope alpha
+      (ActualParticularStageControls.currentSource x j)
+```
+
+plus `PreservesCarriers`, `InputSupport`, and the geometric floor `hN`. Its output is a native jet bound `C * Q(n)^(h(alpha+1/2) - 2hm) * S(n)^p`, with `C` and the integer `p` chosen. So the bottom of the estimate chain is not a physical derivative estimate but a **wave-class membership statement about the actual source**. `Invariant` supplies it through `native_source_class`, and `Invariant` is `CycleAnalyticInvariant` (`ActualParticularCycleData.lean:38`).
+
+This refines E67 rather than reversing it. The constants are still existential and never evaluated; what changes is that they are extracted from bounds *derived* one layer lower than E67 recorded, from a source hypothesis that is itself a field of the cycle invariant.
+
+**A negative check.** `ActualStageEstimates.stageEstimates_of_representations` is a parallel branch that the assembly never calls. Its `WaveInputs` parameter carries eight exponent and shift fields with no construction site anywhere in the tree: `particularPotential_exponent` occurs only at its declaration and at its use. `ActualEndpointInputs.actual_stage_endpoints` and `endpointInputs_of_run` have no callers either. These are unused alternates, and a later reader should not mistake them for the proof path.
+
+### 3. Pressure flux — closed end to end
+
+`PressureRecovery.Hypotheses` (`R3/PressureRecovery.lean:33`) has ten fields: `0 < T`; smoothness of `u`, `v`, `p`, `q`; `div u`; `div v`; residual equality; uniform finite energy of `u` and of `v`. No pressure bound, no decay condition, no growth assumption.
+
+- `gradient_recovery` (`:407`) derives, at every interior time, the identification of the physical pressure-gradient pairing with the canonical tensor pairing, from the equation and uniform finite energy alone. `time_test_gradient_difference_zero` shows every compact temporal test annihilates the difference; `averaged_value_zero` gets that from an `H^3` bound plus harmonicity on compact tests (`eq_zero_of_compact_harmonic`); `TemporalTestUniqueness` upgrades vanishing integrals to pointwise equality in time.
+- `pressure_flux_eq_of_gradient_identification` (`R3/PressureFluxIdentity.lean:114`) is integration by parts: split the flux test into `sum_k d_k(chi * w_k)` using divergence-free `w`, apply the identification componentwise, and reassemble the canonical pairing.
+- `pressure_flux_eq_canonical` (`R3/ActualPressureFlux.lean:38`) uses only `tensor_bound`, divergence-free `u - v`, and `gradient_recovery`.
+
+The constant in `canonicalCutoffFlux_bound` is assembled from `cutoff_pressurePair_bound` plus a commutator estimate: Hoelder `6/5`-`6`, a Riesz-test Sobolev constant, a Lipschitz cutoff bound, and an explicit commutator constant. The envelope printed in that theorem statement matches the one `eq_of_pressure_flux_bound` consumes. No unread pressure step remains in the comparison argument.
+
+### 4. What is still open
+
+- **Preservation of the source wave class.** `current_*_mode_bound` *consumes* `UniformWaveClass ... (currentSource x j)`, and `native_source_class` derives it from `Invariant`. Whether `ActualCyclePreservation` re-establishes `Invariant` at every cycle has not been followed to a conclusion. This is the last place a quantitative property could be assumed rather than derived.
+- **Periodic alternative (D)** is bridged and compiled, never audited.
+- **The nine external checkers** were not re-run.
+
+### 5. Effect on earlier entries
+
+E50's conclusion that no build succeeds **on this host** stands, and was reproduced (3/3). Its implication that no build succeeds at all is withdrawn; see the scope note at the top of this log. E66's disposition of `meanSolve` and `highSolve` — Euler-only, not on the Navier--Stokes path — is confirmed by import direction and is unaffected.
+
+*Log only. No Lean declaration is contradicted by this entry; every claim above is a `path:line` reading, not a recompilation.*
+
+---
+
+## E69 — Preservation of the invariant is a theorem, not a hypothesis: the chain closes (2026-11-21)
+
+*Reading only; no build.*
+
+### 1. The question E68 left open
+
+`current_potential_mode_bound` and `current_pressure_mode_bound` consume, as their only quantitative hypothesis, `LabelSumBounds.UniformWaveClass nativeStrip nativeEnvelope alpha (currentSource x j)`, and `native_source_class` derives it from `Invariant`. If `Invariant` were merely carried from stage to stage, the entire estimate chain would rest on an assumption. It is not carried. It is reproved.
+
+### 2. The seed is a theorem about the literal initial state
+
+`ActualCyclePreservation.initial_invariant` gives `Invariant (1/5) (state B N0 0)` from `ActualCoreSupport.initial_invariant`. `state B N0 0` is `ActualInitialization.initialCycleState` by `rfl`, so this is a statement about the object the construction actually starts from, not a hypothesis about an arbitrary state. `initial_runInvariant` packages it with coherence and periodicity.
+
+### 3. The step rebuilds the invariant
+
+`CorrectionAnalyticStep.step` (`:521`) has the shape
+
+```
+StaticData -> CycleAnalyticInvariant ... sigma x -> 1/5 <= sigma -> kappa <= 1/100000
+  -> StepData ... -> StepResult ...
+```
+
+and `StepResult` (`:506`) has first field
+
+```
+invariant : CycleAnalyticInvariant G c primary P S (sigma+1/10) (CycleState.step p c x)
+```
+
+The proof term of `step` ends `exact ⟨hFull, hT, hRank, hPressure, hInc.1, hInc.2, hSθ, hSz⟩`, where `hFull := assemble ... H W ...`. So the new invariant is the **output of `assemble` applied to the old invariant and the wave data**, not a hypothesis of the step. `step_preserves` (`:632`) is the projection of that field, and `iterate_invariant` / `iterate_results` induct over an arbitrary schedule with `sigma (n+1) = sigma n + 1/10`.
+
+### 4. The actual run closes at the assembly boundary
+
+`ActualCyclePreservation.state_runInvariant` proves `RunInvariant (sigma j) (state j)` for every stage `j` by induction: the seed is `initial_runInvariant`, the step is `next_runInvariant`, which calls `stepResult_of_particular ... .invariant`. The `StepData` that step consumes is built by `stepData_of_particular` from `ActualParticularCycleData.Data`, which is itself produced by `actual_data` from the invariant and periodicity. `state_invariant` is the projection, and `ActualCandidateAssembly:479` consumes exactly `state_invariant`.
+
+So the floor hypothesis of the stage estimates is supplied by the induction, one stage at a time, from a proved seed. There is no point on the path where "the source is in the required class" is assumed at a boundary and left there.
+
+### 5. What this does not settle
+
+- The body of `assemble` was not read in this pass. Its **signature** is the load-bearing claim (old invariant plus wave data yields the new invariant), and every consumer depends only on that. Opening it is a follow-up, not a gap at the floor.
+- The induction is over the stages `state B N0 j`; admissibility of `sigma j` is separate and comes from `ActualIterationLedger.sigma_admissible`. Both are needed, both are proved.
+- The constant barrier is untouched. The constants in the mode bounds are still chosen witnesses. What changes is that they are not *assumed* — they are extracted from bounds derived from a proved invariant.
+
+**Verdict.** The source wave class is derived at every stage: proved for the initial state, rebuilt by each step, and only then consumed by the mode bounds. E68's last open item is closed, and with it the estimate chain from the initial state to `breakdownStatement` is continuous in the proof term.
+
+*Log only. No Lean declaration is contradicted by this entry; every claim above is a `path:line` reading, not a recompilation.*
+
+---
+
+## E70 — Periodic alternative (D), audited by reading (2026-11-21)
+
+*Reading only; no build, no axiom print.*
+
+### 1. What is claimed
+
+`PeriodicPaperTheorem.breakdownStatement` says: for every `ν > 0` there exist `u`, `p`, `f`, `K` with `CandidateProperties ν u p f K` and `¬ Nonempty (GlobalSmoothSolution ν f)`. `periodic_corollary` (`:155`) proves it unconditionally.
+
+The candidate record requires smooth `u`, `p` before time one; smooth `f`; unit spatial periods; compact `K` inside the fundamental interior; the support of each time slice intersected with the fundamental cube inside `K`; zero initial velocity; `f` compactly supported in future time and zero for `t ≤ 0`; divergence-free; residual equal to `f` on `(0,1)`; and unbounded speed at one.
+
+The excluded class, `GlobalSmoothSolution`, requires only: smooth `u`, `p` on the future domain; unit periods in space including the pressure; zero initial velocity; divergence-free; residual equal to `f` for `t > 0`. **No energy bound, no pressure normalization, no growth or decay condition on the competitor.** That class is larger than the bounded-energy class used for alternative (C), so the exclusion is the stronger statement of the two.
+
+### 2. The proof, and where each obligation comes from
+
+1. `theorem_1_1_with_initial_rest` supplies a whole-space candidate that is identically zero on `|t| ≤ 3/8`.
+2. `ParabolicScaling.compressedCandidate` applies clock `l^2 (t-1) + 1`, spatial scale `1/l`, force scale `l^3`, pressure scale `l^2`, viscosity unchanged, singular time still exactly one. `zeroBefore_*` discards the pre-initial history the shifted clock would otherwise create. Energy stays bounded (`velocity_energy_bounded`), speed stays unbounded (`velocity_speed_unbounded`), and the equation is checked after the pullback (`pull_residual`, `zeroBefore_residual`) — this is a similarity of the equations, not a relabelling.
+3. `exists_compression_scale` chooses `l` so the supports fit the quarter cube; `of_compact_candidate` then periodizes `beforeOne u`, `beforeOne p` and `f`, proving smoothness, periodicity, support, zero datum, divergence-freeness, and the PDE term by term. The post-one extensions are cut before the lattice sum, which is what `beforeOne` is for.
+4. `CandidateProperties.no_global_solution` applies `PeriodicViscosity.excludes_global_solution`: `PeriodicViscosityUniqueness.classical_uniqueness_on_Icc` identifies any global competitor with `u` on every compact slab before one, and `MaximalLifespan.unbounded_excludes_continuous_extension` contradicts unbounded speed. The competitor's lack of an energy bound is irrelevant to both steps.
+
+### 3. Comparator fidelity, both directions
+
+- `PeriodicPaperComparator.option_D_of_paper_candidate` produces the comparator's exact (D) quantifiers with `u0 = 0` and `toComparator f`, and proves both admissibility conditions: `InitialVelocityConditionPeriodic` and `ForceConditionPeriodic`, the latter from compact future time support plus the jet decay lemma (`forceConditionPeriodic_of_decay`).
+- `PeriodicComparatorSolution.periodicPaperSolution_of_comparator` converts a comparator solution into the paper's `GlobalSmoothSolution`, so the exclusion transfers back.
+
+Neither direction rescales viscosity or time; only the argument order changes.
+
+### 4. Statement-design notes
+
+- **"Support" is not compact support on `R^3`.** A nonzero periodic lift cannot have compact support. The record intersects the topological support of each time slice with the fundamental cube and puts that intersection inside `K ⊆ fundamentalInterior`. The file header (`:11-14`) states this. Read against the torus, it is the intended clause; read as a claim about all of `R^3`, it would be false.
+- **The force is not zero.** As with (C), `f` is the residual of the constructed field, so this is a forced periodic breakdown and says nothing about the unforced periodic problem.
+
+### 5. Limits of this audit of (D)
+
+- `#print axioms` was run on the four whole-space `R3` theorems, **not** on `periodic_corollary`, `option_D_of_paper_candidate`, or `periodicPaperSolution_of_comparator`. Their axiom footprint is *inferred* from the repo-wide scan (0 `axiom`, 5 `sorry` confined to the unimported `ComparatorChallenges/`) and from the fact that `PeriodicPaperTheorem.lean` lies inside the 817-module `NavierStokes` build that exited 0. Inferred, not printed.
+- The bodies of `classical_uniqueness_on_Icc` and the periodization lemmas were sampled, not read line by line. This entry audits the statement and the architecture of (D); it does not re-prove periodic uniqueness.
+
+**Verdict.** (D) is a genuine corollary of the whole-space theorem, bridged to the comparator in both directions, with a competitor class at least as strong as (C)'s. The only statement-design remark is the torus-support convention, which the source discloses. The empirical gap is the axiom print, not the mathematics.
+
+*Log only. No Lean declaration is contradicted by this entry; every claim above is a `path:line` reading, not a recompilation.*
+
+---
+
+## E71 — `assemble`'s body read: every field constructed, carried with a reason, or discharged before the call (2026-11-21)
+
+*Reading only; no build.*
+
+### 1. What was open
+
+E69 recorded that `assemble` (`CorrectionAnalyticStep.lean:265`, declared `private theorem`) was the one unread link: it takes the old invariant plus the wave data and returns the invariant at `sigma+1/10`. E69 rested on its signature. This entry reads the body (`:301-445`).
+
+### 2. Shape of the proof
+
+`assemble` ends in a single structure literal, `refine { ... }`, with four residual goals discharged immediately after. Every field falls into one of three classes.
+
+**Constructed from the wave data and the stage estimates.** `wave` and `difference` from `finalBlock_uniform_cumulative`; `pressure` from `finalBlock_pressure_cumulative`; `residual` from `meanStages_residual_gain`; `solenoidal` from `waveStages_residual_gain`; `inputSupport` from `next_inputSupport ... H.inputSupport W.particularSupport W.signedSupport`; `realCoefficients` from `next_realCoefficients`; `mean` from `next_meanResidualBounds`; `covariance` from `next_covariance_mem` applied to `hCovP` and `hCovS`; `masses` from `next_zeroMassesOn`; `representation` from `next_representation`; `bands` from `next_coefficient_bands`; and the four coefficient-smoothness fields by adding the old coefficients to `W.particular*` and `W.signed*`.
+
+**Carried because the underlying object is unchanged.** `phase`, `frequency`, `angular` are `H`'s; `carrier` is rebuilt from the three components of `H.carrier l`; `aliasCoefficients := H.aliasCoefficients`; `axisFlat := hAxis`. These are structural carries, and the record's `SameCarrier` field is precisely the statement that the carriers did not move.
+
+**Passed as arguments and discharged before the call.** The quantitative parameters --- `hCovP`, `hCovS`, `hTemporal`, `hRank`, `hCumulative`, `hDebt`, `hTheta`, `hAxial`, `hAxis` --- are hypotheses *of `assemble`*. They are not hypotheses of the cycle: in `step` (`:521`) each is produced first, by `mean_gain_from_waves_of_cross_defects`, the two covariance lemmas, and the stage, rank and debt lemmas, and only then supplied. The structure literal therefore contains no `sorry`, no `by assumption`, and no field whose value is an unproved proposition.
+
+### 3. The residual goals
+
+The four holes are filled at the end of the proof: `primitives` from `hpr.1` (the `next_primitive` theorem), `oscillatoryPressureSmooth` from `H`'s smoothness plus `W.particularPressureField` and `W.signedPressureField`, `gaussianMean` from `next_gaussian_angularMean`, and `baseAngular` from the transported base. None is an assumption.
+
+### 4. Consequence
+
+E69's conclusion now rests on the body, not on a signature: the new invariant is built field by field from produced estimates. The quantitative content stays existential --- the constants in those estimates are chosen witnesses --- so the constant barrier is untouched. What is excluded is the possibility that a *field of the invariant* was smuggled in as a hypothesis at the step.
+
+### 5. What this still does not settle
+
+- The producer lemmas called here (`finalBlock_uniform_cumulative`, `meanStages_residual_gain`, `waveStages_residual_gain`, `next_meanResidualBounds`) were read at their call sites, not end to end. Their statements fix the exponents; their bodies are another layer.
+- Nothing in this pass is machine-checked. The compilation of this module is the one already recorded.
+
+**Verdict.** `assemble` is a genuine construction. With E69, the invariant is produced rather than presupposed at every stage, and the remaining open surface is the bodies of the estimate producers, not the shape of the assembly.
+
+*Log only. No Lean declaration is contradicted by this entry; every claim above is a `path:line` reading, not a recompilation.*
+
+---
+
+## E72 — The periodic axiom question is already posed in the source, in execable form (2026-11-21)
+
+*Reading only; no build. Refines the framing of E70 §5 without changing its conclusion.*
+
+### 1. What E70 left as a gap
+
+E70 audited the periodic corollary by reading and recorded its axiom footprint as **inferred, not printed**: the four whole-space `R3` theorems got a real `#print axioms`, `periodic_corollary` and the two comparator adapters did not. That was accurate about what this audit had executed. It was slightly misleading about the artifact, because the artifact already asks the question.
+
+### 2. Where the question is asked
+
+`NavierStokes/ComparatorSolution.lean` — the file that defines the (D) adapter — ends with two literal commands, not comments:
+
+```lean
+#print axioms NavierStokes.Comparator.navier_stokes_breakdown_R3
+#print axioms NavierStokes.Comparator.navier_stokes_breakdown_periodic
+```
+
+The first is the theorem this audit already printed on Linux. The second is the periodic one E70 could not print. So the exact check E70 wanted is a line of source that ships with the development: elaborating that module prints both answers. Nothing has to be written to obtain it, only compiled.
+
+### 3. Where the answer is claimed
+
+Two places, both machine-facing rather than prose:
+
+- `formalization.yaml`, `status.main_results`, lists `(D) Non-existence of global smooth periodic solutions` with `declaration: NavierStokes.Comparator.navier_stokes_breakdown_periodic`, `file: NavierStokes/ComparatorSolution.lean`, `sorry_count: 0`, `axioms: [propext, Classical.choice, Quot.sound]`, and `comparator_config: ComparatorChallenges/NavierStokes.json`.
+- `ComparatorChallenges/NavierStokes.json` names both theorems in `theorem_names`, sets `permitted_axioms` to exactly `propext`, `Quot.sound`, `Classical.choice`, and sets `enable_nanoda: true`.
+
+The second is the stronger object. It is a configuration a checker consumes: an exported proof term containing `sorryAx`, or any axiom outside those three, fails that run by construction rather than by review. The periodic footprint is therefore not an unexamined corner of the metadata; it is a declared acceptance condition.
+
+### 4. What this does not establish
+
+- **It is a claim, not a result of ours.** `formalization.yaml` is upstream's self-report, and its own `review.status` field says `self-assessed`. Nothing in the tree records a comparator run, its date, its machine, or its output. A configuration that would reject a bad footprint is not evidence that the footprint was accepted.
+- **`enable_nanoda: true` is a request, not a receipt.** It asks the tool to re-check the exported proof in an independent kernel. Whether it ran, and against which commit, is not recorded in-tree.
+- **This audit still has not printed the periodic footprint.** E70's conclusion stands unchanged: the mathematics of (D) is audited by reading; the execution is not.
+
+### 5. What changes, and what the next step is
+
+The gap E70 recorded was worth about one command, not one investigation. That changes the honest next step: the remaining empirical work is not "audit the periodic development" — E70 did that — it is "elaborate one module that already contains the command".
+
+`.github/workflows/kernel-check.yml` in this repository does that on a runner instead of on this host: clone upstream at `f9e8bc5`, `lake exe cache get`, `lake build NavierStokes`, then elaborate a probe file containing the two prints upstream ships plus `periodic_corollary`, `option_D_of_paper_candidate`, and `periodicPaperSolution_of_comparator`.
+
+Until it is run, the correct sentence in the manuscript and README remains "not printed", now followed by where the print lives.
+
+**Verdict.** E70's empirical gap is smaller than recorded and precisely located: the command is in `ComparatorSolution.lean`, the acceptance condition is in `ComparatorChallenges/NavierStokes.json`, and the only missing thing is a run on a machine that can hold the oleans. No claim about the periodic axiom footprint is upgraded by this entry.
 
 *Log only. No Lean declaration is contradicted by this entry; every claim above is a `path:line` reading, not a recompilation.*

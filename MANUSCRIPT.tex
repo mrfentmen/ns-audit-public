@@ -2,7 +2,7 @@
 %  Statement-Design Arbitrage and Verification Limits:
 %  A Forensic Code Audit of the openai/NavierStokesAndEuler Repository
 %
-%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E67.
+%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E72.
 %  All code citations are to commit f9e8bc5.
 % =====================================================================
 % Compile with LuaLaTeX or XeLaTeX: the Lean listings are quoted verbatim,
@@ -138,14 +138,21 @@ comparison theorem whose hypotheses are nearly empty) and what it does not (any
 numerical size, any dimension, any physical realizability). The conclusion is a
 verdict about statement design and verification scope, not about soundness: the
 logical integrity of the artifact is robust, and the theorem it states holds
-\emph{if} the kernel accepts it. We did not recompile the repository, so that
-acceptance is reported here rather than reproduced, and no step of the upstream
-proof is shown to be false. The stated whole-space result matches the
+\emph{if} the kernel accepts it. Kernel acceptance of the whole-space library was
+subsequently reproduced locally (9,580 build jobs, exit~0, 817 modules) in a Linux
+virtual machine, after the pinned prerelease toolchain's \ct{lake} was found to
+abort on current macOS; \ct{\#print axioms} on the four R3 theorems reports only
+\ct{propext}, \ct{Classical.choice} and \ct{Quot.sound}, with no \ct{sorryAx}.
+That build verifies terms, not statements, and no step of the upstream proof is
+shown to be false. The stated whole-space result matches the
 data and the conclusion of alternative (C) of the Clay statement---zero is an
 admissible datum, and a smooth compactly supported force is stronger than
 Clay's rapid-decay requirement---and it is silent on the unforced alternatives
-(A) and (B). The periodic Navier--Stokes and Euler developments in the same
-repository are outside the scope of this audit.
+(A) and (B). The periodic Navier--Stokes corollary is audited separately as alternative (D)
+(audit log, E70), with its comparator bridge in both directions; its axiom
+footprint, unlike the whole-space theorems', was not printed; the command that prints it ships in
+\file{NavierStokes/ComparatorSolution.lean} (E72). The Euler
+developments in the same repository are outside the scope of this audit.
 \end{abstract}
 
 \medskip
@@ -154,9 +161,9 @@ similarity ansatz, dependent type theory, proof auditing, statement design.
 
 \noindent\textbf{Data availability:} commit \texttt{f9e8bc5} of
 \texttt{openai/NavierStokesAndEuler}; audit log
-\file{ns-audit/AUDIT\_LOG.md}, entries E0--E67. Every code citation below is a
-\file{path:line} pair in that commit. We did not recompile the repository; see
-\S\ref{sec:limits}.
+\file{ns-audit/AUDIT\_LOG.md}, entries E0--E72. Every code citation below is a
+\file{path:line} pair in that commit. Kernel acceptance was reproduced on the
+\file{NavierStokes} library; see \S\ref{sec:limits}.
 
 \tableofcontents
 
@@ -363,6 +370,40 @@ lemma. Of the thirty-five tasks in the final review matrix, nineteen were
 answered from declarations that exist under the names given; sixteen required
 premise correction (audit log, E46 and E47).
 
+\subsection{Three kinds of claim, and which ones this audit makes}
+\label{sec:categories}
+
+The results here are easy to over-read, so we separate three kinds of assertion
+and say which kind each one is.
+
+\begin{enumerate}
+\item \textbf{A property of the formalized code.} Something true of the source at
+\texttt{f9e8bc5}: a binder appears in this order, an identity is closed by
+\texttt{rfl}, a record field is inhabited by \texttt{Classical.choose}, a module
+is not imported by the proof root. Claims of this kind are settled by reading,
+and every one in this paper carries a \file{path:line} pair.
+
+\item \textbf{A limitation on what the formalization establishes.} A claim about
+the \emph{type} rather than the \emph{term}: no numeral is recovered from an
+existential constant, no unit is weighed, no homogeneity class is asserted. Such
+a limit can hold of a development whose theorem is also true, and it is the kind
+of claim both findings make.
+
+\item \textbf{A mathematical error that invalidates a proof step.} An estimate
+that is false, an exponent that is wrong, an inference that does not follow. This
+is the only kind that bears on whether the theorem is true, and it requires
+naming the step, its \file{path:line}, and the inequality that fails.
+\end{enumerate}
+
+Sections~\ref{sec:constants} and the anisotropy section establish claims of the
+first kind and draw consequences of the second; the three interface audits record
+identities of the first kind. No claim of the third kind is made anywhere in this
+paper. The one place the audit briefly made such a claim --- that the anisotropic
+weights admitted no order-by-order expansion --- is recorded and withdrawn in the
+log (E63), because the source contradicted it. That withdrawal is the standard
+the remaining claims are held to: a category-three assertion survives only if the
+defective step can be exhibited.
+
 % =====================================================================
 \section{Preliminaries: notation and the two spaces}
 \label{sec:prelim}
@@ -429,6 +470,53 @@ comparison eliminates the pressure through a Riesz pairing instead
 claim: the erratum was not read at first hand for this audit. The attribution
 rests on the repository's own reference and on secondary descriptions, so the
 clause is correctly attributed rather than independently verified.
+
+\subsection{The periodic corollary, audited as alternative (D)}
+\label{sec:periodic}
+
+The repository also proves a periodic statement, and it is worth separating from
+the whole-space result because its quantifiers differ in a direction that favours
+the theorem. The corollary asserts: for every $\nu>0$ there exist a velocity, a
+pressure, a force and a compact set $K$ in the interior of the fundamental cube,
+such that the fields are smooth and periodic before time one, the initial
+velocity vanishes, the residual equals the force, the speed is unbounded at one,
+and no global smooth periodic solution exists for that same force.
+
+Two features of the statement deserve emphasis, because each is stronger than its
+whole-space counterpart rather than weaker.
+
+First, the excluded competitor class imposes no energy bound. A competing
+solution must be smooth, periodic in space (velocity and pressure),
+divergence-free, vanish at time zero, and satisfy the equation for all $t>0$. It
+need not have bounded kinetic energy, a normalised pressure, or any decay or
+growth condition. Excluding a larger class is the stronger theorem, so the
+periodic result is not bought by weakening the competitor; if anything the
+whole-space alternative (C) is the more cautious encoding of the two.
+
+Second, the passage from the whole-space theorem is a genuine similarity, not a
+relabelling. The clock $l^2(t-1)+1$ fixes the singular time at exactly one, space
+is compressed by $1/l$, the force scales by $l^3$ and the pressure by $l^2$, and
+the viscosity is untouched. That the compressed object still solves the equation
+with the transformed force is checked at the level of the residual, and the
+pre-initial history introduced by the clock shift is removed before the lattice
+sum. The choice of $l$ is what places the supports inside the interior of the
+fundamental cube, after which periodization is applied to the fields with their
+post-one extensions discarded.
+
+The adapter to the comparator runs in both directions: a candidate yields the
+comparator's exact existential quantifiers with zero datum and the argument order
+swapped, and a comparator solution converts back into the excluded class. Neither
+direction rescales viscosity or time.
+
+One statement-design remark, disclosed by the source itself: ``support'' here is
+not compact support on $\R^3$, which a nonzero periodic lift cannot have. The
+record intersects the support of each time slice with the fundamental cube and
+places that intersection inside $K$. Read as a claim about all of $\R^3$ the
+clause would be false; read against the torus, it is the intended one.
+
+The limitation is empirical, not mathematical: the axiom footprint of the
+periodic theorems and their adapters was not printed. Only the four whole-space
+theorems were checked that way.
 
 % =====================================================================
 \section{The Non-Evaluated Constant Barrier}
@@ -1032,6 +1120,21 @@ asserted near the junction but bounded away from it:
 $\operatorname{tsupp}f\subseteq[1/16,21/16]\times K$, which is what supplies the
 \ct{CompactPositiveTimeSupport} field.
 
+The inheritance is only half of that obligation, and the other half is where
+the sharpest external objection landed: the final assembly also requires the
+residual's jets to converge locally uniformly at the singular point
+(\ct{hlim}, \file{NavierStokes/CandidateFromLimits.lean:39}). That convergence
+is not postulated. Vanishing joint jets at the singular spatial point, a common
+schedule carrying residual flatness (\ct{exists\_schedule\_all\_jetRates}), and
+locally uniform boundary limits (\ct{boundaryLimits\_locallyUniform}) assemble
+it from the finite-stage estimates; the chain, and the disposition of
+\ct{meanSolve} and \ct{highSolve}---Euler-only, not on this path---are E65--E66.
+The estimates themselves are then not merely consumed: they are traced below
+\ct{RawStageBounds} to a single wave-class fact about the actual source (E67,
+E68), that fact is proved for the initial state and rebuilt at every cycle
+(E69), and the assembly which rebuilds it is a structure literal with no
+assumed field (E71).
+
 Consequently no jet of $f$ is matched at $t=3/8$ by computation. The junction is
 regular because both sides are eventually equal to the zero germ, and
 $C^\infty$ is closed under that identification.
@@ -1418,13 +1521,21 @@ separate questions that this audit does not decide.
 \subsection{Scope and limitations}
 \label{sec:limits}
 
-We did not recompile the repository. There is no \Lean{} toolchain on the audit
-host, so every claim above is by inspection of proof terms, binder sequences and
-definitions, not by re-elaboration. Independent kernel evidence exists for the
-artifact as a whole---the repository reports acceptance by nine external
-checkers---but such evidence verifies \emph{terms}, not \emph{statements}, and
-the statement-level caveats (zero datum, force-as-residual, similarity in $\nu$)
-are exactly what kernel acceptance cannot test. The derived identities
+The findings above are by inspection of proof terms, binder sequences and
+definitions. Kernel acceptance was tested separately and afterwards: the pinned
+toolchain (\ct{leanprover/lean4:v4.34.0-rc2}) installs on the audit host, but its
+\ct{lake} aborts with \ct{SIGTRAP} in \ct{libmalloc} at worker-thread teardown
+(reproduced 3/3), so the build ran in a Linux virtual machine (Ubuntu~26.04,
+8 cores, 12\,GiB). \ct{lake build NavierStokes} completed 9,580 jobs with exit~0
+in 20\,min\,17\,s, producing 817 modules; \ct{\#print axioms} on
+\ct{breakdownStatement}, \ct{theorem\_1\_1},
+\ct{theorem\_1\_1\_with\_initial\_rest} and
+\ct{theorem\_1\_1\_with\_dissipation} reports only \ct{propext},
+\ct{Classical.choice} and \ct{Quot.sound}. This reproduces acceptance for the
+whole-space library; it does not re-run the nine external checkers, and it
+verifies \emph{terms}, not \emph{statements}. The statement-level caveats (zero
+datum, force-as-residual, similarity in $\nu$) are exactly what kernel acceptance
+cannot test. The derived identities
 \eqref{eq:measure}--\eqref{eq:bcrit} are ours, not the repository's, and are
 labelled as such. One entry of the audit log (E36, on
 \ct{SchwartzCompactApproximation.continuous\_zero\_of\_compactSupport}) is
@@ -1528,7 +1639,7 @@ OpenAI, \emph{NavierStokesAndEuler}, GitHub repository, commit
 \bibitem{audit}
 A.~El Sayad and John, \emph{Forensic audit log for
 \texttt{openai/NavierStokesAndEuler}}, \file{ns-audit/AUDIT\_LOG.md}, entries
-E0--E67 (companion document).
+E0--E72 (companion document).
 
 \bibitem{lean}
 L.~de~Moura and S.~Ullrich, \emph{The \Lean{}~4 theorem prover and programming

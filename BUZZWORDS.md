@@ -293,7 +293,7 @@ A careless reader may attribute these to the paper. It does not hold them; it pu
 ## F. THE TELLS
 
 1. **Title abstractions the body abandons.** "Arbitrage" and "Verification Limits" appear only in the title.
-2. **No definitional sentences.** Zero `we call` / `we term` / `by X we mean` in 1,555 lines.
+2. **No definitional sentences.** Zero `we call` / `we term` / `by X we mean` in the manuscript.
 3. **The paired antithesis, repeatedly.** "epistemic, not logical"; "instrumental, not constitutive"; "logical closure, numerical opacity"; "a packet, not a pulse".
 4. **Borrowed prestige domains.** Finance (`arbitrage`, `budget`), accounting (`ledger`, `entry`), law (`forensic`, `audit`, `certif-`), databases (`schema`).
 5. **Ordinary observations promoted to named objects.** "the container", "the join", "the halving", "the scale regime".
@@ -437,4 +437,4 @@ Real terms, correctly used. Nothing here is invented; the invented ones are in Â
 
 ---
 
-*Sources: `MANUSCRIPT.tex` (1,555 lines), `PHASE2-FINDINGS.md`, `AUDIT_LOG.md` (167 headings), `NavierStokesAndEuler/NavierStokes/{ExponentLedger,PressureStream,CorrectionStep}.lean`. Counts produced by extraction over the full source, not sampling. No TeX engine was available, so the page estimate is arithmetic, not a compiled measurement.*
+*Sources: `MANUSCRIPT.tex`, `PHASE2-FINDINGS.md`, `AUDIT_LOG.md` (entries E0â€“E72), `NavierStokesAndEuler/NavierStokes/{ExponentLedger,PressureStream,CorrectionStep}.lean`. Counts produced by extraction over the full source, not sampling. No TeX engine was available, so the page estimate is arithmetic, not a compiled measurement.*

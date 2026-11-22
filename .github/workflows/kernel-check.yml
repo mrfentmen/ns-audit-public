@@ -1,0 +1,83 @@
+name: kernel-check
+
+# The pinned toolchain's `lake` aborts with SIGTRAP in libmalloc on current macOS,
+# so the build runs here instead of on a laptop. Nothing upstream is vendored:
+# this clones openai/NavierStokesAndEuler at the audited commit and builds it.
+#
+# Manual only (Actions -> kernel-check -> Run workflow). Public repositories are
+# not charged for runner minutes, and no secrets are needed.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          df -h /
+
+      - name: Clone upstream at the audited commit
+        run: |
+          git clone --filter=blob:none https://github.com/openai/NavierStokesAndEuler.git upstream
+          cd upstream
+          git checkout f9e8bc5
+          git log -1 --format='%H %ci'
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Restore .lake
+        uses: actions/cache@v4
+        with:
+          path: upstream/.lake
+          key: lake-ubuntu-f9e8bc5-v1
+
+      - name: Fetch mathlib cache
+        working-directory: upstream
+        run: lake exe cache get
+
+      - name: Build NavierStokes (817 modules)
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          lake build NavierStokes 2>&1 | tail -40
+
+      - name: Print axioms
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          cat > AxiomsProbe.lean <<'EOF'
+          import NavierStokes.ComparatorSolution
+          import NavierStokes.PeriodicPaperTheorem
+          import NavierStokes.PeriodicPaperComparator
+
+          -- (C) whole space, reproduced on Linux already
+          #print axioms NavierStokes.Comparator.navier_stokes_breakdown_R3
+
+          -- (D) periodic: the adapter upstream ships, and the paper theorem behind it
+          #print axioms NavierStokes.Comparator.navier_stokes_breakdown_periodic
+          #print axioms NavierStokes.PeriodicPaper.periodic_corollary
+          #print axioms NavierStokes.ComparatorBridge.option_D_of_paper_candidate
+          #print axioms NavierStokes.ComparatorBridge.periodicPaperSolution_of_comparator
+          EOF
+          lake env lean AxiomsProbe.lean | tee "$GITHUB_WORKSPACE/axioms.log"
+
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axioms-log
+          path: |
+            axioms.log
+            upstream/lake-manifest.json
