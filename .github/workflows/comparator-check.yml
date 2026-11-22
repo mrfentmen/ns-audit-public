@@ -42,6 +42,14 @@ jobs:
             | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
+      # landrun is a Go program (it was Rust when Comparator's README was
+      # written), and its go.mod asks for a Go newer than the image ships.
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: false
+
       # Same key as kernel-check, so this run inherits the compiled NavierStokes
       # oleans instead of spending 28 minutes rebuilding them.
       - name: Restore compiled build
@@ -73,12 +81,27 @@ jobs:
           ls -l .lake/packages/lean4export/.lake/build/bin/ 2>/dev/null || true
           ls -l .lake/build/bin/ 2>/dev/null || true
 
-      # Both are unpinned `main` clones; the commit each one landed on is written
-      # into the log so the run can be reproduced after the fact.
-      - name: Build landrun and nanoda
+      # Required: Comparator will not build anything outside this sandbox.
+      # Unpinned clone, so the commit is written into the log.
+      - name: Build landrun (sandbox)
         working-directory: upstream
         run: |
           set -euo pipefail
+          {
+            echo "== go =="; go version
+            git clone --depth 1 https://github.com/Zouuup/landrun.git /tmp/landrun
+            echo "landrun commit: $(git -C /tmp/landrun rev-parse HEAD)"
+            cd /tmp/landrun
+            go build -o /tmp/landrun-bin ./cmd/landrun
+            ls -l /tmp/landrun-bin
+          } 2>&1 | tee "$GITHUB_WORKSPACE/landrun-build.log"
+
+      # Optional: release LTO makes this the slowest step, and it is a second
+      # opinion. It must never be able to skip the statement check below.
+      - name: Build nanoda (second kernel)
+        continue-on-error: true
+        run: |
+          set -uo pipefail
           if ! command -v cargo >/dev/null 2>&1; then
             curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
             echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
@@ -86,17 +109,11 @@ jobs:
           export PATH="$HOME/.cargo/bin:$PATH"
           {
             echo "== rust =="; cargo --version
-            echo "== landrun =="
-            git clone --depth 1 https://github.com/Zouuup/landrun.git /tmp/landrun
-            git -C /tmp/landrun rev-parse HEAD
-            cargo build --release --manifest-path /tmp/landrun/Cargo.toml
-            /tmp/landrun/target/release/landrun --version 2>&1 || true
-            echo "== nanoda =="
             git clone --depth 1 https://github.com/ammkrn/nanoda_lib.git /tmp/nanoda
-            git -C /tmp/nanoda rev-parse HEAD
+            echo "nanoda commit: $(git -C /tmp/nanoda rev-parse HEAD)"
             cargo build --release --manifest-path /tmp/nanoda/Cargo.toml
             ls -l /tmp/nanoda/target/release/nanoda_bin
-          } 2>&1 | tee "$GITHUB_WORKSPACE/rust-tools.log"
+          } 2>&1 | tee "$GITHUB_WORKSPACE/nanoda-build.log"
 
       # The primary run. `enable_nanoda` is stripped so this config asks only for
       # the builtin kernel: a statement check that does not depend on a second
@@ -115,7 +132,7 @@ jobs:
           print(out.read_text())
           PY
           export COMPARATOR_LEAN4EXPORT="$PWD/.lake/packages/lean4export/.lake/build/bin/lean4export"
-          export COMPARATOR_LANDRUN=/tmp/landrun/target/release/landrun
+          export COMPARATOR_LANDRUN=/tmp/landrun-bin
           ls -l "$COMPARATOR_LEAN4EXPORT" "$COMPARATOR_LANDRUN"
           # The README wraps its own invocation in `systemd-run --user` to guard a
           # landrun escape fixed in Linux 7.1. Runners have no user systemd
@@ -142,7 +159,7 @@ jobs:
         run: |
           set -uo pipefail
           export COMPARATOR_LEAN4EXPORT="$PWD/.lake/packages/lean4export/.lake/build/bin/lean4export"
-          export COMPARATOR_LANDRUN=/tmp/landrun/target/release/landrun
+          export COMPARATOR_LANDRUN=/tmp/landrun-bin
           export COMPARATOR_NANODA=/tmp/nanoda/target/release/nanoda_bin
           WRAP=()
           if systemd-run --user --pty -- true >/dev/null 2>&1; then
@@ -162,7 +179,8 @@ jobs:
             navierstokes-build.log
             lean4export-build.log
             comparator-build.log
-            rust-tools.log
+            landrun-build.log
+            nanoda-build.log
             comparator-builtin.log
             comparator-nanoda.log
             upstream/lake-manifest.json
