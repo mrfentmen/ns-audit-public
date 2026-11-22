@@ -4,19 +4,39 @@ name: comparator-check
 # term names; Comparator says whether the solution proves the *same statement*
 # the challenge poses, under an export re-checked in a second kernel.
 #
-# The upstream README asks for `landrun`, `lean4export` and `nanoda_bin` on PATH.
-# None are on a stock runner, so all three are built here from source. The
-# builtin-kernel run is the one whose result stands on its own; nanoda is a
-# second opinion and is allowed to fail without taking the statement check down
-# with it. Both are uploaded either way.
+# Run 44999798334 showed the failure mode of the first version: one monolithic
+# step, 162 minutes in, no artifact, no exit. GitHub Actions has no resume, so
+# a job that reaches its 360-minute cap takes every byte of that work with it.
 #
-# Manual only. Public repository: no runner minutes are charged.
+# What changed here, and why it is a real fix rather than a reshuffle:
+#
+#   * Every expensive step now carries its own `timeout-minutes`. A STEP that
+#     times out *fails* and the job continues; a JOB that times out is
+#     *cancelled*. Those are different outcomes. Bounding the step converts an
+#     unrecoverable loss into a recoverable one.
+#   * Each phase uploads its own log the moment it ends, `if: always()`. The
+#     artifact is the evidence; it no longer waits on later phases.
+#   * Output goes through `stdbuf -oL -eL`, so the log is line-buffered and
+#     survives the SIGINT/SIGTERM pair the runner sends at the limit. A
+#     block-buffered pipe would lose its tail exactly when we need it.
+#   * Each phase stamps its start and duration, so the next run can say which
+#     phase actually ate the hours instead of guessing.
+#
+# Scheduled as well as manual: the cron retries nightly on the default branch,
+# so a capped night still leaves a fresh attempt every night without a click.
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * *'
 
 permissions:
   contents: read
+
+# A nightly retry must never stack on top of a run already in flight.
+concurrency:
+  group: comparator-check
+  cancel-in-progress: false
 
 jobs:
   comparator:
@@ -64,14 +84,17 @@ jobs:
 
       - name: Build NavierStokes
         working-directory: upstream
+        timeout-minutes: 60
         run: |
           set -euo pipefail
+          echo "phase-start build-navierstokes $(date -u +%H:%M:%SZ)"
           lake build NavierStokes 2>&1 | tee "$GITHUB_WORKSPACE/navierstokes-build.log"
 
       # lean4export is already a pinned Lake dependency; the comparator driver
       # comes from the Comparator package the lakefile requires at v4.34.0-rc2.
       - name: Build comparator and lean4export
         working-directory: upstream
+        timeout-minutes: 20
         run: |
           set -euo pipefail
           lake build lean4export 2>&1 | tee "$GITHUB_WORKSPACE/lean4export-build.log"
@@ -87,6 +110,7 @@ jobs:
       # have killed a run already, and a pin is what we wanted anyway.
       - name: Build landrun (sandbox)
         working-directory: upstream
+        timeout-minutes: 15
         run: |
           set -euo pipefail
           {
@@ -109,6 +133,7 @@ jobs:
       # opinion. It must never be able to skip the statement check below.
       - name: Build nanoda (second kernel)
         continue-on-error: true
+        timeout-minutes: 25
         run: |
           set -uo pipefail
           if ! command -v cargo >/dev/null 2>&1; then
@@ -131,11 +156,55 @@ jobs:
             ls -l /tmp/nanoda/target/release/nanoda_bin
           } 2>&1 | tee "$GITHUB_WORKSPACE/nanoda-build.log"
 
+      - name: Upload toolchain logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmp-toolchain-logs
+          path: |
+            navierstokes-build.log
+            lean4export-build.log
+            comparator-build.log
+            landrun-build.log
+            nanoda-build.log
+            upstream/lake-manifest.json
+          if-no-files-found: warn
+
+      # The one checkpoint that costs nothing and is worth having on its own:
+      # the challenge module compiled before Comparator touches it. If the
+      # sandbox build was the hidden 160 minutes, this step says so in minutes
+      # rather than in a cancelled job with no log.
+      - name: Pre-build the challenge module
+        working-directory: upstream
+        timeout-minutes: 30
+        run: |
+          set -euo pipefail
+          echo "phase-start prebuild-challenge $(date -u +%H:%M:%SZ)"
+          START=$SECONDS
+          (lake build ComparatorChallenges.NavierStokes || lake build ComparatorChallenges) 2>&1 \
+            | tee "$GITHUB_WORKSPACE/challenge-build.log"
+          echo "phase-end prebuild-challenge $(( SECONDS - START ))s"
+          du -sh .lake/build 2>/dev/null || true
+
+      - name: Upload challenge build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmp-challenge-build
+          path: challenge-build.log
+          if-no-files-found: warn
+
       # The primary run. `enable_nanoda` is stripped so this config asks only for
       # the builtin kernel: a statement check that does not depend on a second
       # kernel having compiled.
+      #
+      # 240 minutes, not "however long it takes". The job cap is 360, so this
+      # leaves over an hour of job budget for the uploads that follow. If it
+      # fires, the step fails, the job continues, and `comparator-builtin.log`
+      # is uploaded with whatever it had reached.
       - name: Comparator (builtin kernel)
         working-directory: upstream
+        timeout-minutes: 210
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -163,15 +232,30 @@ jobs:
             echo "consequence: no guard against the known landrun escape in this run"
             WRAP=()
           fi
-          "${WRAP[@]}" bash -c \
+          echo "phase-start comparator-builtin $(date -u +%H:%M:%SZ)"
+          START=$SECONDS
+          # `stdbuf -oL` wraps the *producer*, not `tee`: on a timeout the runner
+          # sends SIGINT, then SIGTERM 7.5s later, and a block-buffered producer
+          # would lose the tail precisely when it becomes the only evidence.
+          "${WRAP[@]}" stdbuf -oL -eL bash -c \
             "lake exe comparator ComparatorChallenges/NavierStokesBuiltin.json" 2>&1 \
             | tee "$GITHUB_WORKSPACE/comparator-builtin.log"
+          echo "phase-end comparator-builtin $(( SECONDS - START ))s"
+
+      - name: Upload builtin-kernel log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmp-builtin-kernel
+          path: comparator-builtin.log
+          if-no-files-found: warn
 
       # The second opinion. Its failure is a finding about the toolchain, not a
       # reason to discard the statement check above.
       - name: Comparator (nanoda as second kernel)
         working-directory: upstream
         continue-on-error: true
+        timeout-minutes: 60
         run: |
           set -uo pipefail
           export COMPARATOR_LEAN4EXPORT="$PWD/.lake/packages/lean4export/.lake/build/bin/lean4export"
@@ -182,21 +266,55 @@ jobs:
             WRAP=(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pty
                   -E "PATH=$PATH" --working-directory "$PWD" --)
           fi
-          "${WRAP[@]}" bash -c \
+          if [ ! -x "$COMPARATOR_NANODA" ]; then
+            echo "nanoda binary absent; second-kernel check skipped, recorded as SKIPPED"
+            exit 0
+          fi
+          echo "phase-start comparator-nanoda $(date -u +%H:%M:%SZ)"
+          START=$SECONDS
+          "${WRAP[@]}" stdbuf -oL -eL bash -c \
             "lake exe comparator ComparatorChallenges/NavierStokes.json" 2>&1 \
             | tee "$GITHUB_WORKSPACE/comparator-nanoda.log"
+          echo "phase-end comparator-nanoda $(( SECONDS - START ))s"
 
-      - name: Upload logs
+      - name: Upload nanoda log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: comparator-check-logs
-          path: |
-            navierstokes-build.log
-            lean4export-build.log
-            comparator-build.log
-            landrun-build.log
-            nanoda-build.log
-            comparator-builtin.log
-            comparator-nanoda.log
-            upstream/lake-manifest.json
+          name: cmp-nanoda-kernel
+          path: comparator-nanoda.log
+          if-no-files-found: warn
+
+      # One place that says whether a verdict was reached, so a reader does not
+      # have to infer it from step colours. Absence of a line here is the
+      # honest answer when a phase was cut short.
+      - name: Verdict summary
+        if: always()
+        run: |
+          {
+            echo "# comparator-check summary"
+            echo
+            echo "run: ${GITHUB_RUN_ID}  attempt ${GITHUB_RUN_ATTEMPT}  $(date -u +%FT%TZ)"
+            echo "head: ${GITHUB_SHA}"
+            echo
+            for f in comparator-builtin.log comparator-nanoda.log challenge-build.log; do
+              echo "## $f"
+              if [ -f "$f" ]; then
+                echo "lines: $(wc -l < "$f")  bytes: $(wc -c < "$f")"
+                echo "last 15:"
+                tail -15 "$f"
+              else
+                echo "ABSENT — the phase that writes it never started"
+              fi
+              echo
+            done
+          } > verdict-summary.md
+          cat verdict-summary.md
+
+      - name: Upload verdict summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmp-verdict-summary
+          path: verdict-summary.md
+          if-no-files-found: warn
