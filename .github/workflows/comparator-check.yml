@@ -82,15 +82,24 @@ jobs:
           ls -l .lake/build/bin/ 2>/dev/null || true
 
       # Required: Comparator will not build anything outside this sandbox.
-      # Unpinned clone, so the commit is written into the log.
+      # Fetched as a pinned tarball rather than `git clone`: an anonymous clone
+      # of a third-party repo from a runner IP comes back 403 often enough to
+      # have killed a run already, and a pin is what we wanted anyway.
       - name: Build landrun (sandbox)
         working-directory: upstream
         run: |
           set -euo pipefail
           {
             echo "== go =="; go version
-            git clone --depth 1 https://github.com/Zouuup/landrun.git /tmp/landrun
-            echo "landrun commit: $(git -C /tmp/landrun rev-parse HEAD)"
+            L=573aa723afb16bb1da2dbe24fc00df46cd0ad13b
+            echo "landrun commit: $L"
+            mkdir -p /tmp/landrun
+            for i in 1 2 3; do
+              if curl -fsSL "https://codeload.github.com/Zouuup/landrun/tar.gz/$L" \
+                   | tar -xz -C /tmp/landrun --strip-components=1; then break; fi
+              echo "tarball attempt $i failed, retrying"; sleep 10
+            done
+            test -f /tmp/landrun/go.mod || { echo "no go.mod after fetch"; exit 1; }
             cd /tmp/landrun
             go build -o /tmp/landrun-bin ./cmd/landrun
             ls -l /tmp/landrun-bin
@@ -109,8 +118,15 @@ jobs:
           export PATH="$HOME/.cargo/bin:$PATH"
           {
             echo "== rust =="; cargo --version
-            git clone --depth 1 https://github.com/ammkrn/nanoda_lib.git /tmp/nanoda
-            echo "nanoda commit: $(git -C /tmp/nanoda rev-parse HEAD)"
+            N=0da9f98feadd3a0a2ef4b3dbcf52a298a6fef929
+            echo "nanoda commit: $N"
+            mkdir -p /tmp/nanoda
+            for i in 1 2 3; do
+              if curl -fsSL "https://codeload.github.com/ammkrn/nanoda_lib/tar.gz/$N" \
+                   | tar -xz -C /tmp/nanoda --strip-components=1; then break; fi
+              echo "tarball attempt $i failed, retrying"; sleep 10
+            done
+            test -f /tmp/nanoda/Cargo.toml || { echo "no Cargo.toml after fetch"; exit 1; }
             cargo build --release --manifest-path /tmp/nanoda/Cargo.toml
             ls -l /tmp/nanoda/target/release/nanoda_bin
           } 2>&1 | tee "$GITHUB_WORKSPACE/nanoda-build.log"
