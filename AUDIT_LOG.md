@@ -6400,3 +6400,58 @@ Clause (c) therefore matches, but in the tree's own currency. The paper's `C^m` 
 This is the first row where the core theorem is genuinely stronger than the paper's phrasing in one respect: `directionalInverse_solves` is a statement about the actual Frechet derivative of the descended torus function, whereas the paper writes the equation for the series. The weakness is on the other side — the `C^m` norm is replaced by a coefficient seminorm, and uniqueness is absent.
 
 *Evidence: `.setup/paper/ns.txt:4885-4935` (Lemma 8.6, (8.19)-(8.22)); `TorusInverse.lean:190-215,249-258,286-335,420-445,490-525` (`inverse_derivativeWord_bound`, `inverse_zero_mean`, `zero_mean_series_has_smooth_inverse`); `SmoothFourierData.lean:549-571`; `ParametricTorusInverse.lean:521-543`; `TemporalMeanUpdate.lean:216-225`; E131. Reading only — nothing compiled.*
+
+---
+
+## E133 — Lemma 9.7: one threshold for every stage is placed, the derivative count is unstatable (2026-11-23)
+
+*Reading entry. This is the first row of the `NEXT.md` queue. Two of the lemma's clauses are declarations outright, and the threshold is stronger than the paper's prose implies: its type has no stage argument and no derivative-order argument to vary. The third clause has no declaration, and the reason is structural rather than a missed search. The row is partial; the ledger moves to 14 placed, 6 partial, 54 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 9.7` (p. 111), opening §9.4:
+
+| Clause | Paper's claim |
+|---|---|
+| a | there is `q_big > 0`, **independent of the correction stage and of the derivative order**, such that every finite partial sum, before summation cutoffs, is well defined on `0 < q < q_big` |
+| b | for every fixed stage and output amplitude derivative, the construction and its estimate require **finitely many** input amplitude derivatives |
+| c | the constants may depend on the correction stage |
+
+The proof fixes `0 < q_big ≤ q*` once — "with the fixed background, the stated positive lower bound for `|n_Φ|`, the primary covariance, and the fixed supports of the normalized mean-correction profiles" — and then argues that nothing later can force a smaller threshold: the harmonic propagator is the fundamental propagator times a damping factor of modulus at most one (7.18); differentiation at fixed order raises constants only, never the threshold (Corollary 7.3); signed updates divide by the original `2√(yσ)`; the correction system uses the fixed linear map of Lemma 8.7; pressure, temporal inverses and the modified radial integrals are fixed linear maps. Clause (b) is then a count on the finite DAG of sums, products, derivatives and proved inverses, with `D_{v,a}(m) = max_{w→v} D_{w,a}(m + d_{v,w})`.
+
+### 2. Clauses (a) and (b) of the statement are declarations
+
+**The threshold.** `ActualCandidateConstruction.qbig (B N0 : ℕ) : ℝ := ChartScales.Q (firstBand B N0)` (`ActualCandidateConstruction.lean:155`), with `qbig_pos` (`:157`). Its type *is* the independence claim: there is no stage argument and no derivative-order argument to vary. The two parameters are the global budget `B` and the geometric floor `N0`; `firstBand B N0 = max 4 (bandFloor B N0)` (`:142`) is computed from the cycle parameters before any cycle runs, which is the paper's "choose once". `twice_residual_scale` (`:172`) pins the same number to the comparison band — `2 * Q (residualBand B N0) = qbig B N0` — so the residual band and the validity domain cannot drift apart.
+
+**The common domain.** `physicalDomain B N0 = CutStageEstimates.physicalSublevel h (qbig B N0)` (`:189`), open at `:192`. Every stage is typed over `MixedAxisPreservation.localDomain F.data.h qbig = {w | w.1 < 1 ∧ physicalQ h w < qbig}` (`MixedAxisPreservation.lean:448`), and `germ_stage_endpoints` carries `Jstages : ∀ j, PhysicalJets h qbig (stages j)` (`GermEndpointInputs.lean:316`) — one `qbig` for the whole sequence, not one per stage. `PhysicalJets` (`:25`) bundles `ContDiffOn ℝ ∞ f (physicalSublevel h qbig)` with an all-order bound.
+
+One representational difference has to be said plainly, because it reads as a gap and is not. Lean fields are total functions, so "well defined on `0 < q < q_big`" cannot be a partiality claim. The tree carries the same content as smoothness and support *on the sublevel*, and the endpoint layer (`OneSidedExtension`, `extension_of_eqOn_sublevel`) is what converts sublevel data into the one-sided limits the assembly later consumes. Reading a total function as "defined everywhere" would misread the formalization; the restriction is in the hypotheses, uniformly in `j`.
+
+### 3. Clause (b) has no counterpart, and the reason is not a search failure
+
+A grep of the whole `NavierStokes/` tree for `finitely many input deriv`, `derivRequirement`, `needsDeriv`, `lossOrder`, `derivativeBudget` and `orderBudget` returns nothing. The nearest objects are not it:
+
+* `DiagonalResidual.JetRate` / `FiniteJetRate` (`:33`, `:37`) are *bounds* at order `m` with a loss exponent, and `residual_jetRate_of_stages` (`:196`) consumes `∀ J m, JetRate … (uStage J) m (-Lbg m)` — Lemma 9.8's shape, not this count.
+* `WholeDomainPhysicalStageTheorem.paperJetLoss B N0 m = Σ_{k≤m} |paperLoss B N0 k|` (`:188`) accumulates the loss over lower orders. Again a magnitude, not a number of sources.
+* The "constants may depend on the stage" half is documented rather than proved: the `PhysicalJets` docstring ("The exponent and logarithmic loss may depend on the derivative order and on the field") and `WeightedClasses.lean:125` ("Stage constants are deliberately not uniform in the stage index").
+
+Clause (b) quantifies over *derivations* — how many derivatives of each source a bound needs. That is a property of the construction's syntax, of the term that builds the estimate, and the object language has no predicate for it. In Lean every expression is finite, so "finitely many input derivatives" cannot fail; the paper's real assertion is that its per-stage estimate is a finite expression in finitely many jets, which the kernel establishes by the term existing. There is nothing to state.
+
+This is a third failure mode, distinct from the two already named here. E94's row was unplaced because the *query* was wrong (paper: "normalized linear residual"; tree: `globalGood`). E129's row was partial because the tree stated a *component* instead of the whole. This clause is **unstatable** in the development's terms, which is weaker evidence of a gap than either, and it should not be counted as one when the row is read later.
+
+### 4. The row was pointed at the wrong module
+
+`NEXT.md` sent this row to `LocalScheduleWitness` and `ChartScales`. `ChartScales` is right — `qbig` is `ChartScales.Q` of a band — but `LocalScheduleWitness` **retains a supplied** schedule and threshold (`awayExtensions_of_schedule` takes `qbig` as a binder at `:47`) so the endpoint conclusions hold for any admissible choice. The definition is in `ActualCandidateConstruction`. A reader following the work order would have found only consumers.
+
+### 5. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 14 | 14 |
+| partial | 5 | 6 |
+| unplaced | 55 | 54 |
+| **total** | **74** | **74** |
+
+Clause (a) is the strongest match in the queue so far in one narrow sense: the independence is visible in a type signature rather than argued in prose. Whether `bandFloor`'s dependence on `B` and `N0` is stage-independent *in fact* is a question about `ActualCycleParameters`, which is the next link if this row is ever promoted.
+
+*Evidence: `.setup/paper/ns.txt:5669–5695` (Lemma 9.7 and proof, pp. 111–112); `ActualCandidateConstruction.lean:142–192`; `MixedAxisPreservation.lean:448–462`; `GermEndpointInputs.lean:25–31,316–319`; `WeightedClasses.lean:125`; `DiagonalResidual.lean:33–52,196–214`; `WholeDomainPhysicalStageTheorem.lean:188`; `LocalScheduleWitness.lean:47`. Reading only — nothing compiled.*
