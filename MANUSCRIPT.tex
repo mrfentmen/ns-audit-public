@@ -1643,6 +1643,15 @@ Propositions~5.3, 9.5 and 9.6 are partial: each has an exact arithmetic half ---
 the truncation exponent $2h(N+1)$ is the definition \texttt{slowOrder}, and
 $B_0 = 7/10$, $C^*_0 = 6/5$ with $1/10$ increments are \texttt{residualWave}
 and \texttt{residualMean} --- and an analytic half not matched clause by clause.
+E95 matched what can be matched at statement level. Proposition~5.3's exponent is
+\texttt{truncationResidual\_rate}, which prints $2Nh-2-M$: the paper's
+$2h(N+1)-K_m$ at $K_m=m+2+2h$, exact in the derivative order and independent of
+$N$, and derived from the omitted monomials rather than assumed --- leaving only
+the divergence-freeness of the finite sums without a stated conclusion.
+Proposition~9.6's stage bound is stated with \texttt{gain} $h(j+1)$, which
+\texttt{residual\_physical\_gap} converts to $hB_j$ up to the fixed $7h/10$; and
+Proposition~9.5's stage-$0$ wave class is the $7/10$ of
+\texttt{linear\_bound\_and\_identity}, with the mean class $6/5$ unstated.
 The gap is therefore two named inequalities rather than an unsearched corpus,
 and it is where a defect would sit if one exists: a kernel check cannot compare
 an argument against the argument it formalizes.
