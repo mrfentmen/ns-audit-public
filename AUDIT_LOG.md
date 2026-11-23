@@ -6350,3 +6350,53 @@ The exponent match is the strongest single check in this row. The paper's `A_the
 Three of the four partials are now of the same shape: a paper result whose *algebra* is in the tree exactly and whose *quantitative* half is assembled from pieces rather than stated. That pattern is worth naming once, because it is the most likely place for a real defect to hide: the algebra is the part a reader checks, and the bounds are the part the kernel never weighs (finding 1).
 
 *Evidence: `.setup/paper/ns.txt:4955-5040` (Lemma 8.7 and the display), `:5014-5030` (Step 2, the two blocks and `Gq = 0`), `:5041` (Lemma 8.8, the defect gain); `FiveRowRank.lean:19-93`; `DefectIncrementBounds.lean:621-700`; `PowerMomentMatrix.lean:143`; `CorrectionState.lean:453-472`; E97; E105. Reading only — nothing compiled.*
+
+---
+
+## E132 — Lemma 8.6: the inversion core is placed, the application clauses are assembled (2026-11-23)
+
+*Reading entry. The §8 inversion lemma splits cleanly. Existence, the Fourier formula, smoothness and the zero-mean property are stated in `TorusInverse` and match the paper. The derivative-loss bound appears in the tree's weighted-seminorm form rather than as a `C^m` inequality, uniqueness is not a declaration, and the chart-level application clauses live in the mean-update layer. The row is partial; the ledger moves to 14 placed, 5 partial, 55 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 8.6` (p. 95). Let `N = v_t · ∂_y` on `T^2`, `v_t` as in (6.2), and `F` smooth of zero Haar mean. Then:
+
+| Clause | Paper's claim |
+|---|---|
+| a | `N phi = F` has a **unique** smooth zero-mean solution `phi = N^{-1}F` |
+| b | it is the Fourier series `sum_{k != 0} Fhat(k) / (2 pi i v_t · k) e^{2 pi i k · y}` |
+| c | `norm(N^{-1}F)_{C^m_y} <= C_m norm(F)_{C^{m+4}_y}` for every `m >= 0` |
+| d | chart forms `Delta v = -c_i0^{-1} N_i0^{-1} E_theta`, `gamma_d = -c_i0^{-1} N_i0^{-1} E_z`, with `c_i0^{-1} <= C S_*` |
+| e | both increments lie in `M_alpha`, with zero auxiliary mean at each slow and radial point |
+| f | the azimuthal-potential realization gives `(Delta beta, Delta v, Delta gamma) = (-eps d_Z T1 gamma_d, Delta v, gamma_d - A1 gamma_d)` in `M_{alpha+1} x M_alpha x M_alpha`, divergence-free, preserving both integral constraints |
+| g | the fast-time cancellation (8.22) holds with a flat remainder |
+
+### 2. What is placed
+
+`TorusInverse` builds the inverse as a Fourier multiplier on the universal cover and descends it to the torus.
+
+* **The operator.** `Direction` (`:190`) has two constructors, `radial` and `temporal`, with fixed Diophantine vectors `(1, 1 - sqrt 2)` and `(sqrt 2 - 1, 1)` (`:195`), and `symbol d k` is the corresponding Diophantine symbol with `symbol_formula` proving `symbol d k = k.1 * (vector d).1 + k.2 * (vector d).2`. This is the paper's `v_t · k`, for the two directions the development uses.
+* **The multiplier and zero mean.** `multiplier d k = (omega * symbol d k)^{-1}`, `inverseCoeff d a k = multiplier d k * a k`, and `inverseCoeff_zero : inverseCoeff d a 0 = 0` (`:249-258`) — the zero-mean condition is built into the object, not assumed.
+* **It inverts.** `coefficient_cancel` gives `omega * symbol d k * inverseCoeff d a k = a k` whenever `a 0 = 0`, and `directionalInverse_solves` (`:323`) turns that into the genuine Frechet statement: `fderiv (directionalInverse d a) x (vector d) = series a x`. That is `N phi = F` with the actual derivative, not a formal symbol.
+* **Existence, smoothness, zero mean, as one theorem.** `zero_mean_series_has_smooth_inverse` produces a torus function `u`, continuous, with zero Haar integral, whose lift is `C^infinity`, and whose directional derivative is `series a`. `contDiff_directionalInverse` (`:304`) and `inverse_zero_mean` supply the pieces.
+* **The derivative loss.** `inverseCoeff_weighted_bound` states `weight^p * norm(inverseCoeff d a k) <= C * weight^(p+1) * norm(a k)` — inversion loses exactly one polynomial weight — and `inverse_derivativeWord_bound` composes that with `m` coordinate derivatives: for every derivative word `w`, `norm(w(N^{-1}a)) <= C * coeffSeminorm (|w| + 1) a`.
+
+Clause (c) therefore matches, but in the tree's own currency. The paper's `C^m` left side is a pointwise jet bound; the tree's is a weighted coefficient seminorm, and `m` derivatives plus one inversion cost `coeffSeminorm (m+1)` of the source. A `C^{m+4}` bound supplies that seminorm by the standard estimate in two dimensions (`weight^{m+1}` against `weight^{-3}` summability), which is exactly the paper's `+4`. The conversion itself is not a declared lemma: the file's only seminorm-to-pointwise step is `norm_series_le` at `m = 0`.
+
+### 3. What is not placed
+
+* **Uniqueness.** The paper says "unique". The tree proves existence and that every solution must have the displayed coefficients (`coefficient_cancel` forces them), but no declaration states uniqueness of the zero-mean solution.
+* **Clauses (d) to (g).** The chart factor `c_i0^{-1} <= C S_*`, the `M_alpha` memberships, the azimuthal-potential realization with its three class conclusions, divergence-freeness, the preservation of the two integral constraints, and the (8.22) cancellation are all in the mean-update layer (`TemporalMeanUpdate`, `MeanChartCompatibility`, `VariableGaugeMean`, `StateMomentBalances`), not in `TorusInverse`. E131's finding applies here too: the algebra is stated, the class bounds are assembled.
+
+### 4. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 14 | 14 |
+| partial | 4 | 5 |
+| unplaced | 56 | 55 |
+| **total** | **74** | **74** |
+
+This is the first row where the core theorem is genuinely stronger than the paper's phrasing in one respect: `directionalInverse_solves` is a statement about the actual Frechet derivative of the descended torus function, whereas the paper writes the equation for the series. The weakness is on the other side — the `C^m` norm is replaced by a coefficient seminorm, and uniqueness is absent.
+
+*Evidence: `.setup/paper/ns.txt:4885-4935` (Lemma 8.6, (8.19)-(8.22)); `TorusInverse.lean:190-215,249-258,286-335,420-445,490-525` (`inverse_derivativeWord_bound`, `inverse_zero_mean`, `zero_mean_series_has_smooth_inverse`); `SmoothFourierData.lean:549-571`; `ParametricTorusInverse.lean:521-543`; `TemporalMeanUpdate.lean:216-225`; E131. Reading only — nothing compiled.*
