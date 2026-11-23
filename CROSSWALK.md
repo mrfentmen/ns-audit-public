@@ -1,7 +1,7 @@
 # CROSSWALK — the paper against the Lean development
 
-**Status: first pass. Section level, not lemma level.** Read the limits at the bottom
-before quoting anything here.
+**Status: first pass complete, second pass begun.** Section level throughout, plus one
+slice of result-level mapping. Read the limits at the bottom before quoting anything here.
 
 ## What this file is for
 
@@ -112,6 +112,74 @@ object and conclusion shape; check the hypotheses clause by clause; record the p
 `paper page → file:line`; and record the ones that cannot be found rather than omitting them.
 At one section per day that is about two weeks for the Navier–Stokes paper, longer if the
 unfound ones turn out to be real.
+
+## Pass two, slice one: the paper's own labels are in the source
+
+The paper uses internal labels (`heat:exterior`, `outgoing:moment-rank`, `seed:cone-test`,
+...). Twenty of them appear verbatim in Lean docstrings. That is a much stronger anchor
+than a section number: the file asserts, in its own words, that it is about that named
+result. These are the only places where the correspondence is claimed by the development
+rather than inferred by us.
+
+| Paper label | Lean file:line |
+|---|---|
+| `axis:exit` | `NaturalExitBounds.lean:152` |
+| `axis:model-positive` | `AxisModelBounds.lean:7` |
+| `axis:model-series` | `AxisModelBounds.lean:6` |
+| `geom:counting-bounds` | `LabelCounting.lean:147`, `:170` |
+| `geom:label-counts` | `LabelCounting.lean:257` |
+| `global:kernel-bound` | `R3PressureKernel.lean:112` |
+| `global:localization` | `PaperLocalization.lean:10` |
+| `heat:exterior` | `AppendixHeatResults.lean:4` |
+| `heat:flat-primitive` | `FlatPrimitivePaper.lean:74` |
+| `heat:small-argument` | `AppendixHeatResults.lean:141` |
+| `iter:physical-loss` | `WholeDomainPhysicalStageTheorem.lean:150` |
+| `join:reference` | `ReferenceUniformStocks.lean:412` |
+| `join:scale-envelope` | `ReferenceEndpointRate.lean:273` |
+| `outgoing:moment-rank` | `ExponentialMomentMatrix.lean:6`, `SmoothExponentialMomentMatrix.lean:7` |
+| `outgoing:steering` | `ClosedIntervalCkOperators.lean:254` |
+| `seed:cone-coordinates` | `SeedConePaper.lean:6` |
+| `seed:cone-test` | `SeedConePaper.lean:36`, `:46` |
+| `seed:profile-comparison` | `SeedHandbackJets.lean:353` |
+| `sum:realization` | `GenericSummationRealization.lean:70` |
+
+Twenty-two occurrences, twenty distinct labels. Fourteen further paper sections carry no
+label citation at all.
+
+## Two results placed at declaration level
+
+These are the first rows where the *statement* was checked, not just the module name.
+
+**Lemma 4.7** ("let $\alpha_1,\dots,\alpha_m$ be distinct real numbers ...", the
+non-singular moment system). Placed on `PowerMomentMatrix`:
+`expSum_coefficients_zero` (an exponential sum vanishing at $n$ ordered nodes has zero
+coefficients), `expEvaluationMatrix\_det\_ne\_zero` (distinct exponents, ordered nodes),
+and `powerEvaluationMatrix\_det\_ne\_zero` for the real-exponent case. The integrated form
+is `ExponentialMomentMatrix.expIntervalMomentMatrix\_det\_ne\_zero`, whose own docstring
+names the paper's clause `outgoing:moment-rank` and drops the sign restriction on the
+endpoints. That is the lemma's content, clause for clause: distinctness becomes
+`Function.Injective a`, the matrix is the same matrix, and the conclusion is
+determinant-nonzero rather than "solvable", which is equivalent given the repair
+construction below it.
+
+**Section 8.6** (the five-dimensional correction of the moment constraints). Placed on
+`FiveProfileMoments`, whose module docstring reads "Five actual profile moments on a
+reserved positive patch", and on `MomentRepair`: `momentMatrix`, `coefficients`,
+`coefficients_unique`, `repair`. `FiveProfileMoments` builds the five bumps (two axial,
+three angular) in disjoint halves of the patch; `MomentRepair` is the general invertible
+system that consumes them. `FiveRowRank` supplies the rank statement the paper's rows
+need.
+
+## What is still unplaced
+
+Of the paper's 57 numbered results, six have a mapping that has been checked at the level
+of the statement (Propositions A.4, B.2, B.10, C.2 from pass one, plus Lemma 4.7 and
+Section 8.6 here). Fifty-one do not. Notable among them: Theorem 4.6 (the core
+construction, the paper's central existence claim), Proposition 5.3 (the coefficient
+induction), Propositions 9.1 and 9.5 (the residual estimates and the iteration), and
+Proposition 10.1 with Corollary 10.6 (the forcing and the periodic corollary). Those are
+not failures to find a module; they are results whose Lean counterpart has not been
+matched by statement, and they are the ones a referee would ask about first.
 
 ## Limits of this file
 

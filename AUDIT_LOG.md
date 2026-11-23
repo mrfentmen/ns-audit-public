@@ -4537,3 +4537,29 @@ The gap this exposes is the one worth naming. The paper has numbered proposition
 This is pass one of the two-week job, scoped honestly: the paper's structure is extracted, the five explicit anchors are found, the spine from §3.2 and §3.4 is mapped, and the weak rows are marked weak rather than dressed up. Pass two is per-result: take each numbered statement in the paper, locate the declaration by conclusion shape, check hypotheses clause by clause, and record `paper page → file:line` — including the ones that cannot be found.
 
 *Evidence: `cdn.openai.com/pdf/32d9f210-.../navier-stokes.pdf` (166 pages); `formalization.yaml:20--34`; section citations listed above; module inventory 816 files, 429,279 lines under `NavierStokes/`; `CROSSWALK.md`.*
+
+---
+
+## E90 — Pass two begins: twenty paper labels, two results placed (2026-11-23)
+
+*Reading entry. E89 mapped sections. This entry does the first slice of the harder job: matching individual results.*
+
+### 1. The paper's own labels are in the source
+
+The 166-page paper uses internal labels. Twenty of them appear verbatim in Lean docstrings — `heat:exterior`, `heat:small-argument`, `heat:flat-primitive`, `axis:model-series`, `axis:model-positive`, `axis:exit`, `geom:counting-bounds`, `geom:label-counts`, `global:localization`, `global:kernel-bound`, `join:reference`, `join:scale-envelope`, `outgoing:moment-rank`, `outgoing:steering`, `seed:cone-coordinates`, `seed:cone-test`, `seed:profile-comparison`, `sum:realization`, `iter:physical-loss`. Twenty-two occurrences in all (`geom:counting-bounds`, `outgoing:moment-rank` and `seed:cone-test` are each cited twice).
+
+This is a better anchor than a section number, because it is the development asserting the correspondence in its own words rather than the auditor inferring it: `ExponentialMomentMatrix.lean:6` says "the logarithmic-coordinate clause of `outgoing:moment-rank`", and `SeedConePaper.lean:6` says its subject is `seed:cone-coordinates`. The full table, with file and line for each, is in `CROSSWALK.md`.
+
+Fourteen paper sections carry no label citation. Those are not mapped by assertion at all.
+
+### 2. Two results placed at statement level
+
+**Lemma 4.7** (distinct real exponents, non-singular moment system) is `PowerMomentMatrix`: `expSum_coefficients_zero`, `expEvaluationMatrix_det_ne_zero`, `powerEvaluationMatrix_det_ne_zero`, with the integrated form at `ExponentialMomentMatrix.expIntervalMomentMatrix_det_ne_zero`. Distinctness becomes `Function.Injective a`; the matrix is the same matrix; non-singularity is the conclusion. The clause that vanishes in the integrated version — no sign restriction on endpoints — is recorded in the docstring itself.
+
+**Section 8.6** (the five-dimensional moment correction) is `FiveProfileMoments` ("Five actual profile moments on a reserved positive patch") plus `MomentRepair` (`momentMatrix`, `coefficients_unique`, `repair`) plus the rank statement in `FiveRowRank`. The five bumps are constructed: two axial, three angular, in disjoint halves of the patch, which is what the section describes.
+
+### 3. The ledger
+
+Of 57 numbered results in the paper, six now have a mapping checked at statement level: Propositions A.4, B.2, B.10 and C.2 (E89), Lemma 4.7 and Section 8.6. Fifty-one do not. The largest gap is Theorem 4.6, the core existence claim the rest of the paper consumes; Proposition 5.3, the coefficient induction; Propositions 9.1 and 9.5, the residual estimates and the iteration; and Proposition 10.1 with Corollary 10.6, the forcing and the periodic corollary. These are results whose Lean counterpart has not been matched, not results that are missing — no claim is made here that any of them is absent from the formalization.
+
+*Evidence: label grep over 816 modules under `NavierStokes/` at `f9e8bc5`; `PowerMomentMatrix.lean:74,123,143`; `ExponentialMomentMatrix.lean:40`; `FiveProfileMoments.lean:8`; `MomentRepair.lean:36,46,53,59`; `CROSSWALK.md`.*
