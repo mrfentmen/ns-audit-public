@@ -73,17 +73,26 @@ jobs:
       - name: Build both reader editions in the pandoc image
         run: |
           set -euo pipefail
+          docker run --rm -v /usr/share/fonts:/usr/share/fonts:ro pandoc/extra:latest \
+            fc-cache -f || echo "fc-cache unavailable; font lookup may fail"
           for doc in CAVEMAN LAYMAN; do
             sed -e 's/❌/✗/g' -e 's/✅/✓/g' "$doc.md" > "$doc.build.md"
-            docker run --rm \
-              -v "$PWD:/data" -v /usr/share/fonts:/usr/share/fonts:ro \
-              -w /data pandoc/extra:latest \
-              sh -c "fc-cache -f >/dev/null 2>&1 || true; pandoc '$doc.build.md' -o '$doc.pdf' \
-                --pdf-engine=xelatex --toc --toc-depth=2 \
+            if docker run --rm -v "$PWD:/data" -v /usr/share/fonts:/usr/share/fonts:ro \
+                 -w /data pandoc/extra:latest "$doc.build.md" -o "$doc.pdf" \
+                 --pdf-engine=xelatex --toc --toc-depth=2 \
+                 -V geometry:a4paper -V geometry:margin=2cm -V fontsize=10pt \
+                 -V mainfont="DejaVu Sans" -V monofont="DejaVu Sans Mono" \
+                 -V colorlinks=true -V linkcolor=blue \
+                 2>&1 | tee "$doc-typeset.log"; then
+              echo "[$doc] built with DejaVu"
+            else
+              echo "[$doc] DejaVu not available; retrying with the image defaults"
+              docker run --rm -v "$PWD:/data" -w /data pandoc/extra:latest \
+                "$doc.build.md" -o "$doc.pdf" --pdf-engine=xelatex --toc --toc-depth=2 \
                 -V geometry:a4paper -V geometry:margin=2cm -V fontsize=10pt \
-                -V mainfont='DejaVu Sans' -V monofont='DejaVu Sans Mono' \
-                -V colorlinks=true -V linkcolor=blue" \
-              2>&1 | tee "$doc-typeset.log"
+                -V colorlinks=true -V linkcolor=blue \
+                2>&1 | tee "$doc-typeset.log"
+            fi
             rm -f "$doc.build.md"
             ls -l "$doc.pdf"
           done
