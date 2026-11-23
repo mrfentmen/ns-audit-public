@@ -4032,3 +4032,57 @@ On this runner the sandbox is one notch weaker than landrun's default: pathname 
 All four now have an executed external check. What that buys is narrower than it sounds: it certifies that each theorem's proof term inhabits the statement the challenge poses, under the permitted axioms, in two kernels. It says nothing about whether the statements are the ones a mathematician would write — E76 does that for (C) and (D) by reading, and nothing does it for the Euler pair — and nothing about whether the proofs are right beyond the kernel's opinion.
 
 *Evidence: run `45127157219`, artifacts `euler-verdict-summary`, `euler-builtin-kernel`, `euler-nanoda-kernel`, `euler-challenge-build`, `euler-toolchain-logs` (1,843-line build log, all five toolchain builds, `lake-manifest.json`); commit `e515e89`; upstream `f9e8bc5`.*
+
+---
+
+## E80 — The Euler challenge is the repository's own Euler paper statement (2026-11-23)
+
+*Reading entry. E79 ran the Euler challenge and checked the proofs against the statements. It did not ask whether those statements are the repository's own Euler theorem. This entry asks, and answers by source, not by inference.*
+
+### 1. The answer first
+
+The two statements Comparator checked are the declarations the repository itself publishes as its formalization of the Euler paper. `formalization.yaml:72–94` lists them, in order, with `file: "Euler/Solution.lean"`, `sorry_count: 0`, the three permitted axioms, and `comparator_config: "ComparatorChallenges/Euler.json"`. The alignment table at `:119–126` maps them to the paper:
+
+| source claim | Lean declaration | module |
+|---|---|---|
+| Theorem 1.1 (Euler) | `Euler.euler_breakdown_R3` | `Euler.Solution` |
+| Theorem 1.1 (Euler), alternate version | `Euler.exists_compact_smooth_euler_singularity` | `Euler.Solution` |
+
+So the Euler check was not run against a convenient side statement. It was run against the declarations the upstream metadata designates, and the `comparator_config` key in that metadata is the very file E79 executed.
+
+### 2. The reference is genuinely independent, and textually exact
+
+The challenge module and the solution-side definitions are copies. Stripping comments and comparing declaration by declaration: 11 shared declarations — `divergence`, `InitialVelocityCondition`, `InitialVelocityConditionDecay`, `EulerExistenceAndSmoothness`, `EulerExistenceAndSmoothnessR3`, `toL2`, `SobolevSmoothOn`, `EulerSobolevExistenceAndSmoothnessR3On`, `vorticity`, `velocityC1Norm`, `vorticityNorm` — are character-identical between `ComparatorChallenges/Euler.lean` and `Euler/SolutionDefinitions.lean`, docstrings included. The challenge adds exactly two declarations, the two theorems, and nothing else. It imports only Mathlib; nothing under `Euler/` imports `ComparatorChallenges`. So the independence Comparator relies on is real at the level of text, not merely asserted in a header — which is the same property E75 found for the Navier–Stokes pair.
+
+### 3. The internal theorem is a different statement, and the gap is closed by proof
+
+`EulerPacketInduction.exists_compact_smooth_euler_singularity` (`Euler/EulerSingularity.lean:133`) is **not** the challenge theorem. It is existential over `A : SmoothL2Field Space` and `L : FiniteLifespan A`, and its clauses speak of `L.maximalVelocity`, `HasScalarEulerEvolution`, `L.maximalC1Norm` and `L.maximalVorticityDensity`. The challenge speaks of bare functions `u₀ : ℝ³ → ℝ³`, `v : ℝ³ → ℝ → ℝ³`, `p : ℝ³ → ℝ → ℝ`, a real `Tstar`, and the Formal-Conjectures class. Two carriers, two vocabularies.
+
+The gap is not left to the reader. Each clause that changes vocabulary has a proved bridge:
+
+| challenge clause | bridge |
+|---|---|
+| the solution class on `[0,T]` | `exists_sobolevSolution_iff` (`ComparatorSobolevEvolution.lean`): `(∃ v p, EulerSobolevExistenceAndSmoothnessR3On (Icc 0 T) A.field v p) ↔ HasScalarEulerEvolution A T`, both directions |
+| witness on `[0,T*)` | `maximal_sobolevSolution` (`ComparatorMaximalSolution.lean`) |
+| `T < T*` exactly | `maximal_sobolev_existence_iff` |
+| rapid decay of every derivative | `initialVelocityConditionDecay_of_compact` (`InitialDataBridge.lean`): compact support plus smoothness **implies** it |
+| `velocityC1Norm`, `vorticityNorm` | `velocityC1Norm_maximal`, `vorticityNorm_maximal`, `vorticityNorm_maximal_density` |
+| scalar pressure `p` with `∇p = -force` | `maximalPressure_spec`: `ContDiff ℝ ∞`, `p 0 = 0`, `∇p = pressureForce` |
+
+The last row is the one that could have hidden an assumption, since the development carries a pressure *force*, not a scalar pressure. It does not: `maximalPressure` is `radialPotential` applied to the force (`OrdinaryEulerMaximal.lean:47–48`), and `maximalPressure_spec` is a theorem about the result. The challenge's `p` is a proved potential, not a parameter the solution may choose.
+
+### 4. Three residuals
+
+**(a) The implication runs one way.** What is proved is: the packet construction implies the challenge statements. The converse — challenge statement implies the `SmoothL2Field`/`FiniteLifespan` packaging — is not stated, and would not be a syntactic identity if it were. That is the right direction for a Comparator submission, and it is enough to say the kernel checked the repository's Euler claim. It is not an equivalence of the two top-level theorems, and this entry does not claim one.
+
+**(b) The first theorem is a corollary of the second.** The last conjunct of `exists_compact_smooth_euler_singularity` is `¬ (∃ w q, EulerExistenceAndSmoothnessR3 u₀ w q)`, for a `u₀` already carrying `InitialVelocityConditionDecay` — literally the conclusion of `euler_breakdown_R3`. `formalization.yaml:123` calls the stronger statement the "alternate version", which inverts the strength: the alternate contains the primary. `Euler/Solution.lean` proves the two by different routes (`finiteLifespan_contradiction_of_compact_vorticity` for the first, the maximal extension for the second), so nothing is circular; but a reader of the metadata alone would not learn that one is contained in the other.
+
+**(c) One footprint is measured, one is not.** `#print axioms` occurs twice in the Euler tree, at `Euler/Solution.lean:73` and `:75`, on the two designated declarations — so those are measured, and E79 reports the result. `EulerPacketInduction.exists_compact_smooth_euler_singularity` was never printed. Two facts narrow the gap without closing it: it sits in the import closure of the solution (`ComparatorSobolevEvolution.lean:2` imports `Euler.EulerSingularity`), and the `Euler` library is declared with `warningAsError = true` (`lakefile.toml`), so a `sorry` anywhere in it would have failed the 10,603-job build rather than warning. A non-`sorry` axiom in it would warn about nothing and would not be caught — but the solution's proofs do not call it, so such an axiom could not reach the checked theorems either.
+
+### 5. What this adds, and what is still missing
+
+- Adds: the Euler kernel result covers the declarations the upstream repository designates as its Euler formalizations, and the class mismatch between the challenge and the development is a proved equivalence, not an inspection.
+- Still missing: any comparison of either statement to the Euler paper's own Theorem 1.1 text. E76 did that for Clay's (C) and (D) against Fefferman's PDF; the Euler equivalent needs the Euler PDF's numbered conditions, and this entry reads code and metadata only. The upstream README's description — compactly supported smooth datum, finite-time singularity, unbounded C¹ norm, divergent vorticity integral — is consistent with the second theorem, but a README is not a theorem statement.
+- Unchanged: no estimate inside the Euler proof was read, here or in E79.
+
+*Evidence: `f9e8bc5`, `ComparatorChallenges/Euler.lean` (186 lines), `Euler/SolutionDefinitions.lean` (138), `Euler/Solution.lean` (75), `Euler/EulerSingularity.lean:133`, `Euler/ComparatorSobolevEvolution.lean`, `Euler/ComparatorMaximalSolution.lean`, `Euler/ComparatorMaximalFields.lean`, `Euler/OrdinaryEulerMaximal.lean:182`, `Euler/InitialDataBridge.lean`, `formalization.yaml:72–94` and `:119–126`, `lakefile.toml`; declaration-level text comparison run locally on 2026-11-23.*

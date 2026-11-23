@@ -2,7 +2,7 @@
 %  Statement-Design Arbitrage and Verification Limits:
 %  A Forensic Code Audit of the openai/NavierStokesAndEuler Repository
 %
-%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E79.
+%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E80.
 %  All code citations are to commit f9e8bc5.
 % =====================================================================
 % Compile with LuaLaTeX or XeLaTeX: the Lean listings are quoted verbatim,
@@ -168,7 +168,10 @@ kind of evidence (E73). The Euler
 development in the same repository was outside this audit; its Comparator
 challenge has since been executed and passes on both kernels, which checks the
 two Euler theorems against their statements and reads no estimate inside their
-proofs (E79).
+proofs (E79). Those statements are the two declarations the repository's own
+metadata designates as its Euler formalizations, and the challenge's solution
+class is proved equivalent to the development's rather than assumed to match
+(E80); no comparison to the Euler paper's numbered theorem was attempted.
 \end{abstract}
 
 \medskip
@@ -177,7 +180,7 @@ similarity ansatz, dependent type theory, proof auditing, statement design.
 
 \noindent\textbf{Data availability:} commit \texttt{f9e8bc5} of
 \texttt{openai/NavierStokesAndEuler}; audit log
-\file{ns-audit/AUDIT\_LOG.md}, entries E0--E79. Every code citation below is a
+\file{ns-audit/AUDIT\_LOG.md}, entries E0--E80. Every code citation below is a
 \file{path:line} pair in that commit. Kernel acceptance was reproduced on the
 \file{NavierStokes} library; see \S\ref{sec:limits}.
 
@@ -221,9 +224,15 @@ this paper until E79, which runs its Comparator challenge end to end: the
 library builds from a clean clone (10,603 jobs, 50 min 11 s), both Euler
 theorems are accepted by the builtin kernel and by nanoda, and their axiom
 footprint is \ct{propext}, \ct{Classical.choice} and \ct{Quot.sound} with no
-\ct{sorryAx}. That checks two proofs against two statements. No estimate inside
-the Euler development was read, so no mathematical claim made here applies to
-it.
+\ct{sorryAx}. That checks two proofs against two statements. E80 then checks the statements: the two are the declarations
+\file{formalization.yaml:72--94} designates, both in \file{Euler/Solution.lean},
+and the passage between the challenge's ordinary-function class and the
+development's smooth--$L^2$ fields is a proved equivalence
+(\ct{exists\_sobolevSolution\_iff}), with the decay and norm clauses bridged by
+\ct{initialVelocityConditionDecay\_of\_compact} and the three norm identities.
+No estimate inside the Euler development was read, so no mathematical claim
+made here applies to it, and neither Euler statement has been compared to the
+Euler paper's own text.
 
 \subsection{What the artifact proves}
 

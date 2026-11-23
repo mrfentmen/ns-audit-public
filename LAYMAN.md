@@ -28,7 +28,7 @@ The repository is OpenAI's `NavierStokesAndEuler`, a formalization in Lean 4 of 
 
 At the level of foundations it is unusually clean. There is no axiom smuggled in, no use of the shortcut that trusts compiled code, no unsafe feature, no partial definition, and no "trust me" hole reachable from the main results. One file does contain such a hole, but nothing in the project imports that file, and the file says as much in its own header.
 
-The repository reports that nine independent external checkers accepted it. This audit re-ran one of them: Comparator, which checks that the solution proves the same statement the challenge poses. It passes on both challenges the repository poses — the Navier–Stokes one (E75) and the Euler one (E79). The other eight were not re-run.
+The repository reports that nine independent external checkers accepted it. This audit re-ran one of them: Comparator, which checks that the solution proves the same statement the challenge poses. It passes on both challenges the repository poses — the Navier–Stokes one (E75) and the Euler one (E79). The other eight were not re-run. E80 then checked the Euler pair the way E76 checked the Clay pair, except by code rather than by paper: those two statements are the ones the repository's own index calls its Euler theorems, and the gap between the challenge's plain-function wording and the development's internal objects is closed by a proved equivalence, not by a promise that they mean the same thing.
 
 So the question is not whether the project compiles. The question is what the compiled object actually certifies.
 
