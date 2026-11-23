@@ -50,12 +50,20 @@ three tags are much weaker than the first.
 Section 3.2 asks for four compatibility results, and names them. That is the cleanest spine
 the paper offers, so it is worth recording separately:
 
-| Paper's step | Paper's result | Lean side |
-|---|---|---|
-| exterior and axis pressure | Proposition A.4 | `AppendixHeatResults` (`basis: object`) |
-| inner solution | Proposition B.2 | `AxisProfile` (`basis: object`) |
-| joining and moment matching | Corollary B.10 | `AxisSeries`, `PowerMomentMatrix` (`basis: object`) |
-| enforcing the cone condition | Proposition C.2 | `MatchingConeBounds`, `ActivationCone` (`basis: object`) |
+| Paper's step | Paper's result | Lean side | Basis |
+|---|---|---|---|
+| exterior and axis pressure | Proposition A.4 | `AppendixHeatResults`: `rising`, `derivativeCoeff_eq_rising`, `gamma_add_nat`, `endpoint_derivatives`, `uniform_positive_derivative_bound` | object, declarations checked |
+| inner solution | Proposition B.2 | `AxisProfile`: `radialOperatorCoeff`, `radialOperator_inverse`, `profileCoeff_recurrence`, `profileCoeff_scaled_equation`, `weighted_profileCoeff` | object, declarations checked |
+| joining and moment matching | Corollary B.10 | `AxisSeries`: `bessel`, `bessel_eq_constant_add_tail`, `hasDerivAt_bessel`; `PowerMomentMatrix`: `powerEvaluationMatrix_det_ne_zero`, `expSum_coefficients_zero`, `exists_ordered_derivative_zeros` | object, declarations checked |
+| enforcing the cone condition | Proposition C.2 | `MatchingConeBounds`: `shapeModel_uniform_lower`, `true_collar_of_errors`, `actual_shape_source_threshold`; `ActivationCone`: `ramp_cone_of_errors`, `errorTolerance_bounds`, `activation_uniform_collar` | object, declarations checked |
+
+Those four rows are no longer name matches. The declarations are the right *kind* of
+object for the step they are under: Pochhammer-type rising coefficients and derivative
+endpoint bounds for the radial-moment problem; a proved inverse of the radial operator and
+a coefficient recurrence for the inner profiles; Vandermonde nonsingularity and exponential
+moment vanishing for the joining problem; collar and ramp bounds for the cone. What is still
+missing is the clause-by-clause match — that each paper hypothesis appears as a Lean binder
+and each Lean hypothesis is one the paper grants.
 
 Section 3.4 lists four construction steps — solve the inhomogeneous wave-amplitude
 equations, correct the angular average with zero auxiliary average, solve the five radial

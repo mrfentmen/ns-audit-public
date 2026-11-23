@@ -5,10 +5,12 @@ name: typeset
 # multi-gigabyte download. The paper asks for LuaLaTeX or XeLaTeX because the
 # Lean listings are quoted with their Unicode.
 #
-# The two standalone reader editions are Markdown and are typeset here as well,
-# with pandoc and XeLaTeX on the runner itself. CAVEMAN_1TO1.md stays Markdown
-# because its wide tables do not survive a narrow page. librsvg is installed
-# because the documents embed the SVG diagrams by path.
+# The two standalone reader editions are Markdown. They are built in a second
+# job that runs pandoc inside its own image, so neither job depends on TeX being
+# installed on the runner: an earlier attempt to apt-install TeX Live for this
+# sat in texlive's post-install format generation for half an hour and was
+# cancelled. CAVEMAN_1TO1.md stays Markdown; its wide tables do not survive a
+# narrow page.
 #
 # Manual only, so a red build does not block anything. The PDFs are the artifact.
 
@@ -21,7 +23,7 @@ permissions:
 jobs:
   manuscript:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -31,54 +33,15 @@ jobs:
           root_file: MANUSCRIPT.tex
           latexmk_use_lualatex: true
 
-      - name: Install pandoc, XeLaTeX and helpers on the runner
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq pandoc texlive-xetex texlive-fonts-recommended \
-            texlive-latex-recommended lmodern fonts-dejavu-core fonts-dejavu-extra \
-            librsvg2-bin poppler-utils
-          pandoc --version | head -2
-          xelatex --version | head -1
-
-      - name: Typeset CAVEMAN.md
-        run: |
-          set -o pipefail
-          pandoc CAVEMAN.md -o CAVEMAN.pdf \
-            --pdf-engine=xelatex --toc --toc-depth=2 \
-            -V geometry:a4paper -V geometry:margin=2cm -V fontsize=10pt \
-            -V mainfont="DejaVu Sans" -V monofont="DejaVu Sans Mono" \
-            -V colorlinks=true -V linkcolor=blue \
-            2>&1 | tee caveman-typeset.log
-          ls -l CAVEMAN.pdf
-
-      - name: Typeset LAYMAN.md
-        run: |
-          set -o pipefail
-          pandoc LAYMAN.md -o LAYMAN.pdf \
-            --pdf-engine=xelatex --toc --toc-depth=2 \
-            -V geometry:a4paper -V geometry:margin=2cm -V fontsize=10pt \
-            -V mainfont="DejaVu Sans" -V monofont="DejaVu Sans Mono" \
-            -V colorlinks=true -V linkcolor=blue \
-            2>&1 | tee layman-typeset.log
-          ls -l LAYMAN.pdf
-
-      - name: Report logs, pages and glyph coverage
+      - name: Report the log tail
         if: always()
         run: |
           ls -l MANUSCRIPT.pdf MANUSCRIPT.log 2>/dev/null || true
-          [ -f MANUSCRIPT.log ] && tail -40 MANUSCRIPT.log || echo "no manuscript log written"
-          for f in caveman-typeset.log layman-typeset.log; do
-            [ -f "$f" ] || continue
-            echo "== $f: $(grep -c 'Missing character' "$f" || true) missing-glyph warnings"
-            grep -o "Missing character: There is no .* in font .*" "$f" | sort | uniq -c | head -20 || true
-          done
-          for f in MANUSCRIPT.pdf CAVEMAN.pdf LAYMAN.pdf; do
-            [ -f "$f" ] || continue
-            echo "$f: $(stat -c%s "$f") bytes, $(pdfinfo "$f" 2>/dev/null | awk '/^Pages:/{print $2}') pages"
-          done
-          shasum -a 256 MANUSCRIPT.pdf CAVEMAN.pdf LAYMAN.pdf 2>/dev/null || true
+          [ -f MANUSCRIPT.log ] && tail -40 MANUSCRIPT.log || echo "no log written"
+          python3 tools/pdfpages.py MANUSCRIPT.pdf 2>/dev/null || true
+          shasum -a 256 MANUSCRIPT.pdf 2>/dev/null || true
 
-      - name: Upload PDFs
+      - name: Upload the manuscript
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -86,8 +49,47 @@ jobs:
           path: |
             MANUSCRIPT.pdf
             MANUSCRIPT.log
+          if-no-files-found: warn
+
+  readers:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build both reader editions in the pandoc image
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$PWD:/data" -w /data pandoc/extra:latest --version | head -2
+          for doc in CAVEMAN LAYMAN; do
+            docker run --rm -v "$PWD:/data" -w /data pandoc/extra:latest \
+              "$doc.md" -o "$doc.pdf" \
+              --pdf-engine=xelatex --toc --toc-depth=2 \
+              -V geometry:a4paper -V geometry:margin=2cm -V fontsize=10pt \
+              -V colorlinks=true -V linkcolor=blue \
+              2>&1 | tee "$doc-typeset.log"
+            ls -l "$doc.pdf"
+          done
+
+      - name: Report pages and glyph coverage
+        if: always()
+        run: |
+          python3 tools/pdfpages.py CAVEMAN.pdf LAYMAN.pdf 2>/dev/null || true
+          for f in CAVEMAN-typeset.log LAYMAN-typeset.log; do
+            [ -f "$f" ] || continue
+            echo "== $f: $(grep -c 'Missing character' "$f" || true) missing-glyph warnings"
+            grep -o "Missing character: There is no .* in font .*" "$f" | sort | uniq -c | head -20 || true
+          done
+          shasum -a 256 CAVEMAN.pdf LAYMAN.pdf 2>/dev/null || true
+
+      - name: Upload the reader PDFs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-pdfs
+          path: |
             CAVEMAN.pdf
             LAYMAN.pdf
-            caveman-typeset.log
-            layman-typeset.log
+            CAVEMAN-typeset.log
+            LAYMAN-typeset.log
           if-no-files-found: warn
