@@ -4087,3 +4087,69 @@ The last row is the one that could have hidden an assumption, since the developm
 - Unchanged: no estimate inside the Euler proof was read, here or in E79.
 
 *Evidence: `f9e8bc5`, `ComparatorChallenges/Euler.lean` (186 lines), `Euler/SolutionDefinitions.lean` (138), `Euler/Solution.lean` (75), `Euler/EulerSingularity.lean:133`, `Euler/ComparatorSobolevEvolution.lean`, `Euler/ComparatorMaximalSolution.lean`, `Euler/ComparatorMaximalFields.lean`, `Euler/OrdinaryEulerMaximal.lean:182`, `Euler/InitialDataBridge.lean`, `formalization.yaml:72–94` and `:119–126`, `lakefile.toml`; declaration-level text comparison run locally on 2026-11-23.*
+
+---
+
+## E81 — The Euler encoding against Theorem 1.1: five clauses stronger, one weaker (2026-11-23)
+
+*Reading entry. E80 answered whether the challenge statements are the repository's own Euler theorems. It did not answer whether they are the Euler paper's theorem. This entry reads the paper's Theorem 1.1 and maps it clause by clause, the way E76 read Fefferman for (C) and (D).*
+
+### 1. The source
+
+The Euler paper linked from the upstream README, `https://cdn.openai.com/pdf/315b36cd-ec98-4023-8342-93345194ece1/euler.pdf`, 57 pages, 535,142 bytes, sha256 `a0c234518e6c489e16996805023eb2e75c00b7c03455f7a3a5be2c124954bfdd`. Theorem 1.1, verbatim including its display:
+
+> There exists $u_0 \in C^\infty_{c,\sigma}(\mathbb{R}^3)$ such that $0 < T_*(u_0) < \infty$. Its smooth Euler solution satisfies
+> $$\limsup_{t \uparrow T_*}\|\nabla u(t)\|_{L^\infty} = \infty, \qquad \int_0^{T_*}\|\operatorname{curl} u(t)\|_{L^\infty}\,dt = \infty.$$
+
+$T_*(u_0)$ is defined two lines earlier as "the maximal lifespan of its smooth Euler solution", with local existence cited.
+
+### 2. Clause by clause
+
+Against `Euler/Solution.lean:43`, the second declaration, which is the quantitative one:
+
+| # | Theorem 1.1 | challenge field | verdict |
+|---|---|---|---|
+| 1 | $u_0 \in C^\infty_{c,\sigma}$ | `InitialVelocityConditionDecay` (smooth, divergence-free, every derivative rapidly decaying) plus `HasCompactSupport` | **met**; decay is stronger than compact support, and `initialVelocityConditionDecay_of_compact` derives it rather than assuming it |
+| 2 | $u_0 \neq 0$ (implicit: zero data has a global solution) | `u₀ ≠ 0` | **explicit** |
+| 3 | $0 < T_* < \infty$ | `0 < Tstar`, `Tstar ≤ 1` | **met**, with an explicit horizon bound the paper leaves open |
+| 4 | $T_*$ is the maximal lifespan of the smooth solution | `∀ T > 0, (∃ Sobolev-class solution on [0,T]) ↔ T < Tstar` | **equivalent**, by a proved chain: `exists_sobolevSolution_iff` ↔ `hasScalarEulerEvolution_iff` ↔ `hasSmoothEulerSolution_iff` |
+| 5 | $\limsup\|\nabla u(t)\|_\infty = \infty$ | `limsup velocityC1Norm = ⊤`, where the norm is velocity sup **plus** gradient sup | **weaker** — §3 |
+| 6 | $\int_0^{T_*}\|\operatorname{curl}u\|_\infty\,dt = \infty$ | `∫⁻ vorticityNorm = ⊤` | **exact**, via `vorticityNorm_eq` |
+| 7 | — | $\exists E,\ \forall t \in [0,T_*),\ \int\|v\|^2 < E$ | **extra** |
+| 8 | — | $\forall T \in (0,T_*)$, the C¹ sup and the vorticity integral are finite on $[0,T]$ | **extra** |
+| 9 | — | $\neg\,\exists w\,q,\ $ `EulerExistenceAndSmoothnessR3 u₀ w q` | **extra**, and stronger than "$T_*$ finite": an entire class has no global solution |
+
+Row 4 deserves its own sentence. The paper's $T_*$ is defined in the classical smooth class; the challenge defines it in the all-order Sobolev class. Those are not the same definition on their face, and that was the largest apparent gap. It is not a gap: `exists_sobolevSolution_iff` (`ComparatorSobolevEvolution.lean`) proves the challenge class equivalent to `HasScalarEulerEvolution`, `hasScalarEulerEvolution_iff` (`EulerSingularity.lean:33`) proves that equivalent to `HasEulerEvolution`, and `hasSmoothEulerSolution_iff` (`EulerFiniteLifespan.lean`) proves that equivalent to the classical class. Three proved biconditionals, no assumed bridge. The check passes through the same objects the paper names.
+
+### 3. The one weakening
+
+`velocityC1Norm` is defined as the sum of two suprema (`Euler/SolutionDefinitions.lean:130`):
+
+```
+(⨆ x, ENNReal.ofReal ‖v x‖) + (⨆ x, ENNReal.ofReal ‖fderiv ℝ v x‖)
+```
+
+and `maximalC1Norm` is the same sum (`EulerC1Breakdown.lean:24`), identified with the challenge's norm by `velocityC1Norm_eq` (`ComparatorSingularityNorms.lean:27`). Theorem 1.1 asserts divergence of the **second summand alone**. A sum's limsup can be `⊤` while neither summand's is: `a_n = n`, `b_n = n` gives both divergent, but nothing in the statement bounds $\sup_x\|v\|$; the theorem's own energy clause is $L^2$, which does not bound $L^\infty$. So the challenge's clause does not formally imply the paper's.
+
+What makes this a packaging defect rather than a gap is that the development proves the paper's clause anyway:
+
+| statement | file:line |
+|---|---|
+| `maximalGradientNorm_limsup = ⊤` | `Euler/EulerC1Limsup.lean:54` (lifted at `:82`) |
+| arbitrary large gradient values near the endpoint | `EulerC1Breakdown.lean:66` |
+| pointwise gradient blowup | `EulerC1Breakdown.lean:49` |
+
+The strong fact is three files from the theorem, compiled with the library (so the kernel checked its proof, and `warningAsError` on the `Euler` library means no `sorry` can survive there), but it is **not** in `ComparatorChallenges/Euler.json`'s target list and **not** a conjunct of the statement the kernel accepted. `maximalVelocityExtension_c1_limsup` calls the sum version (`maximalC1Norm_limsup`), not the gradient one. A reader who trusts the checked statement gets the weaker claim; the repository holds the stronger one beside it.
+
+### 4. Verdict
+
+- The encoding is **stronger** than Theorem 1.1 in five respects (rows 2, 3, 7, 8, 9) and **weaker** in exactly one (row 5). Nothing is missing.
+- The five strengthenings are safe: a proof of a stronger statement proves the paper's. The strengthening in row 9 is the substantive one — a non-existence result in a class that contains the classical smooth solutions, which is what makes `euler_breakdown_R3` a theorem rather than a remark.
+- The one weakening is the paper's headline. It should be said plainly: what Comparator accepted is *not* "the gradient blows up"; it is "the C¹ norm blows up", and the gradient statement is proved elsewhere in the same development. Adding `maximalGradientNorm_limsup` to `Euler.json` would close it without a new proof.
+- This is the first clause-level defect in the Euler encoding found by reading. It is not a mathematical error: the theorem is true, and the paper's stronger claim is in the artifact.
+
+### 5. What this does not do
+
+No estimate inside the Euler proof was read — this entry reads one statement, two definitions and six lemmas. It does not check the paper's Section 6.3 argument, its continuation criteria, or the construction. It also does not claim the paper's Theorem 1.1 is the only claim in the paper; it is the only one the repository maps to these declarations.
+
+*Evidence: paper PDF at the digest above, Theorem 1.1 on p.~1 and the $T_*$ definition at `:22` of the extracted text; `Euler/Solution.lean:43`, `Euler/SolutionDefinitions.lean:130`, `Euler/ComparatorSingularityNorms.lean:27`, `Euler/EulerC1Breakdown.lean:24`, `:49`, `:66`, `Euler/EulerC1Limsup.lean:54`, `:82`, `Euler/ComparatorMaximalSolution.lean`; `ComparatorChallenges/Euler.json`. Text extracted with `pypdf` in a throwaway virtual environment on 2026-11-23; no TeX or PDF toolchain on the host.*
