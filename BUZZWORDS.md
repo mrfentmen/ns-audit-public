@@ -437,4 +437,4 @@ Real terms, correctly used. Nothing here is invented; the invented ones are in �
 
 ---
 
-*Sources: `MANUSCRIPT.tex`, `PHASE2-FINDINGS.md`, `AUDIT_LOG.md` (entries E0–E81), `NavierStokesAndEuler/NavierStokes/{ExponentLedger,PressureStream,CorrectionStep}.lean`. Counts produced by extraction over the full source, not sampling. No TeX engine was available, so the page estimate is arithmetic, not a compiled measurement.*
+*Sources: `MANUSCRIPT.tex`, `PHASE2-FINDINGS.md`, `AUDIT_LOG.md` (entries E0–E82), `NavierStokesAndEuler/NavierStokes/{ExponentLedger,PressureStream,CorrectionStep}.lean`. Counts produced by extraction over the full source, not sampling. No TeX engine was available, so the page estimate is arithmetic, not a compiled measurement.*

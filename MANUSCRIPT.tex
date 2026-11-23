@@ -2,7 +2,7 @@
 %  Statement-Design Arbitrage and Verification Limits:
 %  A Forensic Code Audit of the openai/NavierStokesAndEuler Repository
 %
-%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E81.
+%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E82.
 %  All code citations are to commit f9e8bc5.
 % =====================================================================
 % Compile with LuaLaTeX or XeLaTeX: the Lean listings are quoted verbatim,
@@ -171,7 +171,7 @@ two Euler theorems against their statements and reads no estimate inside their
 proofs (E79). Those statements are the two declarations the repository's own
 metadata designates as its Euler formalizations, and the challenge's solution
 class is proved equivalent to the development's rather than assumed to match
-(E80). E81 then compares them with the Euler paper's Theorem~1.1: the encoding is stronger than the paper in five respects and weaker in one---the challenge's $C^1$ limsup is the sum of the velocity and gradient suprema, while the paper asserts the gradient alone diverges; the development proves the stronger statement (\ct{maximalGradientNorm\_limsup}), but the Comparator target list does not contain it.
+(E80). E81 then compares them with the Euler paper's Theorem~1.1: the encoding is stronger than the paper in five respects and weaker in two---the challenge's $C^1$ limsup is the sum of the velocity and gradient suprema, while the paper asserts the gradient alone diverges, and the lifespan is taken over a Sobolev class not proved to contain the paper's smoothly evolving solution (E82); the development proves the gradient-only statement (\ct{maximalGradientNorm\_limsup}), but the Comparator target list does not contain it.
 \end{abstract}
 
 \medskip
@@ -180,7 +180,7 @@ similarity ansatz, dependent type theory, proof auditing, statement design.
 
 \noindent\textbf{Data availability:} commit \texttt{f9e8bc5} of
 \texttt{openai/NavierStokesAndEuler}; audit log
-\file{ns-audit/AUDIT\_LOG.md}, entries E0--E81. Every code citation below is a
+\file{ns-audit/AUDIT\_LOG.md}, entries E0--E82. Every code citation below is a
 \file{path:line} pair in that commit. Kernel acceptance was reproduced on the
 \file{NavierStokes} library; see \S\ref{sec:limits}.
 
@@ -233,10 +233,12 @@ development's smooth--$L^2$ fields is a proved equivalence
 No estimate inside the Euler development was read, so no mathematical claim
 made here applies to it. E81 compares the two statements with the Euler paper's
 own Theorem~1.1, clause by clause: the encoding is stronger than the paper in
-five respects and weaker in one---the challenge's $C^1$ limsup adds the velocity
+five respects and weaker in two---the challenge's $C^1$ limsup adds the velocity
 supremum to the gradient's, while the paper asserts only the gradient's
-divergence. The development proves the gradient-only statement
-(\ct{maximalGradientNorm\_limsup}); the accepted statement does not ask for it.
+divergence, and the lifespan is defined over a class not proved to contain the
+paper's smoothly evolving solution. The development proves the gradient-only
+statement (\ct{maximalGradientNorm\_limsup}); the accepted statement does not ask
+for it.
 
 \subsection{What the artifact proves}
 

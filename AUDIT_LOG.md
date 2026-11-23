@@ -4112,14 +4112,14 @@ Against `Euler/Solution.lean:43`, the second declaration, which is the quantitat
 | 1 | $u_0 \in C^\infty_{c,\sigma}$ | `InitialVelocityConditionDecay` (smooth, divergence-free, every derivative rapidly decaying) plus `HasCompactSupport` | **met**; decay is stronger than compact support, and `initialVelocityConditionDecay_of_compact` derives it rather than assuming it |
 | 2 | $u_0 \neq 0$ (implicit: zero data has a global solution) | `u₀ ≠ 0` | **explicit** |
 | 3 | $0 < T_* < \infty$ | `0 < Tstar`, `Tstar ≤ 1` | **met**, with an explicit horizon bound the paper leaves open |
-| 4 | $T_*$ is the maximal lifespan of the smooth solution | `∀ T > 0, (∃ Sobolev-class solution on [0,T]) ↔ T < Tstar` | **equivalent**, by a proved chain: `exists_sobolevSolution_iff` ↔ `hasScalarEulerEvolution_iff` ↔ `hasSmoothEulerSolution_iff` |
+| 4 | $T_*$ is the maximal lifespan of the smooth solution | `∀ T > 0, (∃ Sobolev-class solution on [0,T]) ↔ T < Tstar` | **exact inside the development, weaker than the paper**: the chain `exists_sobolevSolution_iff` ↔ `hasScalarEulerEvolution_iff` ↔ `hasSmoothEulerSolution_iff` relates three *development* classes; `Evolution` is spatially $C^\infty$ with an $L^2$ strong time derivative, not proved jointly $C^\infty$ in time as the paper's solution is (E82 §4) |
 | 5 | $\limsup\|\nabla u(t)\|_\infty = \infty$ | `limsup velocityC1Norm = ⊤`, where the norm is velocity sup **plus** gradient sup | **weaker** — §3 |
 | 6 | $\int_0^{T_*}\|\operatorname{curl}u\|_\infty\,dt = \infty$ | `∫⁻ vorticityNorm = ⊤` | **exact**, via `vorticityNorm_eq` |
 | 7 | — | $\exists E,\ \forall t \in [0,T_*),\ \int\|v\|^2 < E$ | **extra** |
 | 8 | — | $\forall T \in (0,T_*)$, the C¹ sup and the vorticity integral are finite on $[0,T]$ | **extra** |
 | 9 | — | $\neg\,\exists w\,q,\ $ `EulerExistenceAndSmoothnessR3 u₀ w q` | **extra**, and stronger than "$T_*$ finite": an entire class has no global solution |
 
-Row 4 deserves its own sentence. The paper's $T_*$ is defined in the classical smooth class; the challenge defines it in the all-order Sobolev class. Those are not the same definition on their face, and that was the largest apparent gap. It is not a gap: `exists_sobolevSolution_iff` (`ComparatorSobolevEvolution.lean`) proves the challenge class equivalent to `HasScalarEulerEvolution`, `hasScalarEulerEvolution_iff` (`EulerSingularity.lean:33`) proves that equivalent to `HasEulerEvolution`, and `hasSmoothEulerSolution_iff` (`EulerFiniteLifespan.lean`) proves that equivalent to the classical class. Three proved biconditionals, no assumed bridge. The check passes through the same objects the paper names.
+Row 4 deserves its own sentence. The paper's $T_*$ is defined in the classical smooth class; the challenge defines it in the all-order Sobolev class. `exists_sobolevSolution_iff` (`ComparatorSobolevEvolution.lean`) proves the challenge class equivalent to `HasScalarEulerEvolution`, `hasScalarEulerEvolution_iff` (`EulerSingularity.lean:33`) proves that equivalent to `HasEulerEvolution`, and `hasSmoothEulerSolution_iff` (`EulerFiniteLifespan.lean`) proves that equivalent to `HasSmoothEulerSolution`. Three proved biconditionals — but all three relate *development* classes. `HasSmoothEulerSolution` is defined as an `Evolution`, i.e. a path of `SmoothL2Field`s with an $L^2$ strong time derivative, not joint $C^\infty$ in time. The chain is real and it is internal; it does not establish that these classes coincide with the paper's jointly smooth solution. E82 §4 records the correction.
 
 ### 3. The one weakening
 
@@ -4153,3 +4153,66 @@ The strong fact is three files from the theorem, compiled with the library (so t
 No estimate inside the Euler proof was read — this entry reads one statement, two definitions and six lemmas. It does not check the paper's Section 6.3 argument, its continuation criteria, or the construction. It also does not claim the paper's Theorem 1.1 is the only claim in the paper; it is the only one the repository maps to these declarations.
 
 *Evidence: paper PDF at the digest above, Theorem 1.1 on p.~1 and the $T_*$ definition at `:22` of the extracted text; `Euler/Solution.lean:43`, `Euler/SolutionDefinitions.lean:130`, `Euler/ComparatorSingularityNorms.lean:27`, `Euler/EulerC1Breakdown.lean:24`, `:49`, `:66`, `Euler/EulerC1Limsup.lean:54`, `:82`, `Euler/ComparatorMaximalSolution.lean`; `ComparatorChallenges/Euler.json`. Text extracted with `pypdf` in a throwaway virtual environment on 2026-11-23; no TeX or PDF toolchain on the host.*
+
+---
+
+## E82 — §6.3 against the continuation chain: one half stronger than the paper, and a correction to E81 (2026-11-23)
+
+*Reading entry. E81 compared clauses. This entry compares the two arguments behind Theorem 1.1's divergence conclusions with the Lean proofs that discharge them, and it retracts part of E81's row 4.*
+
+### 1. The paper's two arguments
+
+**Gradient.** Assume $B=\sup_{0\le t<T}\|\nabla u(t)\|_\infty<\infty$. The order-three energy inequality (5.2) gives $\|u(t)\|_{H^3}\le M_3$. Section 5.1 supplies a local time $\delta_0=\delta_0(M_3)$ **uniform** over smooth divergence-free data of $H^3$ norm at most $M_3$; with $\delta=\min\{\delta_0/2,\ 1/(2C_3C_{\mathrm{emb}}M_3)\}$, restart at $s\in(\max\{0,T-\delta/2\},T)$, and uniqueness gives an extension past $T$, contradicting maximality.
+
+**Vorticity.** A Biot--Savart estimate gives (6.7), $\|\nabla u\|_\infty\le C[1+\|u_0\|_2+\|\omega\|_\infty\log(e+\|u\|_{H^3})]$. With $Z=\log(e+\|u\|_{H^3})$ this yields $Z'\le C(1+\|u_0\|_2)+C\|\omega\|_\infty Z$, and Gronwall turns a finite vorticity integral into bounded $H^3$, hence an extension, hence a contradiction.
+
+### 2. The gradient half, in Lean, is not the paper's argument
+
+`Evolution.exists_extension` (`Euler/OrdinaryEulerContinuation.lean:20`) extends **every** closed smooth evolution on `[0,T]` to some `S > T`, agreeing on `[0,T]`. It local-exists at the terminal state and concatenates. No gradient bound, no $H^3$ estimate, no uniform $\delta_0(M_3)$, no Sobolev embedding, no energy inequality appears in it.
+
+| paper step | Lean counterpart | present? |
+|---|---|---|
+| $B<\infty$ hypothesis | none | **not needed** |
+| (5.2) at order 3, $\|u\|_{H^3}\le M_3$ | `h3_energy_gradientIntegral` (`OrdinaryEulerGradientControl.lean`) | exists, but not on this path |
+| $\delta_0(M_3)$ uniform in $M_3$ | `localEvolution` at one datum | used, uniformity **not needed** |
+| restart and uniqueness | `concatenate` + `evolution_agrees` | yes |
+| extension contradicts maximality | `FiniteLifespan.no_endpoint` (`:53`) | yes, immediately |
+
+`HasEulerEvolution.extend` (`:43`) makes every evolution extendable; `no_endpoint` follows in three lines. `gradient_unbounded` (`:65`) is then a contradiction argument: a bounded gradient bounds `gradientIntegral` by $K\cdot$ duration (`gradientIntegral_le_const`), and `endpoint_of_bounded_gradient` extends, contradicting `no_endpoint`.
+
+So the paper's analytic work in the gradient half — the $H^3$ bound, the embedding, the uniform local time — is not what the formal proof uses. The formal statement is stronger (no hypothesis) and the argument is shorter. Two caveats keep this from being a free win: `Evolution` is spatially $C^\infty$ with an $L^2$ **strong** time derivative, a weaker class than the paper's jointly smooth solution, so extension is easier to prove; and `exists_extension` rests on the repository's local existence theorem, which is the analogue of §5.1 but is instantiated at one datum rather than quantified uniformly.
+
+### 3. The vorticity half is the paper's argument, with constants named
+
+| paper step | Lean |
+|---|---|
+| Biot--Savart, (6.7) | `logarithmic_gradient_bound` (`OrdinaryLogarithmicGradient.lean`), constant `36*splitCost`, via `elliptic_derivative_logarithmic` |
+| divergence-free input discharged | `logarithmic_gradient_bound_solenoidal` |
+| $Z'\le a+bZ$, Gronwall | `gradientIntegral_of_vorticity_bound` (`OrdinaryBKMReduction.lean:23`), via `gradientIntegral_logarithmic_uniform` |
+| finite vorticity integral contradicts maximality | `vorticity_unbounded_of_logarithmic` (`:34`), then `no_endpoint` |
+| conclusion | `vorticityIntegral_unbounded`, `vorticity_lintegral_eq_top` (`OrdinaryEulerBKM.lean:20`, `:37`) |
+
+One packaging difference: the paper Gronwals $Z=\log(e+\|u\|_{H^3})$ directly; the repository Gronwals the gradient integral and then bounds $H^3$ and every higher order from it (`h3_energy_gradientIntegral`, `higher_energy_of_gradientIntegral`). Same mechanism, different state variable, and the repository's version yields tame bounds at every order rather than at three.
+
+### 4. Correction to E81, row 4
+
+E81 called the $T_*$ clause "equivalent" and cited three biconditionals. They are real, but all three relate classes **inside the development**:
+
+- `exists_sobolevSolution_iff`: the challenge class ↔ `HasScalarEulerEvolution`;
+- `hasScalarEulerEvolution_iff` (`EulerSingularity.lean:33`): scalar ↔ vector `Evolution`;
+- `hasSmoothEulerSolution_iff` (`EulerFiniteLifespan.lean`): `HasSmoothEulerSolution` ↔ `HasEulerEvolution` — and `HasSmoothEulerSolution` is *defined* as the existence of an `Evolution`, so this is close to definitional.
+
+`Evolution` is a path of `SmoothL2Field`s: spatial $C^\infty$, all spatial jets in $L^2$, continuous in those jets, with a strong time derivative in $L^2$. The paper's solution is jointly $C^\infty$ in space **and time**. Neither direction is proved:
+
+- `Evolution` ⇒ joint $C^\infty$: no. The strongest time regularity shown is joint continuity (`maximalVelocity_joint_continuous`), not differentiability in time beyond $L^2$-strong.
+- Joint $C^\infty$ ⇒ `Evolution`: plausible for compactly supported data, and not stated anywhere in the tree.
+
+So the challenge's $T_*$ is the maximal lifespan in a class not proved to contain the paper's classical solution. What survives is the non-existence side: the `¬∃` conjuncts are stated in `EulerExistenceAndSmoothnessR3`, which requires joint $C^\infty$ on `univ × Ici 0` and a uniform energy bound — that is the classical class, and it is the class of rows 1 and 9 in E81's table. What does not survive is reading the limsup and the vorticity integral as statements about *the paper's* solution: they are statements about the Sobolev-class witness, and its identification with a classical solution is not shown.
+
+E81 therefore has **two** soft clauses, not one: row 4 and row 5. Its table has been amended in place with a pointer here; the rest of it stands. This is a correction to the audit's own verdict, not to the repository.
+
+### 5. What this entry does not do
+
+It compares two arguments with their formal counterparts; it does not re-prove either, does not read the construction, and does not touch Sections 3--5. The probe dispatched as run `45158640147` asks the runner for the axiom footprint of `EulerPacketInduction.maximalGradientNorm_limsup`, the theorem behind E81's row 5; its result is recorded separately when it lands.
+
+*Evidence: papers §6.3 at `:2666`--`:2726` of the extracted text; `Euler/OrdinaryEulerContinuation.lean:20`, `:43`, `:53`, `:65`, `:124`; `Euler/OrdinaryEulerGradientControl.lean:41`; `Euler/OrdinaryBKMReduction.lean:23`, `:34`; `Euler/OrdinaryEulerBKM.lean:20`, `:37`; `Euler/OrdinaryLogarithmicGradient.lean`; `Euler/ComparatorSobolevEvolution.lean`; `Euler/EulerFiniteLifespan.lean`; `Euler/ComparatorMaximalFields.lean`.*
