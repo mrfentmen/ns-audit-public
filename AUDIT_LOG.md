@@ -4216,3 +4216,47 @@ E81 therefore has **two** soft clauses, not one: row 4 and row 5. Its table has 
 It compares two arguments with their formal counterparts; it does not re-prove either, does not read the construction, and does not touch Sections 3--5. The probe dispatched as run `45158640147` asks the runner for the axiom footprint of `EulerPacketInduction.maximalGradientNorm_limsup`, the theorem behind E81's row 5; its result is recorded separately when it lands.
 
 *Evidence: papers §6.3 at `:2666`--`:2726` of the extracted text; `Euler/OrdinaryEulerContinuation.lean:20`, `:43`, `:53`, `:65`, `:124`; `Euler/OrdinaryEulerGradientControl.lean:41`; `Euler/OrdinaryBKMReduction.lean:23`, `:34`; `Euler/OrdinaryEulerBKM.lean:20`, `:37`; `Euler/OrdinaryLogarithmicGradient.lean`; `Euler/ComparatorSobolevEvolution.lean`; `Euler/EulerFiniteLifespan.lean`; `Euler/ComparatorMaximalFields.lean`.*
+
+---
+
+## E83 — The periodization lemmas, read rather than sampled (2026-11-23)
+
+*Reading entry. E70 read alternative (D)'s statement and architecture. The README has said since that the periodization lemmas and periodic uniqueness were sampled rather than audited line by line. This entry reads the periodization half.*
+
+### 1. `periodize` is a lattice sum, not an assumed extension
+
+`PeriodicLocalization.periodize` (`:62`) is `∑' n : Lattice, f (t, x - n)` — an infinite sum taken literally. Four lemmas make it usable, and all four are proved:
+
+| claim | lemma |
+|---|---|
+| only finitely many translates meet any bounded region | `mem_latticeBox_of_translate_ne_zero`, `exists_local_latticeBox` |
+| the family of supports is locally finite | `locallyFinite_support_translate` |
+| the series converges at every point | `summable_translate` |
+| locally it is a finite sum of translates | `periodize_locally_eq_sum` |
+| it preserves every differentiability order, including $\infty$ | `contDiff_periodize` |
+
+The last one derives smoothness from local finiteness rather than from a periodic-extension convention on the torus. That matters because the object being differentiated is the lattice sum itself.
+
+### 2. Locality, and why `r < 1/2`
+
+`periodize_eventuallyEq_translate` (`PeriodizePDE.lean:32`) is the crux: if `z.2 - lattice n` lies in the inner cube of radius `r`, then near `z` the infinite sum equals the single translate `n`. The proof restricts to a neighbourhood where every other copy vanishes and applies `periodize_eq_on_innerCube`.
+
+`divergence_free_periodize` (`:117`) and `navier_stokes_periodize` (`:133`) then run: for any `x`, `exists_lattice_near` gives a lattice point within `1/2` of it in each coordinate; with `r < 1/2` the shifted point is inside the inner cube, so the residual at `(t,x)` equals the residual of one translate at a shifted point, and `residual_translate` carries the equation across at the **same viscosity**. No averaging over copies, no boundary term, no rescaled time.
+
+### 3. The post-one extension is discarded before summing
+
+`of_compact_candidate` (`PeriodicPaperTheorem.lean:113`) is handed a whole-space candidate whose fields are defined for all time, with `speed_unbounded` at one. Summing an arbitrary extension past `t = 1` would be wrong — it would change the lattice sum on the interval that matters. The proof periodizes `beforeOne u` and `beforeOne p` instead, and caps the force with `SupportedInCube (1/4) f`. `periodize` is applied only after that truncation, and `beforeOne_supported` + `beforeOne_smooth` supply the hypotheses. The periodic force keeps its compact future time support (`compactFutureTimeSupport_periodize`).
+
+All sixteen fields of `PeriodicPaper.CandidateProperties` are then constructed, including the two periodicity fields for pressure (`Ico 0 1`) and the support clause `tsupport (u · t) ∩ fundamentalCube ⊆ K`. That support clause is the honest reading of "compactly supported" for a nonzero periodic lift, and the file header says so: the lift is not compactly supported on $\mathbb{R}^3$.
+
+### 4. The exclusion, and what it does not assume
+
+`PeriodicViscosity.excludes_global_solution` (`:18`) excludes every global smooth periodic competitor for the same viscosity, force and zero datum. Its competitor class is `PeriodicPaper.GlobalSmoothSolution`, which has **no energy field** — so (D)'s excluded class is strictly weaker than (C)'s, as E70 said. The argument routes through `MaximalLifespan.unbounded_excludes_continuous_extension`: periodic uniqueness on each slab `[0,t]` identifies the competitor with the candidate before time one, and `periodic_bound_on_slab` bounds a continuous periodic field on a closed slab, contradicting unbounded speed.
+
+`MaximalLifespan` also proves the quantitative statement the Euler development states only in a Sobolev class: `candidate_admissible_lifespans` gives `admissibleLifespans f 0 = Ioc 0 1`, and `candidate_greatest_lifespan` makes one the greatest admissible lifespan. Its `ClassicalSolution` structure is `ContDiffOn ℝ ∞` on `Ico 0 T × univ` in **both** velocity and pressure — joint smoothness, the paper's class. So the periodic side states maximality in the class the Euler side leaves open (E82 §4). That is evidence the Euler gap is a choice of statement, not a limit of the framework.
+
+### 5. What this entry does not do
+
+It does not read the proof of `PeriodicUniqueness.classical_uniqueness_on_Icc`, which is the load-bearing lemma for both `MaximalLifespan` and `PeriodicViscosity`; it reads its interface and its call sites only. It does not read `exists_compression_scale`'s construction beyond its statement and use, nor `ParabolicScaling.compressedCandidate`'s body. The periodization half is now read; the uniqueness proof is the remaining sampled piece, and this entry does not claim it.
+
+*Evidence: `PeriodicLocalization.lean:62`, `:136`, `:155`, `:176`, `:192`, `:252`; `PeriodizePDE.lean:32`, `:117`, `:133`; `PeriodicPaperTheorem.lean:113`, `:160`; `PeriodicPaperSupport.lean:58`, `:79`; `PeriodicPaperScalingSupport.lean:82`; `PeriodicViscosity.lean:18`; `MaximalLifespan.lean` (`candidate_admissible_lifespans`, `candidate_greatest_lifespan`, `periodic_bound_on_slab`); `f9e8bc5`.*
