@@ -19,7 +19,7 @@ The audit's two findings:
 |---|---|
 | `MANUSCRIPT.tex` | The audit paper. LuaLaTeX or XeLaTeX. |
 | `MANUSCRIPT.pdf` | The typeset paper: 25 pages, LuaLaTeX, built by `typeset.yml` (E78). |
-| `CAVEMAN.pdf`, `LAYMAN.pdf` | The two standalone reader editions, typeset by the same workflow. |
+| `CAVEMAN.pdf`, `LAYMAN.pdf` | The two standalone reader editions: 22 and 16 pages, pandoc and XeLaTeX in the same workflow, 0 missing glyphs in the plain edition and 3 in the caveman one. |
 | `AUDIT_LOG.md` | The working log: entries E0–E89, every `path:line` citation behind the paper. |
 | `CROSSWALK.md` | The published paper against the Lean tree, section by section, with each mapping labelled `cited`, `object` or `family` (E89). |
 | `PHASE2-FINDINGS.md` | Second-pass findings: the anisotropic weights, the three "free doors", the packets. |
