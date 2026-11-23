@@ -3917,6 +3917,7 @@ Same status for `actual_stage_endpoints` and `endpointInputs_of_run`: definition
 | `45127159922` | `e515e89` | success | 25 | 358,372 | **45** |
 | `45127609292` | `40fdaf9` | success | 25 | 376,181 | **0** |
 | `45145721571` | `c57d63f` | success | 25 | 377,204 | **0** |
+| `45152731830` | `e2db61b` | success | 25 | 378,006 | **0** |
 
 The first run is green by exit status and wrong by content. `lmmono9-regular` has no ∀ (U+2200), ∃, ℝ, ν or ∧, so every Lean listing quoting one rendered a blank: forty-five `Missing character` warnings, no LaTeX error, exit 0. That is why the log was read rather than the tick. The `literate` table already mapped ∀/∃/ℝ/∧ to math for `listings`, but `\ct{...}` is `\texttt`, which goes through the text font and never consults those mappings; ν was absent from the table as well.
 
@@ -3930,7 +3931,7 @@ The first run is green by exit status and wrong by content. `lmmono9-regular` ha
 - Does not establish: that any line of the mathematics is correct. Typesetting is not checking.
 - Remaining typographic noise: 33 overfull hboxes in the first run, 23 in the fixed one, plus 8 underfull. Zero `LaTeX Warning` lines in both. Cosmetic; not chased further.
 
-The third run rebuilds after the E79 sync, which lengthened the abstract by six lines and the scope paragraph by seven. Same 25 pages, same zero missing characters, zero `LaTeX Warning` lines, 23 overfull and 8 underfull boxes — the typographic noise did not move either. The committed `MANUSCRIPT.pdf` is that run's artifact.
+The third run rebuilds after the E79 sync, which lengthened the abstract by six lines and the scope paragraph by seven. Same 25 pages, same zero missing characters, zero `LaTeX Warning` lines, 23 overfull and 8 underfull boxes — the typographic noise did not move either. A fourth run (`45152731830`, on `e2db61b`) rebuilds after the E80 sentences: 25 pages, 378,006 bytes, zero missing characters, zero `LaTeX Warning` lines, and the same 23 overfull and 8 underfull boxes again. The committed `MANUSCRIPT.pdf` is that run's artifact, byte-identical to it (sha256 `bde41449…`).
 
 `MANUSCRIPT.pdf` is committed beside the source, and `typeset.yml` reproduces it. The workflow is manual only: a red build of the paper must not block anything else.
 
@@ -4029,7 +4030,7 @@ On this runner the sandbox is one notch weaker than landrun's default: pathname 
 | `euler_breakdown_R3` | `Euler.json` | `45127157219` | accepted, both kernels (E79) |
 | `exists_compact_smooth_euler_singularity` | `Euler.json` | `45127157219` | accepted, both kernels (E79) |
 
-All four now have an executed external check. What that buys is narrower than it sounds: it certifies that each theorem's proof term inhabits the statement the challenge poses, under the permitted axioms, in two kernels. It says nothing about whether the statements are the ones a mathematician would write — E76 does that for (C) and (D) by reading, and nothing does it for the Euler pair — and nothing about whether the proofs are right beyond the kernel's opinion.
+All four now have an executed external check. What that buys is narrower than it sounds: it certifies that each theorem's proof term inhabits the statement the challenge poses, under the permitted axioms, in two kernels. It says nothing about whether the statements are the ones a mathematician would write — E76 does that for (C) and (D) against Fefferman's text, E80 does it for the Euler pair against the repository's metadata and against proved bridges, and neither Euler statement has been compared to the Euler paper itself — and nothing about whether the proofs are right beyond the kernel's opinion.
 
 *Evidence: run `45127157219`, artifacts `euler-verdict-summary`, `euler-builtin-kernel`, `euler-nanoda-kernel`, `euler-challenge-build`, `euler-toolchain-logs` (1,843-line build log, all five toolchain builds, `lake-manifest.json`); commit `e515e89`; upstream `f9e8bc5`.*
 
