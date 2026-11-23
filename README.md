@@ -21,6 +21,7 @@ The audit's two findings:
 | `MANUSCRIPT.pdf` | The typeset paper: 25 pages, LuaLaTeX, built by `typeset.yml` (E78). |
 | `AUDIT_LOG.md` | The working log: entries E0–E88, every `path:line` citation behind the paper. |
 | `PHASE2-FINDINGS.md` | Second-pass findings: the anisotropic weights, the three "free doors", the packets. |
+| `LEADS.md` | Working reading notes, not promoted to log entries: statement fidelity end to end, the estimate chain down to its floor, the pressure-flux bodies, and the unused alternate branch (E77). |
 | `CAVEMAN.md` | The whole thing rewritten in caveman. Every finding, plus §13–15: the equation symbol by symbol, why 3D is the hard case, and the four Clay doors A–D. |
 | `CAVEMAN_1TO1.md` | The paper section for section in caveman: 8 sections, every subsection, appendix and bibliography. Nothing skipped. |
 | `LAYMAN.md` | The paper in plain English: same structure, no symbol left unexplained. For a reader who is not a mathematician. |
@@ -57,6 +58,8 @@ cd NavierStokesAndEuler && git checkout f9e8bc5
 ```
 
 All citations are `path:line` pairs into that commit.
+
+Two helper scripts encode the workaround for hosts where the pinned toolchain will not run: `fetch_pkgs.sh` restores the pinned Lake dependencies with plain git when Lake's own fetcher aborts, and `vm_build.sh` drives dependency restore, `lake exe cache get`, the build and the axiom probe inside a Linux guest. Both locate the repository relative to their own path.
 
 `.github/workflows/kernel-check.yml` does the build in CI (Actions → kernel-check → Run workflow): clone at `f9e8bc5`, `lake exe cache get`, `lake build NavierStokes`, then the axiom probe. It exists because this host cannot run the toolchain, and it does not run automatically. Run `44987195620` (2026-11-22) is the one the claims above rest on: green, 9,580 jobs, five footprints printed, artifact `kernel-check-logs`. The full `build.log`, not a tail, is uploaded with it.
 
