@@ -4257,7 +4257,7 @@ All sixteen fields of `PeriodicPaper.CandidateProperties` are then constructed, 
 
 ### 5. What this entry does not do
 
-It does not read the proof of `PeriodicUniqueness.classical_uniqueness_on_Icc`, which is the load-bearing lemma for both `MaximalLifespan` and `PeriodicViscosity`; it reads its interface and its call sites only. It does not read `exists_compression_scale`'s construction beyond its statement and use, nor `ParabolicScaling.compressedCandidate`'s body. The periodization half is now read; the uniqueness proof is the remaining sampled piece, and this entry does not claim it.
+It does not read the proof of `PeriodicUniqueness.classical_uniqueness_on_Icc`, which is the load-bearing lemma for both `MaximalLifespan` and `PeriodicViscosity`; it reads its interface and its call sites only. **E85 closes this**: the proof is read there, and it is a genuine energy argument rather than an assumption. It does not read `exists_compression_scale`'s construction beyond its statement and use, nor `ParabolicScaling.compressedCandidate`'s body. The periodization half is now read; the uniqueness proof is the remaining sampled piece, and this entry does not claim it.
 
 *Evidence: `PeriodicLocalization.lean:62`, `:136`, `:155`, `:176`, `:192`, `:252`; `PeriodizePDE.lean:32`, `:117`, `:133`; `PeriodicPaperTheorem.lean:113`, `:160`; `PeriodicPaperSupport.lean:58`, `:79`; `PeriodicPaperScalingSupport.lean:82`; `PeriodicViscosity.lean:18`; `MaximalLifespan.lean` (`candidate_admissible_lifespans`, `candidate_greatest_lifespan`, `periodic_bound_on_slab`); `f9e8bc5`.*
 
@@ -4298,3 +4298,43 @@ The paper's gradient clause is proved in the development, and its proof uses onl
 This is not a Comparator check. There is no export, no `landrun` replay and no nanoda second kernel on `maximalGradientNorm_limsup` — the library build checks the term, the probe prints its axioms, and the statement-level gap in E81 stays exactly as wide: the *accepted* statement is the weaker one. The run's comparator phase re-executes E79's target set and is not new evidence.
 
 *Evidence: run `45158640147`, artifact `euler-toolchain-logs`, file `euler-paper-clause-probe.log` (350 bytes); `euler-build.log` tail; workflow step "Probe the paper-clause theorems" at the commit above.*
+
+---
+
+## E85 — The periodic uniqueness proof, read (2026-11-23)
+
+*Reading entry. E83 read the periodization half of alternative (D) and left one thing explicitly unread: the body of `PeriodicUniqueness.classical_uniqueness_on_Icc`, the load-bearing lemma for both `MaximalLifespan` and `PeriodicViscosity`. This entry reads it.*
+
+### 1. The statement
+
+`PeriodicUniqueness.classical_uniqueness_on_Icc` (`PeriodicUniqueness.lean:643`): two fields smooth on the closed slab `Icc a b × univ`, unit-periodic there, divergence-free at interior times, solving the same forced equation with the same force and the same initial datum at `t = a`, agree everywhere on `[a,b]`. Viscosity one. `PeriodicViscosityUniqueness.classical_uniqueness_on_Icc` (`:65`) extends it to every `ν > 0` by the rescaling `(t,x) ↦ (ν⁻¹ t, x)` with amplitudes `ν⁻¹` and `ν⁻²`, proved in `normalize_residual` — no second PDE argument.
+
+### 2. The proof is a genuine energy argument
+
+The chain, in the order the file builds it:
+
+| step | lemma | what it does |
+|---|---|---|
+| subtract the equations | `difference_equation` | gives `∂ₜw = Δw − Du(w) − Dw(v) − ∇(p−q)` with the favourable transport split |
+| define the functionals | `energy`, `energyRate`, `dissipation`, `coupling` | squared `L²` distance on the unit cube, its rate, the Dirichlet sum, the transport pairing |
+| transport vanishes | `cubeIntegral_transport_energy_zero` | from scalar integration by parts and `div v = 0`; proved via `cubeIntegral_fderiv_apply_zero` |
+| pressure vanishes | `cubeIntegral_pressure_energy_zero` | `inner_pressureGradient` plus `div w = 0` |
+| viscosity is negative | `cubeIntegral_laplacian_energy` | equals `−Σᵢ∫‖∂ᵢw‖²`, by parts per coordinate |
+| exact balance | `energy_balance` | `E' = −2 dissipation − 2 coupling` |
+| nonlinear bound | `nonlinear_energy_bound`, `neg_coupling_le_energy` | `−⟪w,Aw⟫ ≤ B‖w‖²` |
+| differential inequality | `energy_rate_le` | `E' ≤ 2B·E` |
+| `B` exists | `exists_gradient_bound` | compactness of `Icc a b × cube` applied to the continuous `fderivWithin` — a **conclusion**, not a hypothesis |
+| Gronwall at zero | `gronwall_zero` | integrating factor plus MVT; `E(a)=0`, `E≥0` ⇒ `E≡0` |
+| zero energy ⇒ equality | `eq_of_energy_zero` | continuity plus a cube representative, not mere a.e. equality |
+
+Two points deserve emphasis. First, no energy inequality is an input: `energy_balance` is an identity derived from the equations, and `energy_rate_le` is obtained from it by dropping the nonnegative dissipation. Second, the gradient bound is not assumed either — `exists_gradient_bound` extracts it from compactness of the spacetime slab, which is why the theorem needs no small-data or short-time hypothesis.
+
+### 3. What this closes
+
+E83's caveat is discharged at this layer. The uniqueness lemma is not a black box and not an assumption: its hypotheses are the same smoothness, periodicity, divergence-freedom and equation fields that `MaximalLifespan` and `PeriodicViscosity` already have, and each is consumed where it is needed. The pressure is never normalized — it cancels because the difference field is divergence-free — so the gauge freedom E70 noted is genuinely absent from the argument.
+
+### 4. What remains below it
+
+The proof rests on `PeriodicIntegration`: `cubeIntegral_mul_partial`, `cubeIntegral_partial_eq_zero`, `hasDerivAt_cubeIntegral_of_contDiffOn`. These are used as black boxes here and were not read line by line; they are the integration-by-parts and differentiation-under-the-integral foundation for the whole periodic development. That is now the next unread layer, and it is a smaller one than the uniqueness theorem was.
+
+*Evidence: `PeriodicUniqueness.lean:643` and the lemmas cited above (`:24`–`:641`); `PeriodicViscosityUniqueness.lean:65`, `normalize_residual`; call sites `MaximalLifespan.lean:93`, `PeriodicViscosity.lean:56`; `f9e8bc5`.*

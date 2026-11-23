@@ -14,3 +14,4 @@ NavierStokesAndEuler/
 *.out
 *.toc
 *.synctex.gz
+.tmp-public/
