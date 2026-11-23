@@ -1,9 +1,9 @@
-# NEXT — the queue for the remaining 54 numbered results
+# NEXT — the queue for the remaining 53 numbered results
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which fourteen are placed, five are partial, and **fifty-four are unplaced**.
-The ledger in `CROSSWALK.md` carries **74** as its denominator and therefore 55 unplaced. The
+extracted text, of which fourteen are placed, five are partial, and **fifty-three are unplaced**.
+The ledger in `CROSSWALK.md` carries **74** as its denominator and therefore 54 unplaced. The
 two counts differ by one, and the difference is recorded below rather than smoothed away.
 
 This file is a work order, not a finding. Nothing here has been read yet, and no row below
@@ -13,8 +13,8 @@ carries any audit conclusion.
 
 | Source | Total | Placed | Partial | Unplaced |
 |---|---|---|---|---|
-| `CROSSWALK.md` ledger | 74 | 14 | 5 | 55 |
-| `ns.txt` extraction here | 73 | 14 | 5 | 54 |
+| `CROSSWALK.md` ledger | 74 | 14 | 6 | 54 |
+| `ns.txt` extraction here | 73 | 14 | 6 | 53 |
 
 The extraction finds no result named 6.3, 6.4, 6.5, 9.4 or B.9, and no statement whose name is
 indented or split across lines, so the missing entry is not simply a parsing failure of the
@@ -46,7 +46,6 @@ supporting machinery.
 
 | Result | Page | Statement | Candidate modules |
 |---|---|---|---|
-| Lemma 9.7 | 111 | `ns.txt:5669` | `ActualCycleResidualBounds`, `CorrectionState`, `LocalResidualFlatness`, `JointResidualLimits`, `CandidateFromLimits` |
 | Lemma 9.8 | 113 | `ns.txt:5734` | `ActualCycleResidualBounds`, `CorrectionState`, `LocalResidualFlatness`, `JointResidualLimits`, `CandidateFromLimits` |
 | Lemma 10.2 | 118 | `ns.txt:5997` | `R3CompactCandidate`, `R3/PositiveTimeForce`, `R3/CandidateBreakdown`, `R3/WholeSpaceComparisonClosure`, `Periodic*` |
 | Lemma 10.3 | 120 | `ns.txt:6071` | `R3CompactCandidate`, `R3/PositiveTimeForce`, `R3/CandidateBreakdown`, `R3/WholeSpaceComparisonClosure`, `Periodic*` |
@@ -103,18 +102,21 @@ supporting machinery.
 
 ## The next three, concretely
 
-1. **Lemma 9.7** (p. 111) — `q_big` exists independently of the correction stage and the
-   derivative order. Read `.setup/paper/ns.txt` from its statement line, then
-   `LocalScheduleWitness.lean` and `ChartScales`. This is the threshold that every later
-   estimate is allowed to depend on, so it is the natural first read.
-2. **Lemma 9.8** (p. 113) — a bound for every Cartesian space–time derivative order `m`.
-   Candidate surface: `LocalResidualFlatness.lean` (`boundaryLimits_locallyUniform`) and
-   `JointResidualLimits.lean`. E66 traced `hlim` through these modules but did not check
-   their statements against this lemma.
-3. **Lemma 10.2** (p. 118) — uniform convergence of `d^a_x d^j_t f`. This is the statement
-   behind `R3/PositiveTimeForce.lean`'s compact force and the `R3CompactCandidate` assembly.
-   It is short, and it would close the force-side gap that E65 left at the level of the
-   cutoff rather than the convergence.
+*Already worked from this queue: **Lemma 9.7** is partial as of E133, not unplaced. Its threshold
+is a declaration with no stage or order argument; its derivative-count clause has no Lean
+counterpart and is recorded as unstatable rather than missing. That entry also corrects this
+file's pointer — the definition is in `ActualCandidateConstruction`, not
+`LocalScheduleWitness`, which only consumes a supplied `qbig`.*
+
+1. **Lemma 9.8** (p. 113) — a bound for every Cartesian space–time derivative order `m`, with
+   the loss `K_m` independent of the stage. Candidate surface:
+   `WholeDomainPhysicalStageTheorem` (`paperJetLoss` already has the shape E131 and E133 kept
+   meeting), `LocalResidualFlatness` and `JointResidualLimits`. E66 traced `hlim` through the
+   last two but never checked their statements against this lemma.
+2. **Lemma 10.2** (p. 118) — uniform convergence of `d^a_x d^j_t f`. This is the statement behind
+   `R3/PositiveTimeForce`'s compact force and the `R3CompactCandidate` assembly, and it is short.
+3. **Lemma 10.3** (p. 120) — the next row in §10, which is now read ahead of §8 because §10 is
+   the last step before Theorem 1.1 and the least read of the load-bearing sections.
 
 ## Standing limits
 

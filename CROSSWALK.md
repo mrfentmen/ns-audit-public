@@ -285,7 +285,7 @@ hypothesis: `FiniteHeadClass.waveClass_all_exponents` (`:119`) puts a finitely b
 class in *every* exponent with the identical weight. Statement-level only; the per-label,
 per-harmonic form is not exposed as its own declaration.
 
-### Unplaced (59)
+### Unplaced (the rest)
 
 Fifty-nine, and slice three moved five of them (below). They are sections 4–10 and the
 appendices at result level. A grep for `2 * h * (N + 1)` returns nothing under that
@@ -317,14 +317,21 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 | Status | Count | Which |
 |---|---|---|
 | placed, statement read | 14 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130) |
-| partial — components exist, statement not matched | 5 | Lemma 9.2, Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.7 (E131), Lemma 8.6 (E132) |
+| partial — components exist, statement not matched | 6 | Lemma 9.2, Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.7 (E131), Lemma 8.6 (E132), Lemma 9.7 (E133) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 55 | the rest |
+| unplaced | 54 | the rest |
 | **total** | **74** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
 result; it leaves the numerator. That and the 74 are the corrections this slice makes to
 the previous two entries.
+
+E133 adds the §9.4 threshold row, and it is the first partial here whose unmatched clause is
+unmatched for a structural reason rather than a search failure. Lemma 9.7's first two clauses
+are declarations — `ActualCandidateConstruction.qbig` has neither a stage nor a
+derivative-order argument, and `GermEndpointInputs` carries one `qbig` across `∀ j` — while its
+third clause, the finite count of input derivatives per stage, describes the construction's
+syntax and so has no proposition in the object language to be true of.
 
 ## Limits of this file
 
