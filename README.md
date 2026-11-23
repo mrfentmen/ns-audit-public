@@ -18,7 +18,7 @@ The audit's two findings:
 | File | What it is |
 |---|---|
 | `MANUSCRIPT.tex` | The audit paper. LuaLaTeX or XeLaTeX. |
-| `MANUSCRIPT.pdf` | The typeset paper: 25 pages, LuaLaTeX, built by `typeset.yml` (E78). |
+| `MANUSCRIPT.pdf` | The typeset paper: 26 pages, LuaLaTeX, built by `typeset.yml` (E78). |
 | `CAVEMAN.pdf`, `LAYMAN.pdf` | The two standalone reader editions: 22 and 16 pages, pandoc and XeLaTeX in the same workflow, 0 missing glyphs in either edition. |
 | `AUDIT_LOG.md` | The working log: entries E0–E89, every `path:line` citation behind the paper. |
 | `CROSSWALK.md` | The published paper against the Lean tree, section by section, with each mapping labelled `cited`, `object` or `family` (E89). |
