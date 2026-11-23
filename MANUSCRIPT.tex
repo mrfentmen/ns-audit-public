@@ -137,14 +137,16 @@ the artifact verifies (zero axioms, no \ct{native\_decide}, no \ct{unsafe}, no
 comparison theorem whose hypotheses are nearly empty) and what it does not (any
 numerical size, any dimension, any physical realizability). The conclusion is a
 verdict about statement design and verification scope, not about soundness: the
-logical integrity of the artifact is robust, and the theorem it states holds
-\emph{if} the kernel accepts it. Kernel acceptance of the whole-space library was
-subsequently reproduced locally (9,580 build jobs, exit~0, 817 modules) in a Linux
-virtual machine, after the pinned prerelease toolchain's \ct{lake} was found to
+logical integrity of the artifact is robust, and the theorem it states is machine-checked against the statement it encodes. Kernel acceptance of the whole-space library was
+reproduced on Linux (9,580 build jobs, exit~0, 817 modules; first in a virtual
+machine, then from a pristine clone in continuous integration), after the pinned prerelease toolchain's \ct{lake} was found to
 abort on current macOS; \ct{\#print axioms} on the four R3 theorems reports only
 \ct{propext}, \ct{Classical.choice} and \ct{Quot.sound}, with no \ct{sorryAx}.
-That build verifies terms, not statements, and no step of the upstream proof is
-shown to be false. The stated whole-space result matches the
+A build verifies terms rather than statements, so the statement was checked
+separately: Comparator exports the challenge and the solution against the same
+target list---both the whole-space and the periodic theorem among its
+targets---replays the solution in a fresh kernel, and passes (E75). No step of
+the upstream proof is shown to be false. The stated whole-space result matches the
 data and the conclusion of alternative (C) of the Clay statement---zero is an
 admissible datum, and a smooth compactly supported force is stronger than
 Clay's rapid-decay requirement---and it is silent on the unforced alternatives
@@ -152,7 +154,7 @@ Clay's rapid-decay requirement---and it is silent on the unforced alternatives
 (audit log, E70), with its comparator bridge in both directions; its axiom
 footprint, which E70 could only infer, was printed on a clean clone in continuous
 integration and is the same three axioms, so (C) and (D) now rest on the same
-kind of evidence (E73). The external comparator check has since been executed on a clean clone and passes: the challenge and the solution export to the same statement, the solution replays in a fresh kernel, and Comparator reports \ct{Your solution is okay!} (E75). The Euler
+kind of evidence (E73). The Euler
 developments in the same repository are outside the scope of this audit.
 \end{abstract}
 

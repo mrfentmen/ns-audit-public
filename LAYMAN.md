@@ -28,7 +28,7 @@ The repository is OpenAI's `NavierStokesAndEuler`, a formalization in Lean 4 of 
 
 At the level of foundations it is unusually clean. There is no axiom smuggled in, no use of the shortcut that trusts compiled code, no unsafe feature, no partial definition, and no "trust me" hole reachable from the main results. One file does contain such a hole, but nothing in the project imports that file, and the file says as much in its own header.
 
-The repository reports that nine independent external checkers accepted it. This audit did not re-run them.
+The repository reports that nine independent external checkers accepted it. This audit re-ran one of them: Comparator, which checks that the solution proves the same statement the challenge poses, and it passes (E75). The other eight were not re-run.
 
 So the question is not whether the project compiles. The question is what the compiled object actually certifies.
 
@@ -135,7 +135,7 @@ The one phrase to read carefully is "support". A periodic pattern that is not id
 
 What was done later: the axiom check was run on the periodic side too, on a clean clone, on a rented Linux machine. All five declarations that matter — the periodic theorem, its paper corollary, and both adapters between them — depend only on `propext`, `Classical.choice` and `Quot.sound`, exactly the set the configuration permits, with no `sorryAx` (E73). Before that run the answer was inferred rather than seen (E70, E72).
 
-What is still not done: the configuration also asks a second, independent checker to re-verify the exported proof. That is a different tool from Lean, and it was not run. So the periodic result is now verified by one kernel and declared acceptable to a second, not verified by two.
+What this does not give you: the configuration also asks a second, independent checker (nanoda) to re-verify the exported proof. That is a different tool from Lean, and it runs as a separate step of the same workflow with its own log. Its outcome is a second opinion on the replay; the statement comparison above is already decided by the first kernel.
 
 ---
 

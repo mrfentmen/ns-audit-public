@@ -479,7 +479,7 @@ Caveman respects a paper that lists its own weak spots.
 
 - **Findings not recompiled.** Every finding is from reading proof terms, binder order, and definitions.
 - **But the proof was.** On Linux: `lake build NavierStokes` finished 9,580 jobs, exit 0, 817 modules. The four whole-space theorems lean only on `propext`, `Classical.choice`, `Quot.sound`. On this Mac the build tool dies inside Apple's memory allocator, so the build ran in a Linux box. That checks **terms**, not **statements** — the findings above are still read, not machine-checked.
-- **Nine external checkers were reported by the repo, not re-run.** And even if they had been: external checking verifies **terms**, not **statements**. The statement-level objections (zero datum, force-as-leftover, similarity in ν) are exactly what kernel acceptance **cannot** test.
+- **Nine external checkers were reported by the repo. One of them was run.** Comparator takes the question the repo poses (the `sorry`-holed challenge file) and the answer, exports both, checks they are the same question, and replays the answer in a fresh kernel. It said `Your solution is okay!` (E75). The other eight were still not re-run. And even a passing check verifies **terms against that question**, not that the question is Clay's own: the statement-level objections (zero datum, force-as-leftover, similarity in ν) are exactly what no checker can test.
 - **Two identities in §5 are the auditors' own** — the measure scaling and the critical weight `b*`. Not in the repo. Labelled as derived.
 - **One early log entry (E36) is provisional.** Call site and estimates checked; exact binder not opened. Later entries walked the same estimate chain from the other end (E67–E71) and found no assumed field, but they did not reopen that binder.
 - **Since this file was first written, the audit got further.** The smooth-force question is answered (E65–E66), the estimate chain is walked to its floor (E67–E71), the ring-world is audited (E70), and the print that confirms its harmless stones was found in the source (E72) and then actually run on a rented machine (E73). Nothing is left unread, and nothing is left unrun except the second rock (nanoda), which is a different tool.
@@ -860,7 +860,7 @@ Caveman: **A** — no hand, all goo safe. **B** — same, ring-world. **C** — 
 
 ---
 
-## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E73)
+## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E75)
 
 Caveman wrote this file first. Then the audit kept digging. Four things got better. Caveman writes them down so the two papers do not disagree.
 
@@ -886,7 +886,11 @@ First paper said: the periodic axioms were never printed. Then the print was fou
 
 Then it ran. Clean copy of the tree, nothing left over, 9,580 jobs, green. All five stamps came back the same — `propext`, `Classical.choice`, `Quot.sound` — and no `sorryAx` anywhere (E73). The three stones are the ones the config allows, so nothing had to be waved through. Caveman's receipt is in the artifact called `kernel-check-logs`.
 
-One thing still not done: the config also asks a **second** rock, nanoda, to check the same proof with a different tool. That rock did not get thrown. So: one rock checked it, one rock was asked to.
+Then the **official** question-checker ran, and it is a different animal from `#print axioms`. Comparator takes the question the repo poses (`ComparatorChallenges/NavierStokes.lean`, the one with `sorry` holes) and the answer (`ComparatorSolution`), exports both against the same list of names, checks they describe the same statement, and replays the answer in a clean kernel. It said `Lean default kernel accepts the solution` and `Your solution is okay!` (E75). Both theorems are in that list, so one pass covers the whole-space and the torus question at once.
+
+Why it took so long to hear that: caveman had wrapped the runner in a pipe nobody drained. The tool was shouting into a blocked cave for 210 minutes, then 355. Nothing was slow. Same work, once the pipe was fixed: **7 minutes** (E74, E75).
+
+One thing still open: the config also asks a **second** rock, nanoda, to check the same proof with a different tool. It runs as its own step of the same workflow, with its own log. One rock has checked the question; the second is a second opinion on the replay.
 
 ---
 

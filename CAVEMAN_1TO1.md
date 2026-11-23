@@ -79,7 +79,7 @@ Big cave. Lean 4. **641,332 lines**, **2,659 files**. People say "28.6 million l
 
 The cave is clean at the bottom: no `axiom`, no `native_decide`, no `unsafe`, no `partial def`, no `@[implemented_by]`, and no `sorry` you can reach from the proof roots. One module does carry a `sorry`, `ComparatorChallenges/NavierStokes.lean`, and it is unreachable: nothing under `NavierStokes/`, `Euler/`, the root `NavierStokes.lean` or `Euler.lean` imports it, and the module says so in its own header.
 
-The repo says nine outside checkers accepted it. We did not run them. Say that out loud.
+The repo says nine outside checkers accepted it. We ran one of them: Comparator, which checks that the answer proves the **same question** the challenge asks, and it says `Your solution is okay!` (E75). The other eight we did not run. Say that out loud.
 
 So the question is not "does it compile". The question is: **what does the compiled thing actually certify?**
 
@@ -213,7 +213,9 @@ One word to watch: **support.** A periodic pattern that is not all zero cannot s
 
 What caveman did **not** do at first: print axioms for the torus theorems. Only the whole-space four got that. The print turned out to be **in the source already** (E72), and then it got run on a rented Linux box, on a clean copy, start to finish, no leftovers: build green, 9,580 jobs, and all **five** stamps came back with the same three harmless stones — `propext`, `Classical.choice`, `Quot.sound` — and **no** `sorryAx` (E73). That is now a receipt, not a claim.
 
-What caveman still did **not** do: let the second, independent rock (nanoda) check the same proof. The JSON asks for it. It is a different tool from Lean and it did not run. So: one kernel checked it, a second was told to, and has not.
+What caveman checked next: the **official** question-checker, Comparator. It exports the challenge and the answer against the same list of names, confirms both describe the same constants, and replays the answer in a fresh kernel. Green: `Lean default kernel accepts the solution`, `Your solution is okay!` (E75). Both theorems sit in that target list, so one pass covers whole space and torus together.
+
+What is still open: the config also asks the second, independent rock (nanoda) to check the same proof. It is a different tool from Lean, and it runs as its own step of the same workflow with its own log. One kernel has now checked the question; the second is a second opinion on the replay, not a second statement check.
 
 ---
 
