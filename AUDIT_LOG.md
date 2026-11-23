@@ -4434,12 +4434,54 @@ Both are in `ComparatorChallenges/Euler.lean`, the specification module, not in 
 
 What this does *not* do: it does not check that the challenge statements match the paper's prose. That was E81 and E82, and it remains a reading finding rather than a machine result.
 
-### 4. The second kernel has not returned
+### 4. The second kernel returned
 
-Step 18, `Comparator (nanoda as second kernel)`, has been in progress since 10:48Z on the same run. Two kernels would be stronger than one; at present the evidence is one kernel, one export, one commit.
+Step 18, `Comparator (nanoda as second kernel)`, was still in progress when this entry was written. It has since finished and accepted the same export: `nanoda kernel accepts the solution`. The phase log, timings, and the limits of that verdict are in E88. Two kernels now, one export, one commit.
 
 ### 5. What this changes
 
-E79 recorded builtin-kernel acceptance for the same target set. This run repeats it and adds the paper-clause prints (E84). Together they mean the Euler clause set is accepted twice by the same tool at the same commit, and the clauses the paper asserts carry a clean footprint. It does not independently confirm the mathematics — a kernel check never does — and it does not close the nanoda gap.
+E79 recorded builtin-kernel acceptance for the same target set. This run repeats it and adds the paper-clause prints (E84). Together they mean the Euler clause set is accepted twice by the same tool at the same commit, and the clauses the paper asserts carry a clean footprint. It does not independently confirm the mathematics — a kernel check never does — and the nanoda gap it left is closed in E88.
 
-*Evidence: run `45158640147`; artifacts `euler-builtin-kernel` (`comparator-euler-builtin.log`, 2,410 bytes), `euler-challenge-build` (239 bytes), `euler-toolchain-logs`; steps 9 and 14--17 succeeded, step 18 in progress.*
+*Evidence: run `45158640147`; artifacts `euler-builtin-kernel` (`comparator-euler-builtin.log`, 2,410 bytes), `euler-challenge-build` (239 bytes), `euler-toolchain-logs`; steps 9 and 14--18 succeeded; step 18's verdict is E88.*
+
+---
+
+## E88 — The second kernel accepts the Euler export (2026-11-23)
+
+*Evidence entry. Closes the open item in E87 §4: step 18 of run `45158640147`, the nanoda phase, returned after E87 was written.*
+
+### 1. The verdict
+
+`comparator-euler-nanoda.log` (artifact `euler-nanoda-kernel`, 2,574 bytes, 22 lines):
+
+```
+Building Euler.Solution
+ℹ [10591/10591] Replayed Euler.Solution
+info: Euler/Solution.lean:73:0: 'Euler.euler_breakdown_R3' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Euler/Solution.lean:75:0: 'Euler.exists_compact_smooth_euler_singularity' depends on axioms: [propext, Classical.choice, Quot.sound]
+Build completed successfully (10591 jobs).
+Exporting #[..., Euler.euler_breakdown_R3, Euler.exists_compact_smooth_euler_singularity, propext, Quot.sound, Classical.choice, ...] from Euler.Solution
+Running nanoda kernel on solution
+nanoda kernel accepts the solution
+Running Lean default kernel on solution.
+Lean default kernel accepts the solution
+Your solution is okay!
+```
+
+Both kernels ran on the *same* export, inside one phase: nanoda first, then the Lean default kernel. The phase took 917 s end to end, of which nanoda took about five and a half minutes (11:00:02Z → 11:05:29Z) and the default kernel about eight (11:05:29Z → 11:13:36Z). The whole job — two builds, two exports, two kernels — finished in 30 minutes with conclusion `success`.
+
+### 2. What nanoda is, and why it is a second opinion
+
+nanoda is an independent implementation of the checking loop, written in Rust and built here from `ammkrn/nanoda_lib` at commit `0da9f98feadd3a0a2ef4b3dbcf52a298a6fef929` (`cargo build --release`; binary 1,378,240 bytes, built in 24 s). It shares no code with Lean's kernel. When it reports that the export checks, the proof term has been re-parsed from `lean4export` format and re-derived by a different program — this is not Lean re-reading its own output.
+
+That is what the repository means when it reports acceptance by more than one external checker, and it is a genuine upgrade over one kernel's word. Its limits are the limits of any kernel check, and they are the limits already named in E87 §3 and E81–E82: it verifies that the term inhabits the declared type, not that the declared type is the paper's sentence. The two soft Euler clauses are untouched by it, because a soft clause is a statement-level difference and both kernels see the same statement. And nanoda's own source is trusted as third-party code at a pinned commit, in the same way Mathlib is trusted in E86.
+
+### 3. Why the earlier attempt produced nothing
+
+Not the mathematics. The sandbox wrapper, as E74 and E75 recorded: a `systemd-run --pty` wrapper left the child blocked on an undrained PTY buffer. With the wrapper corrected, the same phase that previously yielded no verdict completes in 15 minutes of wall clock, and the two-kernel evidence arrives in the same run that prints the paper-clause axiom footprints (E84).
+
+### 4. Standing of the Euler result now
+
+At `f9e8bc5`, on a clean clone, in a sandbox, the two Euler statements designated by `formalization.yaml:72--94` are accepted by two independent kernels, with axiom footprint `propext`, `Classical.choice`, `Quot.sound` and no `sorryAx`. The statement-level caveats of E81 and E82 stand exactly as recorded: the checked `C¹` limsup is the sum of the velocity and gradient suprema where the paper asserts the gradient alone, and the lifespan class is not proved to contain the paper's jointly smooth solution. Not one estimate inside the Euler development has been read.
+
+*Evidence: run `45158640147`, job `137637992292`, step 18; artifact `euler-nanoda-kernel` (`comparator-euler-nanoda.log`, 2,574 bytes); nanoda commit `0da9f98f`; timestamps 10:47:45Z (fetch), 10:48:09Z (binary), 10:58:20Z–11:13:37Z (phase, 917 s), 11:05:29Z (nanoda verdict), 11:13:40Z (job end).*

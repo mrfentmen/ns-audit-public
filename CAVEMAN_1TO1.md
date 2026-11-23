@@ -737,7 +737,7 @@ So nobody misquotes the cave. This paper does **not** claim, and its evidence do
 ## WHERE TO LOOK (the paper bibliography, in caveman)
 
 - **The repo itself**: OpenAI, `NavierStokesAndEuler`, commit `f9e8bc5`.
-- **This audit**: A. El Sayad and John, the audit log, entries E0–E87.
+- **This audit**: A. El Sayad and John, the audit log, entries E0–E88.
 - **Lean 4**: de Moura and Ullrich, CADE-28, 2021.
 - **Mathlib**: the Mathlib community, CPP 2020.
 - **Leray 1934**: the original weak-solution construction for viscous flow in all of space.
