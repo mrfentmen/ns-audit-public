@@ -5718,3 +5718,257 @@ The third is the cheapest to rule out and the most damaging if present. The curr
 The kernel accepts the artifact, two external kernels accept the two challenges, and thirteen of the paper's seventy-four numbered results have a declaration whose statement is the paper's; none of that is a proof that the paper's inequalities are valid, and the audit's finding about constants is a statement about what the kernel was asked to check, not about whether the mathematics is wrong.
 
 *Evidence: this log, E65–E119; `README.md`; `CROSSWALK.md`; `formalization.yaml`.*
+
+---
+
+## E120 — Every viscosity is one construction plus an exact dilation (2026-11-23)
+
+*Reading entry. Theorem 1.1 quantifies over every `ν > 0`. The development proves it at `ν = 1` and transports it by a spatial rescaling. The rescaling is exact, preserves the singular time, and imposes nothing new on the competitor.*
+
+### 1. The dilation
+
+```
+def rescale (a b : ℝ) (g : SpaceTime → V) : SpaceTime → V :=
+  fun z => a • g (z.1, b • z.2)
+```
+
+Only the spatial variable moves; the time variable is untouched. So the singular time is still `1`, the initial time is still `0`, and a force supported in positive time stays supported in positive time. The two parameters are the amplitude `a` and the inverse length `b`.
+
+### 2. The residual identity
+
+`rescale_residual μ a ha` is the compatibility statement:
+
+```
+navierStokesResidual (a^2 * μ) (rescale a a⁻¹ u) (rescale (a^2) a⁻¹ p) t x
+  = a • navierStokesResidual μ u p t (a⁻¹ • x)
+```
+
+Read the exponents off the left side: velocity amplitude `a`, length scale `a⁻¹`, pressure amplitude `a²`, viscosity `a²μ`. The proof is four chain rules, one per term — `rescale_temporalDerivative` (no spatial factor), `rescale_advection` (`a²b`), `rescale_laplacian` (`ab²`), `rescale_gradient` (`ab`) — followed by `h1 : a² · a⁻¹ = a` and `h2 : (a²μ)(a · a⁻²) = aμ`. Those two arithmetic identities are the whole content of the scaling: they are what makes all four terms carry the same factor `a`.
+
+### 3. What is preserved
+
+`rescale_candidate` rebuilds every field of `CandidateProperties`: smoothness by `rescale_smooth_on`, compact support by `h.support_compact.image (continuous_id.const_smul a)`, both support inclusions by `tsupport_spatialScale_subset`, the zero initial datum by `smul_zero`, divergence-freedom by `rescale_divergence` (`ab · div`), the equation by `rescale_residual`, the energy bound by `h.energy_bounded.spatial_smul a a⁻¹`, and the blow-up by `rescale_speed_unbounded`, which divides the threshold: `M` at the new viscosity is `M/a` at the old one.
+
+The force's support uses `h.force_support.spatialScale a a⁻¹`. Note that the *pressure* support is scaled with amplitude `a²` and length `a⁻¹`, not `a`, which is consistent with the residual identity but easy to get wrong if one assumes every field scales the same way.
+
+### 4. The competitor transports too
+
+`rescale_global_solution` is the converse direction for an arbitrary global finite-energy competitor, at any `a ≠ 0`:
+
+```
+GlobalFiniteEnergySolution μ f → GlobalFiniteEnergySolution (a²μ) (rescale a a⁻¹ f)
+```
+
+No support, periodicity or decay condition is added. That is what makes the exclusion at viscosity `ν` follow from the exclusion at `1`: given a competitor at `ν`, `normalized_global_solution` dilates it back to a competitor at `1`, where `theorem_1_1` already says none exists. The proof computes `(√ν)⁻¹² · ν = 1` by `field_simp` and then rewrites the force back to its original form.
+
+### 5. Why this is the right shape
+
+The theorem is not proved separately for each viscosity, and it is not proved by a Compactness or continuity argument in `ν`. It is one construction and one identity. That has a cost worth naming: the construction's constants (the `h`, the profile, the schedule) are all at `ν = 1`, and the dilation changes the *spatial scale* of the support by `√ν` while leaving every constant alone. So a reader who asks "what is the support radius at viscosity `ν`" gets `√ν` times the unit-viscosity radius, and a reader who asks "what is the force" gets `√ν · f(·, √ν ·)` — both exact, both cheap.
+
+*Evidence: `R3/ViscosityScaling.lean:20–33,35–100,102–130,133–181`; `R3/Theorem.lean:31–46`; `R3/SpatialEnergyScaling.lean` (`spatial_smul`); `R3/SpatialSupportScaling.lean` (`spatialScale`, `tsupport_spatialScale_subset`).*
+
+---
+
+## E121 — The `3/8` in the rest theorem is the force cutoff's plateau (2026-11-23)
+
+*Reading entry. E98 recorded that `theorem_1_1_with_initial_rest` proves `u = p = 0` on `|t| ≤ 3/8` and that the paper never prints `3/8`. The number is not arbitrary: it is the interval on which the force cutoff equals one.*
+
+### 1. The cutoff
+
+```
+def timeCutoff (t : ℝ) : ℝ :=
+  SmoothCutoffs.cutoff ((8 / 5 : ℝ) * (t - 11 / 16))
+
+def force (f : VelocityField) : VelocityField :=
+  fun z => timeCutoff z.1 • f z
+```
+
+`SmoothCutoffs.cutoff` is the standard flat bump: `1` on `|x| ≤ 1/2`, `0` on `|x| ≥ 1`, smooth in between. Substituting, `timeCutoff` is `1` when `|(8/5)(t − 11/16)| ≤ 1/2`, i.e. `|t − 11/16| ≤ 5/16`, i.e. `t ∈ [3/8, 1]`. That is `timeCutoff_eq_one`. It is `0` when `|(8/5)(t − 11/16)| ≥ 1`, i.e. `t ∉ [1/16, 21/16]`. That is `timeCutoff_eq_zero`.
+
+So the cutoff is a plateau on `[3/8, 1]`, with a ramp down on `[1/16, 3/8]` and a ramp up on `[1, 21/16]`; it vanishes outside `[1/16, 21/16]`.
+
+### 2. The same `3/8`
+
+`theorem_1_1_with_initial_rest` proves the candidate is at rest for `|t| ≤ 3/8`. The left end of the plateau is `3/8`. On that slab the force is `timeCutoff · f = 1 · f`, so the force equals the original field; at `t = 3/8` the two definitions agree exactly, and for `t < 3/8` the ramp is still `1` (because the plateau begins there, not because of a separate choice). The two constants are the same constant, and the rest interval is chosen to sit inside the force's plateau.
+
+That matters for the energy identity: if the force were cut off inside the rest slab, the candidate would solve a different equation from the one stated there, and `force_eq` (`force f = f` on `[3/8, 1]`) would fail. The theorem's `|t| ≤ 3/8` is therefore not an arbitrary convenience — it is the largest symmetric interval around `0` on which the cut force is the original force.
+
+### 3. The support
+
+`force_tsupport_subset` proves
+
+```
+tsupport (force f) ⊆ Icc (1/16) (21/16) ×ˢ K
+```
+
+given `K` compact and `f` vanishing off `K`. The proof is the two halves of the cutoff: outside `[1/16, 21/16]` the time factor is zero, and outside `K` the field is zero. `force_compactPositiveTimeSupport` then packages `IsCompact (Icc ×ˢ K)` and the strict positivity `0 < t` into `CompactPositiveTimeSupport`.
+
+This is the construction behind the force's support field in `CandidateProperties`. The audit's E65 traced smoothness; this entry traces *support*, and the two together are the whole of Proposition 10.1's force clause.
+
+### 4. What is exact and what is chosen
+
+Exact: the plateau endpoints, the support interval, the smoothness, and the identity `force = f` on the plateau — all proved. Chosen: the scale `8/5` and the centre `11/16`, which set the ramp widths. Those are formalization choices that make the ramp fit between `1/16` and `3/8`; the paper's construction has a cutoff too but does not print these numbers. The audit records the distinction because a reader comparing constants will find `3/8` in two places and `1/16`, `21/16` in a third, and should know which are forced by the theorem and which are the formalizer's convenience.
+
+*Evidence: `R3/PositiveTimeForce.lean:14–80`; `SmoothCutoffs.cutoff`, `cutoff_one_of_abs_le`, `cutoff_zero_of_one_le_abs`; `R3/Theorem.lean:31`; `R3/ProblemStatement.lean:92–109`; E65; E98.*
+
+---
+
+## E122 — The comparison closes on an explicit pressure envelope (2026-11-23)
+
+*Reading entry. `WholeSpaceComparisonClosure` is the last analytic step before Gronwall. It is stated with one explicit pressure-flux hypothesis, and the module says in its own header that the hypothesis is discharged elsewhere — which it is, in `PressureFlux`.*
+
+### 1. The envelope
+
+```
+def pressureEnvelope (R A B : ℝ) : ℝ :=
+  (B ^ (1/2) + 1) * (A / R + 1 / R^2) + R ^ (-7/4) * B ^ (3/4)
+```
+
+`R` is the localization radius, `A` the weighted dissipation root, `B` the `L⁶` norm of the cutoff velocity difference. The two terms are the two ways the pressure pairing can be bounded: a `1/R` boundary term and an `R^{-7/4}` interior term. The exponents `1/2`, `3/4`, `7/4` are the Sobolev/Young bookkeeping; they are printed, not hidden in a constant.
+
+### 2. The theorem
+
+`eq_of_pressure_flux_bound` assumes `T ≥ 0`, bounds `M` (the `L²` norm of `u − v`), `G` (the gradient of `u`), `CP` (the pressure-flux constant) and `R₀` (where the weight's derivative vanishes on the reference), plus the equation, divergence-freedom, the initial agreement and the pressure-flux inequality
+
+```
+|∫ (p − q) · ∇weight_R · (u − v)| ≤ CP * pressureEnvelope R A B
+```
+
+for every `R ≥ 1`, `t ∈ (0, T)`. It concludes `u = v` everywhere on `[0, T] × ℝ³`.
+
+The proof builds two constants, `C0 = weightLaplacianConstant * M² / 2` and `C1 = 4 * derivativeConstant 1 * M^{3/2}`, applies `ComparisonRateBound.exists_uniform_rate_bound` to get a decay rate `D`, and then invokes `WholeSpaceEnergyLimit.eq_zero_of_weighted_rate_bound` with `K = 2G`. The weight's derivative is assumed to vanish for `R ≥ R₀` on the reference — `hvanish`, supplied in `WholeSpaceUniqueness` by `exists_radius_weight_derivative_zero` from compact support.
+
+### 3. The one hypothesis, and where it is discharged
+
+The pressure-flux inequality is the only analytic input not proved in this module. `WholeSpaceUniqueness.classical_uniqueness_on_Icc` discharges it by calling `PressureFlux.exists_uniform_actual_pressure_flux_bound H M U G₀`, which takes the pressure-recovery hypotheses `H`, the `L²` bound `M`, an `L³` bound `U` on `u`, a tensor-difference `L¹` bound `G₀`, and returns a `CP` and the inequality for the *actual* pressure pair. So the closure module is a clean interface: it says "if the pressure pairing obeys this envelope, the fields agree", and the uniqueness theorem supplies the envelope from the equations.
+
+That is the right factoring, and it is also why the audit's earlier `LEADS.md` reading of the pressure-flux bodies matters: the interface being clean does not by itself prove the bound, and the bound's proof is in `PressureFlux`, not here.
+
+### 4. What the module does not assume
+
+No decay of `v`, no support of `v`, no pressure growth, no derivative bound on `q`. The only hypotheses on `v` are membership in `L²` at each time (`hwu`), the uniform bound `M`, smoothness, divergence-freedom, the equation and the initial datum. The gradient bound `G` is on `u`, the compactly supported reference, not on the competitor. This is the same asymmetry E106 recorded at the level of the uniqueness theorem, now visible at the level of the estimate that proves it.
+
+*Evidence: `R3/WholeSpaceComparisonClosure.lean:1–90` and following; `ComparisonRateBound.exists_uniform_rate_bound`; `WholeSpaceEnergyLimit.eq_zero_of_weighted_rate_bound`; `LocalizedFluxEstimates.weightLaplacianConstant`; `ComparisonCutoffs.derivativeConstant`; `R3/WholeSpaceUniqueness.lean:19–69`; `PressureFlux.exists_uniform_actual_pressure_flux_bound`.*
+
+---
+
+## E123 — The pressure is paired through a Riesz functional, not assumed smooth (2026-11-23)
+
+*Reading entry. `PressureFlux` is the layer that turns the pressure into something integrable against compact tests. Its first sixty lines are complexification bookkeeping; the point of them is that the pairing is defined before any estimate is made.*
+
+### 1. The pairing
+
+The module header: "The pressure is paired with compact smooth tests through its canonical Riesz functional. Every integral used to split the weighted pairing is shown to be integrable before its norm is estimated."
+
+That ordering is the content. A pressure in this development is a function, not a priori an `L²` object; the flux pairing `∫ (p − q) ∇weight · (u − v)` is not obviously integrable. The module proves integrability first (`integrable_holder_pair`), then bounds the pairing by Hölder with the conjugate pair `6/5` and `6` (`norm_holder_pair_le`), and only then assembles the uniform constant.
+
+### 2. The complexification lemmas
+
+`lpNorm_ofReal` and `norm_fderiv_ofReal` identify the `Lᵖ` norm and the derivative norm of a real function with those of its image under `Complex.ofRealCLM`. `lpNorm_fderiv_realTest` does the same for `PressureRecovery.realTest`. These are not cosmetic: they let the Hölder estimate be proved in the complex `Lᵖ` space where Mathlib's interpolation lemmas live, while the pressure itself stays real. The `HolderTriple (6/5) 6 1` instance is proved by `norm_num` on `ℝ≥0∞`.
+
+### 3. The cutoff is Lipschitz in the right constant
+
+`cutoff_lipschitz` proves `|cutoff R x − cutoff R y| ≤ (derivativeConstant 1 / R) ‖x − y‖` by the mean value inequality, with the derivative bound `cutoff_fderiv_le`. That `1/R` is what produces the `A/R` term in the envelope of E122. The envelope's shape is therefore not guessed: it is the two estimates (gradient `1/R`, interior `R^{-7/4}`) added.
+
+### 4. What is and is not checked
+
+Checked by reading: the integrability, the Hölder pair, the Lipschitz constant, and the fact that the final constant is produced from `M`, `U`, `G₀` rather than assumed. Not checked: the body of `exists_uniform_actual_pressure_flux_bound` beyond its statement, and whether the `6/5` exponent is the sharp one the paper uses. The paper's §10 pressure argument is where a `6/5`-type exponent would appear; the audit has not compared the two, and this entry does not claim a match.
+
+What it does establish is the ordering the audit cares about: the pressure is never assumed to be a smooth decaying field on the competitor. It is a function whose pairing with a compact test is proved integrable from the equation's own regularity. That is the difference between "we assume the pressure is nice" and "we prove the pairing converges", and the module is on the right side of it.
+
+*Evidence: `R3/PressureFlux.lean:1–90` and following; `PressureRecovery.realTest`; `ComparisonCutoffs.cutoff_fderiv_le`, `derivativeConstant`; `R3/WholeSpaceComparisonClosure.pressureEnvelope`; E122.*
+
+---
+
+## E124 — A fourth candidate structure, without the energy field (2026-11-23)
+
+*Reading entry. `R3CompactCandidate.Properties` is the structure E91 read for Proposition 10.1. It is not the same as `R3.ProblemStatement.CandidateProperties`, and the difference is where the energy bound enters.*
+
+### 1. The fields
+
+`R3CompactCandidate.Properties u p f` has:
+
+* smoothness of `u`, `p` on `preSingularDomain`, of `f` on `futureDomain`;
+* **separate** compact support witnesses for `u`, `p` and `f` (`∃ K, IsCompact K ∧ …`), not one shared `K`;
+* the zero initial velocity;
+* `force_time_support : CompactFutureTimeSupport f` — the one-sided vanishing predicate of E101, not `CompactPositiveTimeSupport`;
+* divergence-freedom and the residual identity;
+* `speed_unbounded`.
+
+It has **no** `energy_bounded` field and **no** shared support set. The energy bound and the single `K` appear only when this is converted to `R3.ProblemStatement.CandidateProperties`, which is what `theorem_1_1` concludes.
+
+### 2. Why the split exists
+
+The compact candidate is built before the comparison: `of_localized_fields` assembles the cut potential, the direct field and the pressure, and proves locality against the periodic model. At that stage the energy bound is not yet available — it comes from compact support plus continuity, via `CompactComparisonBounds.uniformFiniteEnergy_of_compact_slab` — and the three supports are genuinely different sets (velocity, pressure, force each have their own cylinder). So the structure records what the construction actually produces, and the conversion adds the consequences.
+
+That is the same layering E99 found among the three `CandidateProperties`, one level lower: the *construction's* record is weaker than the *theorem's* record, and the difference is exactly the two fields that are derived rather than built.
+
+### 3. The support geometry
+
+`outerCutoff x = spatialCutoff ((1/2) • x)`; `outerSupport = (fun x => 2 • x) '' supportCylinder`; `outerCutoff_one` on `supportCylinder`; `outerCutoff_zero_outside`; and `outerCutoff_ne_zero_inner` proves that wherever the outer cutoff is nonzero, `x` lies in `PeriodicLocalization.innerCube (1/4)`. `supportCylinder_inner` does the same for the cylinder itself.
+
+So the construction's support is a cylinder scaled by `2`, and the region where it is active sits strictly inside the quarter cube. That is what makes the periodization in Corollary 10.6 legal: the field is supported away from the cube boundary, so its lattice sum is locally finite and the periodic identification is exact. E107 traced the compression; this is the other half — the support inclusion that lets `periodize` be applied without aliasing.
+
+### 4. The audit's bookkeeping correction
+
+E91 said Proposition 10.1's five clauses were fields of `R3CompactCandidate.Properties` and the sixth was missing. With this entry the count is precise: five clauses are fields of *this* structure, the sixth is the rest theorem of E98, and the energy bound plus the shared `K` are added by the conversion to `R3.ProblemStatement.CandidateProperties`. Three structures, three jobs; none of them is redundant, and the paper's single "candidate" spans all three.
+
+*Evidence: `R3CompactCandidate.lean:1–90` and following; `outerCutoff`, `outerSupport`, `outerCutoff_ne_zero_inner`, `supportCylinder_inner`, `of_localized_fields`; `R3/ProblemStatement.lean:92–109`; `PeriodicLocalization.innerCube`; E91; E98; E99.*
+
+---
+
+## E125 — The slice in one table, and what is still open (2026-11-23)
+
+*Summary entry. Twenty-two entries, E98–E124, all from reading; none compiled anything new. This is what each one established, so the slice can be cited without reading it.*
+
+### 1. The entries
+
+| Entry | Finding |
+|---|---|
+| E98 | Proposition 10.1's short-time clause is `theorem_1_1_with_initial_rest`, proving rest on `|t| ≤ 3/8`; the ledger closes at 13 placed, 0 partial |
+| E99 | Three different structures are named `CandidateProperties`, in three namespaces |
+| E100 | `SpeedUnboundedAtOne` is pointwise in space, not a trajectory; no fixed blow-up point is claimed |
+| E101 | The force's "rapid decay" is temporal and follows from literal vanishing after `T` |
+| E102 | The stage loss `1 + 3h/2` is not the truncation loss `K_m = m + 2 + 2h`; they are not interchangeable |
+| E103 | Every constant is an exact rational; `κ = 10⁻⁵` clears the tightest printed margin by 500× |
+| E104 | `formalization.yaml` claims four main results, `review.status: self-assessed`; not "the whole paper" |
+| E105 | Moment matrices are nonsingular for every `n`, not a numeric 5×5 determinant; no inverse bound |
+| E106 | The uniqueness competitor has no decay, support or pressure hypothesis |
+| E107 | The rest clause is load-bearing: `compressedCandidate` uses it to stay smooth across the new `t = 0` |
+| E108 | `MaximalLifespan` is a periodic development; "lifespan" is a set of admissible `T` |
+| E109 | The four reserved windows have one touching pair and a one-unit gap |
+| E110 | The annulus weight has asymmetric edge factors (`c` left, `4` right) |
+| E111 | Toolchain and dependencies are pinned to a prerelease tag, not a commit |
+| E112 | Five raw `sorry` tokens: four challenge placeholders and one docstring; zero in either library |
+| E113 | The headline theorem excludes finite-energy competitors only, which is exactly Clay (C) |
+| E114 | The energy/dissipation conclusions hold for the same witnesses as Theorem 1.1 |
+| E115 | What "placed" means, and why 13/74 must be quoted with its two qualifiers |
+| E116 | The measure scaling and `b* = −(3−2h)/4` are the auditors' own, labelled |
+| E117 | Four rows moved by shape search; the procedure and its cost |
+| E118 | Three concrete ways the bottom line could be wrong |
+| E119 | Machine-checked vs read vs asserted, in one table |
+| E120 | Every viscosity is one construction plus an exact spatial dilation |
+| E121 | The `3/8` rest interval is the force cutoff's plateau |
+| E122 | The comparison closes on an explicit pressure envelope; one hypothesis, discharged in `PressureFlux` |
+| E123 | The pressure is paired through a Riesz functional with integrability proved first |
+| E124 | `R3CompactCandidate.Properties` is a fourth candidate structure, without the energy field |
+
+### 2. What moved
+
+The ledger moved once: Proposition 10.1, from 5 of 6 clauses to placed. Everything else is description, method or scope. That is the honest shape of this slice — twenty-five entries and one row — because the rows that were left are the ones whose declarations are hard to find, and most of this slice's work went into establishing what the found objects mean.
+
+### 3. What did not move
+
+* **No estimate was checked for validity.** The 13 placements remain statement-level.
+* **No new compilation.** The build and Comparator evidence is E73/E75/E79; this slice read source.
+* **The §6–§8 construction lemmas remain unread** at result level.
+* **Lemma 9.2 and Proposition 9.3 remain cited-unchecked.**
+* **The paper's §5 and §9 constants were not compared numerically** beyond E95/E102/E103.
+
+### 4. The next three targets, in order
+
+1. **Lemma 9.2 and Proposition 9.3.** They are the only two rows where the source itself asserts the correspondence and the audit has not read it. The declarations are named in `CurlClassBounds.lean:757` and `LinearWaveBounds.lean:896`.
+2. **The pressure-flux body.** E122/E123 read the interface and the integrability layer; `exists_uniform_actual_pressure_flux_bound`'s estimate is the place where the `6/5` exponent would have to match the paper's §10.
+3. **The `§6` chart lemmas.** The dyadic charts and the label sum are the least-read part of the spine, and E67–E71 stopped at the source wave class rather than at the chart geometry.
+
+*Evidence: this log, E98–E124; `README.md`; `CROSSWALK.md`; E119.*
