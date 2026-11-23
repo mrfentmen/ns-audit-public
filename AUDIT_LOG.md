@@ -4927,3 +4927,794 @@ It does not change the verdict, and it narrows where a defect could sit to one c
 What it does not establish, and cannot: that the declarations *prove* the paper's inequalities. Statement-level correspondence is where this audit has always been, and seventy-four rows of it still say nothing about whether the estimates are valid. Two specific weaknesses are recorded rather than smoothed: Proposition 9.6 is placed as four separate steps rather than one composed theorem, and every rate in §5 is proved on a filter (`FiniteJetRate`) rather than as a pointwise constant, which is the correct reading of "`q ↓ 0`" but not the same object as the paper's displayed inequality.
 
 *Evidence: `SlowExpansionResidual.lean:634,769,885,915`; `BaseResidual.lean:1440`; `ActualIterationLedger.lean:34,38,231,235,239,243`; `CorrectionState.lean:217–219`; `CorrectionStep.lean:3004,3021`; `WholeDomainPhysicalStageTheorem.lean:101`; `ActualInitialization.lean:173`; `BaseWitnessClosure.lean:66,92,106`; `FinalSlowBase.lean:101,106,130,149`; `ns.txt:2874–2891, 5421–5425, 5475–5488`.*
+
+---
+
+## E98 — Proposition 10.1 closes: the initial rest is a theorem, not a structure field (2026-11-23)
+
+*Reading entry. E91 and E97 both left exactly one clause of the whole ledger open: Proposition 10.1's "`u(·,t) = p(·,t) = 0` for all sufficiently small `t ≥ 0`", recorded as following from the time cutoff but not stated. It is stated, in the theorem that carries the paper's Theorem 1.1, one file above the structure that E91 read.*
+
+### 1. The clause
+
+The paper's Proposition 10.1 (pp. 117–118) builds the compact candidate `(u, p, f)` and lists six properties. The sixth: the velocity and pressure vanish identically for all sufficiently small nonnegative times. E91 read `R3CompactCandidate.Properties` (`R3CompactCandidate.lean:24`) and found the other five as fields — smoothness, compact support, divergence-freedom, the residual identity, and agreement with the local fields — and no field for the sixth. That reading was correct and its conclusion was not: the clause is not a property of the *structure*, it is a property of the *selected* candidate, proved where the selection is made.
+
+### 2. The declaration
+
+`R3/Theorem.lean:31`, `theorem_1_1_with_initial_rest`:
+
+```
+theorem theorem_1_1_with_initial_rest (ν : ℝ) (hν : 0 < ν) :
+    ∃ u : VelocityField, ∃ p : PressureField, ∃ f : VelocityField, ∃ K : Set Space,
+      CandidateProperties ν u p f K ∧
+      ¬ Nonempty (GlobalFiniteEnergySolution ν f) ∧
+      ∀ t : ℝ, |t| ≤ 3 / 8 → ∀ x : Space,
+        u (t, x) = 0 ∧ p (t, x) = 0
+```
+
+The proof obtains the three fields from `ActualCandidate.selected_candidate_one_with_initial_rest`, which supplies the rest interval together with the candidate, and transports both through the viscosity scaling: `u_ν(t,x) = √ν · u(t, x/√ν)`, `p_ν = ν · p`, and the zero is preserved by `smul_zero`. So the rest interval is not bolted on after the fact; it is part of the selected candidate's data all the way from `ActualCandidateConstruction`.
+
+### 3. Stronger than the paper asks, in two directions
+
+The paper asks for *sufficiently small* `t ≥ 0`, one-sided. The theorem gives `|t| ≤ 3/8`: two-sided, with an explicit radius, and it includes negative time. Neither strengthening costs anything, and both are worth naming because they change what the clause can be used for. A reader who needs the candidate at rest on a full slab around zero — which is what makes a force supported in positive time meaningful, and what `force_nonzero_of_no_global_solution` (`R3/CandidateBreakdown.lean:57`) uses — gets it from this statement rather than having to reconstruct it from a cutoff argument.
+
+It also removes the last reason to read Proposition 10.1 as partial. All six clauses now have a named declaration:
+
+| Clause | Declaration |
+|---|---|
+| smooth `u`, `p` on `preSingularDomain` | `CandidateProperties.velocity_smooth`, `.pressure_smooth` (:94–95) |
+| compact spatial support | `.support_compact`, `.velocity_support`, `.pressure_support` (:96–100) |
+| `div u = 0` | `.divergence_free` (:104) |
+| residual equals the force | `.navier_stokes` (:106) |
+| agreement with the local fields | `R3CompactCandidate.velocity_locally_eq`, `.pressure_locally_eq` (:231, :240) |
+| `u = p = 0` for small `t ≥ 0` | `theorem_1_1_with_initial_rest` (`R3/Theorem.lean:31`) |
+
+### 4. Why E91 missed it, and why that is the same mistake three times
+
+E91 read the structure. E94 read the paper's phrase. E95 read the exponent shape. This is the fourth time a row has moved because the search was aimed at a name rather than at a statement, and the first time the missing statement was in the *headline theorem's* signature rather than in a helper module. The lesson is not "search harder". It is that a clause can live at the top of the dependency graph instead of the bottom: the structure describes what every candidate has, and the initial rest is a property of the one candidate the construction selects.
+
+It is also the reason the clause is genuinely stronger than a field would have been. A field on `Properties` would have to be supplied by every producer, including the periodic route that builds its candidate through `of_periodic_local_model`; a theorem about the selected whole-space candidate states the fact once, where the selection is made, and does not constrain the route.
+
+### 5. The ledger closes
+
+| Status | Count | Which |
+|---|---|---|
+| placed, statement read | 13 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Corollary 10.6 |
+| partial | 0 | — |
+| cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
+| unplaced | 59 | the rest |
+| **total** | **74** | |
+
+Thirteen of seventy-four, with no row left half-open. That is a cleaner statement than a larger number would be: the paper's spine — the existence theorem, the coefficient induction, the three stage results, the summed local field, the forcing, the periodic corollary — is now mapped end to end at statement level, and what remains unplaced is the outer shell: the appendices' supporting lemmas, the §6–§8 construction lemmas, and the two rows the source cites but this audit has not read.
+
+### 6. What this does not change
+
+Nothing about validity. The theorem's conclusion is a rest statement about the *constructed* field; it says nothing about whether the residual estimates that produce the field are correct. And the route difference E91 recorded survives: the assembly reaches the cutoff product through the periodic local model (`of_periodic_local_model`, `:179`) rather than through `curl(χA) + χB e_θ` directly. The clause is placed; the route is still not the paper's. That is the same distinction E91 drew, and closing the clause does not close it.
+
+One small honesty note on the constant: `3/8` appears in the theorem and nowhere in the paper's Proposition 10.1, which says only "sufficiently small". The audit did not find where `3/8` is chosen, only that it is proved. That is a strengthening, not a mismatch, but it is a number the paper does not print.
+
+*Evidence: `R3/Theorem.lean:19,31–45,48`; `R3/ProblemStatement.lean:92–109`; `R3/CandidateBreakdown.lean:57`; `R3CompactCandidate.lean:24,179,231,240`; `ActualCandidate.selected_candidate_one_with_initial_rest`; `ns.txt` pp. 117–118.*
+
+---
+
+## E99 — Three structures are called `CandidateProperties` (2026-11-23)
+
+*Reading entry. Found while checking what Proposition 10.1's clauses quantify over. There are three distinct structures with this name, in three namespaces, with different fields and different competitors. Nothing is wrong with the development; the naming is the finding.*
+
+### 1. The collision
+
+| Name | Module | Fields that differ |
+|---|---|---|
+| `NavierStokes.ProblemStatement.CandidateProperties` | `NavierStokes/ProblemStatement.lean` | periodic velocity and pressure, `CompactFutureTimeSupport`, no compact support set `K`, no energy bound |
+| `NavierStokesR3.ProblemStatement.CandidateProperties` | `NavierStokes/R3/ProblemStatement.lean:92` | compact `K`, `CompactPositiveTimeSupport`, `UniformFiniteEnergy (Ico 0 1)`; no periodicity |
+| `NavierStokes.PeriodicPaper.CandidateProperties` | `PeriodicPaperTheorem.lean:22` | compact `K ⊆ fundamentalInterior`, periodic on the cube, support intersected with `fundamentalCube`, no energy bound |
+
+Each is the right structure for its own theorem. The whole-space candidate needs a compact support set because `not_global_agreement` uses compactness of `Icc 0 1 ×ˢ K` to bound a competitor on the set where the candidate is large. The periodic candidate needs the support *intersected with the fundamental cube*, because a nonzero periodic lift cannot be compactly supported on `ℝ³`; the module says so in its header. The generic `ProblemStatement` structure is the loosest of the three and is the one whose `candidateStatement` carries an explicit `OPEN` banner.
+
+### 2. The banner is not about the theorem
+
+`ProblemStatement.candidateStatement` is annotated:
+
+```
+/-- OPEN: the primary existential content of Candidate Theorem 1.1.
+There is no proof, witness, or axiom asserting this proposition in this module. ... -/
+```
+
+A reader who greps `candidateStatement` and finds this will conclude the main existence claim is open. It is not: the periodic corollary is `PeriodicPaper.periodic_corollary` (`:155`), built from `NavierStokesR3.theorem_1_1_with_initial_rest`, and the whole-space theorem is `NavierStokesR3.breakdownStatement`. The banner is a statement about *this module's* contents — true, and the right thing for a formalizer to write — but it is attached to a proposition that is not the one the paper's Theorem 1.1 denotes. The same care that produced the banner is what makes the name collision costly: the honest label and the headline name are on different objects.
+
+### 3. Why it matters for the audit
+
+Every entry in this log that says "Proposition 10.1 is placed" cites fields by bare name — `velocity_smooth`, `divergence_free`, `navier_stokes`. Those names exist on all three structures, and two of the three have no `energy_bounded` and no `K`. A clause-level placement is therefore only as precise as the namespace it is written in. This entry fixes that for the rows already placed: Theorem 1.1 and Proposition 10.1 are `NavierStokesR3.ProblemStatement.CandidateProperties`; Corollary 10.6 is `NavierStokes.PeriodicPaper.CandidateProperties`. No row changes status; two citations become unambiguous.
+
+### 4. What it says about the formalization's layering
+
+The three structures are not duplication by accident. The whole-space one is closed under the viscosity scaling used in `theorem_1_1_with_initial_rest`; the periodic one is closed under periodization (`of_compact_candidate`); the generic one is the interface `CandidateConsequences` consumes, where only smoothness, periodicity, support in time and unboundedness are needed. That is a sensible factoring — a consumer takes the weakest interface that supports its lemma. The cost is that the paper's single phrase "a candidate" denotes three Lean records, and the audit's own table needs the namespace to be meaningful.
+
+### 5. The general lesson, stated once
+
+E94 found a result under its output's name. E98 found a clause in the headline theorem rather than in the structure. This entry finds that the structure itself is three structures. All three are the same failure mode of *statement-level* auditing: names are not statements. The remedy is not more greps; it is that every row in the ledger should carry its full name, and this entry retrofits that for the three rows where the bare name is ambiguous.
+
+*Evidence: `NavierStokes/ProblemStatement.lean` (`CandidateProperties`, `candidateStatement`, `CompactFutureTimeSupport`, `SpeedUnboundedAtOne`); `R3/ProblemStatement.lean:92–109,119–133`; `PeriodicPaperTheorem.lean:22–40,44–53,148`; `R3/Theorem.lean:31`; `R3/CandidateBreakdown.lean:28–36`.*
+
+---
+
+## E100 — "Speed unbounded at one" is pointwise, and that is weaker than a trajectory (2026-11-23)
+
+*Reading entry. The headline theorem's conclusion is `SpeedUnboundedAtOne`. Its definition decides what the paper's "the speed becomes unbounded as `t → 1`" actually means in the formalization, and the answer is not a limit along a trajectory.*
+
+### 1. The definition
+
+```
+def SpeedUnboundedAtOne (u : VelocityField) : Prop :=
+  ∀ M : ℝ, 0 < M → ∀ δ : ℝ, 0 < δ →
+    ∃ t : ℝ, ∃ x : Space, t ∈ Ioo 0 1 ∧ 1 - δ < t ∧ M < ‖u (t, x)‖
+```
+
+Every threshold `M` and every left-neighbourhood radius `δ` is met by *some* spacetime point in the strip. There is no requirement that the same spatial point works for two different `M`, no continuity in `x`, no trajectory `x(t)`, and no statement about the pressure. It is exactly "the sup over `x` of `‖u(t,x)‖` is unbounded as `t ↑ 1`", expressed without taking a supremum.
+
+### 2. What it implies, and what it does not
+
+`unbounded_speed_excludes_uniform_bound` (`ProblemStatement.lean`) proves the equivalence one actually wants at this level: no constant bounds `‖u(t,x)‖` on `Ico 0 1 × ℝ³`. That is the negative of a uniform bound, and it is what `not_global_agreement` needs: a smooth competitor is bounded on the compact set `Icc 0 1 × K`, so a candidate that exceeds that bound somewhere in the strip cannot equal it there.
+
+It does **not** give a divergent trajectory. `h3_tendsto_of_speed_tendsto` (`CandidateConsequences.lean:153`) makes the gap explicit: given a path `x : ℝ → Space` with `‖u(t, x t)‖ → ∞` as `t ↑ 1`, it proves the `H³` norm tends to infinity. That is a strictly stronger hypothesis than `SpeedUnboundedAtOne`, and the development proves the stronger conclusion only under the stronger hypothesis. So the headline theorem's "unbounded" is a statement about a set of points, not about a moving particle.
+
+### 3. Why the paper's prose reads stronger
+
+The paper says the speed is unbounded as `t → 1`. In ordinary PDE prose that usually means a blow-up of the `L∞` norm, which is precisely the pointwise-in-time supremum — the same object, modded out by the fact that the supremum need not be attained. The formalization avoids the supremum entirely by existentially quantifying the point, which is equivalent for the purpose of excluding a uniform bound and cheaper to prove. This is a faithful encoding of the norm blow-up, and it is *not* a claim about any particular fluid parcel.
+
+### 4. The one place the difference bites
+
+`not_global_agreement` picks `M = max M_competitor 1` and `δ = 1`, obtains `(t, x)` with `1 - 1 < t < 1`, and shows `x ∈ K` by contradiction: if `u(t,x) = 0` then the norm is zero, contradicting `M < ‖u‖`. That argument needs only one point per threshold, which is what the definition gives. If a later argument needed the singular set to accumulate at a fixed `x`, or needed `‖u(t, x₀)‖ → ∞` for a fixed `x₀`, this definition would not supply it — and the development does not claim it does. The audit records the distinction because the paper's §1 sentence is the kind a reader paraphrases as "a particle speeds up", and the formal statement is not that.
+
+*Evidence: `NavierStokes/ProblemStatement.lean` (`SpeedUnboundedAtOne`, `unbounded_speed_excludes_uniform_bound`, `zero_velocity_not_unbounded`); `R3/CandidateBreakdown.lean:10–36`; `CandidateConsequences.lean:136–142,153–169`.*
+
+---
+
+## E101 — The force's "rapid decay" is temporal, and mostly literal vanishing (2026-11-23)
+
+*Reading entry. `CandidateProperties.force_derivative_decay` is stated as arbitrary polynomial decay of every jet of the force for `t ≥ 0`. Read with its proof, the clause is almost entirely a support statement.*
+
+### 1. The support predicate is one-sided and spatial-free
+
+```
+def CompactFutureTimeSupport (f : VelocityField) : Prop :=
+  ∃ T : ℝ, 0 ≤ T ∧ ∀ t : ℝ, T ≤ t → ∀ x : Space, f (t, x) = 0
+```
+
+Despite the name, nothing is compact: it says the force vanishes after some finite time `T`, uniformly in `x`. No spatial support, no decay in `x`, no regularity. The whole-space candidate uses a different predicate, `CompactPositiveTimeSupport`, which is what makes `force_nonzero_of_no_global_solution` conclude that a force with no global solution must be nonzero at some `t > 0`.
+
+### 2. The decay theorem
+
+`CandidateConsequences.futureJet_decay` proves, for every `m` and every `K ≥ 0`, a constant `C > 0` with
+
+```
+‖futureJet f m (t, x)‖ ≤ C * (1 + t) ^ (-K)     for all t ≥ 0, x
+```
+
+The proof splits at `T`. For `t > T` the jet is literally zero, by `CompactForceDecay.iteratedFDeriv_eq_zero_after`, and the right-hand side is nonnegative. For `t ≤ T` it uses `MaximalLifespan.periodic_bound_on_slab` — a uniform bound `M` on the compact slab `Icc 0 (T+1) × univ`, obtained from continuity and spatial periodicity of the one-sided jets — and sets `C = M * (1 + (T+1))^K`, so that `C (1+t)^{-K} ≥ M ≥ ‖jet‖` on the slab.
+
+### 3. What the clause therefore says
+
+Two things, neither of them spatial decay. On `[0, T]` it says the jets are bounded, with a constant that grows like `(1+T)^K` — the polynomial rate is paid for by the constant, not proved by an estimate. On `(T, ∞)` it says the force is zero. So "every derivative has arbitrary polynomial decay in time" is true, and its content is: the force is smooth and periodic in space, continuous up to `t = T`, and identically zero afterwards.
+
+That is exactly what the paper's periodic corollary needs, because a force with compact time support trivially satisfies any decay requirement imposed at infinity. It is worth writing down because a reader who sees "rapid decay" in the corollary's statement will look for a spatial weight in the proof and find none; there is nothing to find. The decay is a consequence of the cutoff, and the only estimate in the proof is a compactness bound on a slab.
+
+### 4. The honest limit
+
+`full_forceJet_decay` and `full_forceMixed_decay` extend the same statement from the one-sided jet to the ordinary jet and to every mixed spacetime component, for the whole-space candidate, using `CandidateProperties.force_smooth : ContDiff ℝ ∞ f` — global smoothness on all of `ℝ⁴`, not just the future. That is the version `PeriodicPaper.CandidateProperties.force_derivative_decay` quotes. So the clause is placed as a statement about the *actual force constructor*, not assumed: the force is globally smooth by construction (E65), vanishes after `T`, and the bound follows.
+
+What the audit does not claim: that a decay rate of this kind is what Fefferman's (D) asks for. E76 checked the numbered clauses and found the force regularity clause satisfied; this entry only records what the code's own decay theorem contains, so that "rapid decay" is not read as more than it is.
+
+*Evidence: `NavierStokes/ProblemStatement.lean` (`CompactFutureTimeSupport`); `CandidateConsequences.lean:79–110,114–133,141–142,144–148`; `PeriodicPaperTheorem.lean:35,116–128`; `R3/CandidateBreakdown.lean:57–66`.*
+
+---
+
+## E102 — Two derivative costs, and the sharper one is not the paper's `K_m` (2026-11-23)
+
+*Reading entry. E95 identified the paper's truncation loss `K_m = m + 2 + 2h` with `truncationResidual_rate`'s exponent, whose slope in `m` is exactly 1. The stage estimates use a different loss, whose slope is `1 + 3h/2`. Both are in the tree; they are not interchangeable, and the difference is the sort of thing that would matter to anyone reusing one for the other.*
+
+### 1. The two definitions
+
+```
+def derivativeCost (h : ℝ) : ℝ := 1 + 3*h/2
+def physicalLoss (h : ℝ) (m : ℕ) : ℝ :=
+  2*CoordinateAlgebra.A h + ((m:ℝ)+1)*derivativeCost h
+```
+
+`physicalLoss` is the loss charged per derivative in the sharp phase estimates: `SharpPhysicalCopyBounds`, `SharpCurrentParticularBounds`, `SharpParticularStageBounds` and `WholeDomainPhysicalStageTheorem` all bound jets by `q^(g − physicalLoss h m)`, and `rescale_with_common_loss` (`SharpPhysicalLoss.lean:14`) is the generic step that converts a `q^(g − k·derivativeCost)` bound into `q^(g − physicalLoss h m)` for `k ≤ m+1`. The `(m+1)` is deliberate, and its docstring says why: "The printed physical loss includes one derivative for potential recovery."
+
+### 2. The comparison
+
+At `0 < h < 1/2`, `derivativeCost h ∈ (1, 7/4)`. So the stage loss grows strictly faster in `m` than the truncation loss, whose slope is 1 after E95's identification. Concretely, if one tried to reuse `physicalLoss h m` as the paper's `K_m` in (5.25), the resulting bound would be *weaker* — a larger exponent subtracted — and not equal to the paper's display. Conversely, using `K_m = m + 2 + 2h` in the stage estimates would be stronger than what the tree proves.
+
+This is not a defect in either place. It is a reminder that "the derivative loss" is not one object in this development: the truncation residual loses one power per derivative because it is built from finitely many smooth monomials (`finset_monomial_rate`), while the oscillatory phase loses `1 + 3h/2` because differentiating the carrier multiplies by a phase gradient of size `q^{-(1+h)}` and by a `q^{-h/2}` amplitude factor — `carrier_geometric_bound`'s `hqpow` computation is literally `q^g · (q^{-h/2})^m · (q^{-(1+h)})^m = q^(g − m(1 + 3h/2))`.
+
+### 3. Why the audit records it
+
+Because E95's `K_m = m + 2 + 2h` is the one place in the log where a paper exponent was matched to a Lean exponent by arithmetic, and the arithmetic is only valid for the truncation residual. A reader who carries that identification into §9 gets the wrong loss. The correct statement is narrower and worth having: the paper's `K_m` is realized by `truncationResidual_rate`; §9's stage estimates use `physicalLoss`, which is a different and larger loss, and the paper's §9 accordingly prints different constants. Nothing in the ledger changes status, because both are stated results, not hypotheses.
+
+*Evidence: `SharpPhysicalCarrier.lean:13–17,101–107`; `SharpPhysicalLoss.lean:14–37`; `SharpPhysicalCopyBounds.lean:29–65`; `SharpParticularStageBounds.lean:13–46`; `WholeDomainPhysicalStageTheorem.lean:196–201`; `BaseResidual.lean:1440`; E95 §3.*
+
+---
+
+## E103 — The numeric ledger is exact rationals, and `κ` is conservative by 500× (2026-11-23)
+
+*Reading entry. The paper fixes `κ_s = 10⁻⁵` and a list of decimal-looking constants. The tree carries them as rationals and proves every comparison by `norm_num`/`linarith`, with no floating point anywhere. One of those comparisons shows the manuscript's `κ` is far from tight.*
+
+### 1. Every constant is a rational
+
+`ExponentLedger` contains `1/5`, `1/10`, `7/10`, `6/5`, `17/25`, `19/10`, `9/50`, `17/100`, `9/10`, `1/200`, `1/100000`, `1/1000000`. There is not a decimal literal in the module, and the theorems that use them are closed by `norm_num` or `linarith`, so each comparison is a kernel-checked rational inequality rather than a numerical approximation.
+
+`manuscript_kappa_admissible` is the formal statement that `κ = 10⁻⁵` is in the ledger's admissible range, written as `0 ≤ 1/100000 ∧ 1/100000 ≤ 1/100000`. `smaller_kappa_admissible` records that any `κ < 10⁻⁶` also satisfies the ledger's hypothesis `κ ≤ 10⁻⁵` — a transitivity fact, not an independent existence claim.
+
+### 2. The tight margin is not the one `κ` is chosen for
+
+```
+theorem old_difference_bar_margin_iff (κ : ℝ) :
+    17 / 100 < 9 / 50 - 2 * κ ↔ κ < 1 / 200
+```
+
+The `.17` bar margin — the module calls it "the most restrictive" — is satisfied exactly when `κ < 0.005`. The manuscript's `κ = 0.00001` is smaller by a factor of 500, so at the manuscript's value the margin is `0.17998 > 0.17`, with `0.00998` to spare. Whatever else is tight in §9, this comparison is not: `κ` could be raised two and a half orders of magnitude and still clear it.
+
+### 3. Why that matters
+
+Not as a criticism — choosing `κ` small is free, and a small `κ` makes every exponent margin easier. It matters because it locates where the real constraints are. `ExponentLedger` proves the stage arithmetic *uniformly in* `κ` for `κ ≤ 10⁻⁵` (`all_stage_arithmetic`, for every `n`), so the choice is not doing work at any individual stage; it is a single global cushion. A reader who sees "`10⁻⁵`" and assumes some estimate forced it that small will look in the wrong place. The binding constraints in this development are not these rational margins at all; they are the losses `physicalLoss` (E102) and the geometric thresholds in `ActualCarrierGeometry`.
+
+### 4. What is still not checked
+
+The arithmetic being exact says nothing about whether the exponents attached to the *fields* match the exponents in these theorems. `all_stage_arithmetic` is a statement about numbers; `residualWave_formula` and `residualMean_formula` are statements about the ledger's own definitions; and the class memberships that connect the two are the rows E94–E97 placed by reading. The chain is: rational margin (kernel-checked) → exponent formula (kernel-checked) → class membership of an actual residual (kernel-checked, statement read). This entry closes none of those links; it records that the first two are exact, so any error in the chain would have to be in the third.
+
+*Evidence: `ExponentLedger.lean:1–40,236–321`; `manuscript_kappa_admissible` (`:271`); `old_difference_bar_margin_iff` (`:285`); `stageParameter` (`:294`); `all_stage_arithmetic` (`:313`); `ActualIterationLedger.lean:231–243`.*
+
+---
+
+## E104 — `formalization.yaml` is a second, much smaller claim ledger (2026-11-23)
+
+*Reading entry. The repository ships machine-readable metadata naming its main results. Read against the audit's ledger, it shows exactly how much of the paper the development claims to have formalized, and it is far less than "the paper".*
+
+### 1. What the file claims
+
+`formalization.yaml` (v0.4) declares four `main_results`, each with a declaration, a file, `sorry_count: 0`, an axiom list of exactly `propext`, `Classical.choice`, `Quot.sound`, and a comparator config:
+
+| Claim | Declaration | File |
+|---|---|---|
+| (C) non-existence of global smooth finite-energy solutions on `ℝ³` | `NavierStokes.Comparator.navier_stokes_breakdown_R3` | `NavierStokes/ComparatorSolution.lean` |
+| (D) non-existence of global smooth periodic solutions | `NavierStokes.Comparator.navier_stokes_breakdown_periodic` | same |
+| unforced Euler breakdown on `ℝ³` | `Euler.euler_breakdown_R3` | `Euler/Solution.lean` |
+| compact Euler data with finite maximal lifespan | `Euler.exists_compact_smooth_euler_singularity` | same |
+
+`status.scope` is the sentence `"Full formalization of main results."` — not "of the paper". That distinction is doing real work: the alignment block maps four statements, and the paper has seventy-four numbered results. The file is honest; a reader who quotes "full formalization" without the qualifier is not.
+
+### 2. `review.status: self-assessed`
+
+The metadata's own review field says `self-assessed`. That is the same status this audit keeps recording: no independent referee has checked the development, and the only external checks are the Comparator runs the repository configures and this audit reproduced (E75, E79). It is worth noting that the repository says so itself, because the audit's repeated caveat ("not independently reproduced math") can read as an accusation when it is in fact a restatement of the project's own metadata.
+
+### 3. One clause where the metadata is stronger than the paper
+
+The Euler entry's description says the compact data has "an infinite C1 norm limsup". E81 read the Euler paper's Theorem 1.1 and found it asserts `limsup ‖∇u‖∞ = ∞`; the challenge's `limsup velocityC1Norm = ⊤` includes the velocity supremum as well, which is a *weaker* statement (a sum can diverge while a summand does not). The development also proves the paper's gradient-only form (`EulerC1Limsup.maximalGradientNorm_limsup`), but that declaration is not in the challenge's target list. So the metadata's prose follows the challenge, not the paper, and the difference is the one E81 already recorded. Nothing is hidden; the description just names the stronger encoding without saying it is stronger.
+
+### 4. The pin is a tag, not a hash
+
+`lakefile.toml` pins mathlib and Comparator at `rev = "v4.34.0-rc2"`, and `lean-toolchain` names `leanprover/lean4:v4.34.0-rc2`. Those are *tags*. A tag can be moved; a commit hash cannot. The audit reproduced the build at the pinned tag (E73), but "reproducible" in the strong sense would need the resolved commit SHAs recorded beside the tag. The repository does not do that, and `lake-manifest.json` — the file that would carry them — was not among the files this slice read. Recorded as a durability note, not a defect: for a prerelease toolchain the tag is the only stable name the upstream projects offer.
+
+*Evidence: `formalization.yaml:1–131`; `lakefile.toml:1–29`; `lean-toolchain:1`; E73; E81.*
+
+---
+
+## E105 — The moment matrices are nonsingularity theorems, for every `n` (2026-11-23)
+
+*Reading entry. §8.5 of the paper solves five linear moment equations; `FiveRowRank` and `MomentRepair` are the modules. The audit expected a 5×5 determinant and found four general theorems instead.*
+
+### 1. What is proved
+
+`PowerMomentMatrix.lean` proves four determinant statements, each for arbitrary `n : ℕ`:
+
+* `expEvaluationMatrix_det_ne_zero` — the matrix `(i,j) ↦ exp(a_i x_j)` is nonsingular when the `a_i` are distinct and the `x_j` strictly increasing. This is the generalized Vandermonde/Chebyshev fact: if a vector `c` annihilates all rows, the exponential polynomial `∑ c_i exp(a_i x)` has `n` distinct zeros, and an exponential polynomial with distinct frequencies cannot have more zeros than its number of terms minus one.
+* `powerEvaluationMatrix_det_ne_zero` — `(i,j) ↦ x_j^{a_i}` at distinct exponents and positive ordered nodes, reduced to the previous theorem by `x^a = exp(a log x)`; the proof literally rewrites the matrix as `expEvaluationMatrix a (fun j => log (x j))` and applies strict monotonicity of `log`.
+* `intervalMomentMatrix_det_ne_zero` — moments against measures supported on disjoint intervals, by Rolle: each interval contributes a zero of the exponential polynomial, and `n` zeros force all coefficients to vanish.
+* `bumpMomentMatrix_det_ne_zero` — moments against nonnegative bump functions with disjoint supports, by the same route.
+
+### 2. Why this is the right shape
+
+The paper needs five specific rows to be independent, with exponents and radii chosen numerically. The tree proves independence for *any* finite set of distinct exponents on ordered nodes, so the five-row case is an instance and no numerical coincidence is relied on. It also supplies `exists_ordered_derivative_zeros` (E90), which is the Rolle step in the form the repair uses. That is stronger than the paper in the way that matters: a wrong numerical choice of exponents would not be caught by a general theorem, but the theorem also does not need the choice to be right — it needs only distinctness.
+
+### 3. What is not proved, and it is the audit's usual gap
+
+`det ≠ 0` says the linear system has a unique solution. It does not bound the solution. The five-moment correction solves `M c = b`, and the size of `c` is what the later estimates charge; `MomentRepairPicard` and `FiveRowRank` carry the quantitative side, and this entry did not read their constants. So the placement is: nonsingularity is proved in general, invertibility is `Matrix.isUnit_iff_isUnit_det`, and the operator norm of the inverse is not a statement in this module.
+
+That is not a criticism of the module — it is a determinant module. It is a statement about what a row "moment matrix nonsingular" can and cannot mean: the kernel checks the determinant is nonzero, and the *size* of the inverse is a term-level constant like every other in this development.
+
+### 4. The `n`-general form has a cost
+
+Because the theorem is stated for arbitrary `n`, its conclusion says nothing about which `n` the construction instantiates. The five-row use is a call site, not a theorem; a reader who wants "the 5×5 determinant is nonzero" has to instantiate `n = 5` and supply five distinct exponents and five ordered radii. The audit did not find that instantiation by name. So the row is placed at the level of the general principle, and the specific five-row instance is a use, not a declaration — the same granularity distinction E97 recorded for Proposition 9.6.
+
+*Evidence: `PowerMomentMatrix.lean:121–155,216–267`; `FiveProfileMoments.lean:8`; `FiveRowRank`; `MomentRepair.lean:36–59`; `CROSSWALK.md` §3.4.*
+
+---
+
+## E106 — The uniqueness theorem assumes no decay on the competitor (2026-11-23)
+
+*Reading entry. `WholeSpaceUniqueness.classical_uniqueness_on_Icc` is the lemma that turns "the candidate blows up" into "no global solution exists". Its hypothesis list is the competitor class, and it is deliberately minimal.*
+
+### 1. The statement
+
+```
+theorem classical_uniqueness_on_Icc {T : ℝ} (hT : 0 < T)
+    {u v : VelocityField} {p q : PressureField} {K : Set Space}
+    (hu : ContDiffOn ℝ ∞ u (Comparison.slab 0 T))
+    (hv : ContDiffOn ℝ ∞ v (Comparison.slab 0 T))
+    (hp : ContDiffOn ℝ ∞ p (Comparison.slab 0 T))
+    (hq : ContDiffOn ℝ ∞ q (Comparison.slab 0 T))
+    (hK : IsCompact K)
+    (hsupp : ∀ t ∈ Icc (0 : ℝ) T, tsupport (fun x => u (t, x)) ⊆ K)
+    (hev : UniformFiniteEnergy (Icc (0 : ℝ) T) v)
+    (hdu hdv : divergence-free)
+    (hNS : navierStokesResidual 1 u p = navierStokesResidual 1 v q)
+    (hzero : u (0, ·) = v (0, ·)) :
+    ∀ t ∈ Icc (0 : ℝ) T, ∀ x, u (t, x) = v (t, x)
+```
+
+What is assumed about `v`: smoothness on the slab, divergence-freedom, the same equation, the same initial datum, and a uniform finite energy bound. What is **not** assumed: spatial decay, compact support, pressure growth, derivative bounds, or a pressure gauge. The module header says so in one line: "No growth, decay, support or derivative bound is assumed for the competing pressure or velocity."
+
+### 2. What makes that possible
+
+The reference `u` has compact spatial support throughout `[0, T]`, so `CompactComparisonBounds.uniformFiniteEnergy_of_compact_slab` gives *it* finite energy, and the difference `w = u − v` has finite energy. The pressure is eliminated by a flux estimate: `PressureFlux.exists_uniform_actual_pressure_flux_bound` produces a constant `CP` for the actual pressure pair from `M` (the `L²` bound on `w`), `U` (an `L³` bound on `u`), `G₀` (a tensor-difference `L¹` bound), and a gradient bound `G` on `u`. Every one of those is produced by a compactness argument on the slab — `exists_lpNorm_three_bound`, `exists_gradient_bound`, `exists_radius_weight_derivative_zero` — not assumed. Then `eq_of_pressure_flux_bound` closes the energy identity with Gronwall.
+
+So the asymmetry is the point: the *candidate* pays for compact support, and the *competitor* pays only finite energy. That is exactly the right trade for excluding a global solution, because a global finite-energy solution is the weakest natural competitor and any decay hypothesis would have made the theorem weaker than Clay's (C).
+
+### 3. The one place the compactness matters
+
+`CandidateProperties.not_global_agreement` uses `IsCompact (Icc 0 1 ×ˢ K)` and continuity of the competitor on that set to get a bound `M`; then it applies `speed_unbounded (max M 1)` to find a point in `K` where the candidate exceeds `M`. If `K` were not compact, or if the competitor were only locally bounded, the argument would need a different bound. The compact support of the candidate is therefore load-bearing twice: once for the energy of the reference in the uniqueness theorem, and once for the boundedness of the competitor on the singular set.
+
+### 4. The scope of "no global solution"
+
+`GlobalFiniteEnergySolution` (`R3/ProblemStatement.lean:125`) has no support, no periodicity, no pressure normalization, and requires `UniformFiniteEnergy (Ici 0)` over all of `ℝ³` and all `t ≥ 0`. So `¬ Nonempty` is: there is no smooth divergence-free field on `ℝ³ × [0, ∞)` with bounded kinetic energy solving the equation with the same force and zero datum. That is (C)'s competitor, and the audit's E76 clause check is the authority for the match; this entry only records that the class is not narrowed by the uniqueness proof.
+
+*Evidence: `R3/WholeSpaceUniqueness.lean:19–69,73–119`; `R3/ProblemStatement.lean:119–136`; `CompactComparisonBounds` (`uniformFiniteEnergy_of_compact_slab`, `exists_lpNorm_three_bound`, `exists_gradient_bound`, `exists_radius_weight_derivative_zero`); `PressureFlux.exists_uniform_actual_pressure_flux_bound`; `R3/CandidateBreakdown.lean:10–36`.*
+
+---
+
+## E107 — The initial-rest clause is load-bearing for the periodic corollary (2026-11-23)
+
+*Reading entry. E98 placed Proposition 10.1's sixth clause as a strengthening. It is not optional: the parabolic compression that produces the periodic candidate consumes exactly that clause to be smooth across the new time origin.*
+
+### 1. The compression
+
+`R3/ParabolicScaling.compressedCandidate` takes a whole-space candidate, a rest hypothesis
+
+```
+hrest : ∀ t, |t| ≤ 3/8 → ∀ x, u (t, x) = 0 ∧ p (t, x) = 0
+```
+
+and a scale `l > 1`, and returns a candidate for the same viscosity `ν` with
+
+* `velocity l u (t, x) = l · u (l²(t−1)+1, l·x)`,
+* `pressure l p (t, x) = l² · p (l²(t−1)+1, l·x)`,
+* `force l f (t, x) = l³ · f (l²(t−1)+1, l·x)`,
+* support `(fun x => l⁻¹ • x) '' K`.
+
+The clock `l²(t−1)+1` maps the singular time `1` to `1` and the original initial time `0` to `1 − l² < 0`. The docstring says it: "Extension by zero before the original initial time makes the compressed solution start from rest, while the spatial support is divided by the arbitrary factor `l > 1`. Viscosity remains unchanged."
+
+### 2. Where `hrest` is used
+
+`zeroBefore u` sets `u := 0` for `t ≤ 0`. Then `zeroBefore_smooth_on hc.velocity_smooth (fun t ht x => (hrest t ht x).1)` proves the zero-extended field is `C^∞` on `Iio 1 × univ`: at `t = 0` the original field is smooth from the right and zero from the left, and the two match because of `hrest`; without it, the extension would have a jump at `t = 0` and `pull_smooth_on` would fail. The pressure uses the same hypothesis with its own scaling `l²`.
+
+So the clause is not cosmetic. It is precisely the analytic input that lets the compression move the initial time to a negative value without losing smoothness. A construction that only proved `u = 0` on a one-sided neighbourhood of `0` would suffice; the theorem's two-sided `|t| ≤ 3/8` is more than enough, and the `3/8` is exactly the radius that survives `l` up to the range used.
+
+### 3. The rest of the invariance
+
+`force_support` re-proves `CompactPositiveTimeSupport` for the scaled force by `affineScale (l³) l (l²) (1−l²)`: the force's time support moves to a compact interval in positive time because `1 − l² < 0`. `velocity_energy_bounded` rescales the energy by `l`'s exponents, `velocity_speed_unbounded` preserves the blow-up at `t = 1`, and `divergence_free` uses `pull_divergence`: `div(u ∘ φ) = l² · div u`, so zero stays zero. `navier_stokes` is `pull_residual` plus `zeroBefore_residual`, and the pressure scaling `l²` is what makes the residual match `force l f`.
+
+### 4. What this changes in the ledger
+
+Nothing — both rows were already placed. It changes what the placement *means*: Proposition 10.1's sixth clause is not a convenience attached to the forcing theorem, it is the compatibility condition between the whole-space candidate and the periodic corollary's clock. The audit's E91→E98 sequence therefore ends with a clause that was not merely missing from a structure, but was the one whose absence would have blocked Corollary 10.6's construction.
+
+*Evidence: `R3/ParabolicScaling.lean:1–15,41–69,92–120,163–222`; `R3/Theorem.lean:31`; E98; E70.*
+
+---
+
+## E108 — `MaximalLifespan` is a periodic development, and its "lifespan" is a set (2026-11-23)
+
+*Reading entry. The module name suggests a general statement about the whole-space candidate. It is stated for periodic classical solutions, and that scope is the point.*
+
+### 1. The structures
+
+`ClassicalSolution f initial T u p` requires `ContDiffOn` on `lifespanDomain T = Ico 0 T ×ˢ univ`, `UnitSpatialPeriodsOn` for both velocity and pressure on `Ico 0 T`, the initial datum, divergence-freedom, and the residual identity for `t ∈ Ioo 0 T`. There is no energy bound in the structure, and no pressure gauge condition: the docstring says pressures are "retained as witnesses but are never required to agree with a different gauge."
+
+`HasClassicalExtension` asks for a strictly larger `S`, a solution on `S`, and velocity agreement on the whole of the original interval — the pressure may differ by a time-dependent spatially constant normalization. `IsMaximalClassicalSolution` is a solution with no extension.
+
+### 2. The set, not the number
+
+```
+def admissibleLifespans (f) (initial) : Set ℝ :=
+  {T | ∃ u p, ClassicalSolution f initial T u p}
+```
+
+"Maximal lifespan is one" is then a statement about this set, not about a distinguished solution: `candidate_admissible_lifespans` proves `admissibleLifespans f 0 = Ioc 0 1`. That is stronger and cleaner than picking a solution and proving it cannot be extended, because it says *every* classical solution with this force and datum has lifespan at most one, and every `T ≤ 1` is attained by restriction (`ClassicalSolution.restrict`).
+
+### 3. The exclusion step
+
+`PeriodicViscosity.excludes_global_solution` takes a pre-singular periodic solution with `SpeedUnboundedAtOne` and a global periodic competitor (smooth on `futureDomain`, periodic on `Ici 0`, same force, zero datum, **no energy bound**) and derives `False` by applying `MaximalLifespan.unbounded_excludes_continuous_extension`: the competitor is a continuous extension of the pre-singular solution across time one, and a continuous periodic field on a compact spatial torus is bounded there. Uniqueness on each `[0, t]`, `t < 1`, identifies the two, so the unboundedness contradicts the bound.
+
+### 4. Scope, stated plainly
+
+This module is part of alternative (D), not (C). Its `ClassicalSolution` is periodic by construction; the whole-space exclusion goes through `WholeSpaceUniqueness` and the compact support of the candidate (E106), not through this file. `CandidateConsequences` imports it and quotes `candidate_is_maximal` for the periodic candidate, which is consistent. So a reader who finds `MaximalLifespan` while looking for the whole-space theorem has found the wrong alternative — the same namespace hazard E99 recorded for `CandidateProperties`, in a different form: the name is general, the statement is periodic.
+
+*Evidence: `MaximalLifespan.lean:24–66,68–115`; `PeriodicViscosity.lean:18–79`; `PeriodicPaperTheorem.lean:44–53`; `CandidateConsequences.lean:136–148`.*
+
+---
+
+## E109 — The four reserved windows: one touching pair, one gap (2026-11-23)
+
+*Reading entry. `ReservedPatches` is the module behind Theorem 4.6(vi)'s two reserved intervals, and E92 read only two of its four slots. The full offset table is more specific than the paper's prose, and its arithmetic is exact.*
+
+### 1. The table
+
+```
+leftOffset  modulation = -25   heat = -20   positive = -14   mean = -8
+rightOffset modulation = -20   heat = -15   positive = -9    mean = -3
+```
+
+Each window has width exactly 5 (`offset_width`, proved by `norm_num` for each constructor), all four lie in `[-25, -3]` (`offset_bounds`), and any two distinct windows are ordered (`offsets_separated`, a case split). The module header says these are "the four examples in the manuscript: (-25,-20), (-20,-15), (-14,-9), and (-8,-3), relative to the pulse entrance."
+
+### 2. Two details the header does not state
+
+First, `modulation` and `heat` **touch**: `rightOffset modulation = -20 = leftOffset heat`. `offsets_separated` is stated with `≤`, not `<`, so it permits this; the two windows are disjoint as half-open or open intervals but share an endpoint. Second, there is a **one-unit gap** between `heat` and `positive`: `-15 < -14`. So the four are not an evenly spaced partition; they are two adjacent pairs with a gap in the middle. If a later estimate needs a positive distance between every pair, it has it for all pairs except `modulation`/`heat`, where the distance is zero.
+
+### 3. Why the offsets are in log coordinates
+
+`left F XR s = radius XR (pulseStart + leftOffset s)` with `radius XR y = XR · exp y`, so the windows are images of log-`X` intervals under `X = XR e^y`. `radius_strictMono` makes the ordering in `y` the ordering in `X`; `left_pos` gives positivity. The paper's `Ipos`, `Imean` and the `Jpos`, `Jmean` conversion (p. 21) is the same change of variable E92 placed. The tree's slots are therefore not four arbitrary time windows: they are four multiplicative bands of the radial variable, chosen so that the `(1+η²)^{-1}X^{-1/2-λ}` patch is pure on two of them and heat-corrected on the others.
+
+### 4. The correction to E92's phrasing
+
+E92 wrote "the log offsets are `(-14,-9)` for `.positive` and `(-8,-3)` for `.mean`, four five-log-unit windows", which reads as if there were two offsets and four windows. The precise statement is four slots, each of width five, with the table above. The placement of Theorem 4.6(vi) is unchanged — E92's mapping of `Slot` to `Ipos`/`Imean` used the right two slots — but the audit's own description was compressed past the point of accuracy, and this entry restores it.
+
+*Evidence: `ReservedPatches.lean:1–46`; `offset_width`, `offset_bounds`, `offsets_separated`, `radius_strictMono`, `left_pos`; `ns.txt` p. 21, pp. 33–34; E92 §2.*
+
+---
+
+## E110 — The active-annulus weight has two different edge factors (2026-11-23)
+
+*Reading entry. `ActiveAnnulusWeight.weight` is the paper's `ζ`, and it is not symmetric: the left edge and the right edge use different cutoffs.*
+
+### 1. The definition
+
+```
+def weight (c a b y : ℝ) : ℝ :=
+  FlatCutoff.edge c (y - a) * FlatCutoff.edge 4 (b - y)
+
+def edgeDistance (a b y : ℝ) : ℝ := min 1 (min (y - a) (b - y))
+
+def radialWeight (c a b X : ℝ) : ℝ := if 0 < X then weight c a b (Real.log X) else 0
+```
+
+`FlatCutoff.edge c x` is the flat exponential cutoff `exp(−c/x²)` on `x > 0` and `0` for `x ≤ 0` (its `edge_of_pos` rewrite is used in `edge_mono_pos`). The left factor carries `c`, the right factor carries the literal `4`. In the actual instantiation `c` is `activationTime²`, so the two sides of the annulus have cutoffs of different width; both are `C^∞` and flat at the edge, so the difference is quantitative, not regular.
+
+### 2. What is proved about it
+
+`weight_nonneg`, `weight_pos` on `Ioo a b`, `weight_zero_left` for `y ≤ a`, `weight_zero_right` for `b ≤ y`, `weight_le_left`, `weight_le_right`, `weight_le_one`, and `weight_smooth` for `c > 0`. `edgeDistance_pos` on the open annulus, `edgeDistance_le_one`, and the two one-sided bounds `edgeDistance ≤ y − a`, `edgeDistance ≤ b − y`. Later in the file, the `δ^{-m}` loss is `distance_power_le_left` and `left_bound_to_weight` (E92), and the flat-edge derivative vanishing is `weight_flat_left`/`weight_flat_right`.
+
+So the weight is positive exactly on the open annulus, vanishes outside, is `≤ 1`, and its distance to the boundary is the `δ` of the paper's display. That is the `ζ` of Theorem 4.6(iv), and E93's `stress_lower_bound` uses it on `activeLeft < X < activeRight` with `η ∈ [-1, 1]`.
+
+### 3. The asymmetry is not an accident of notation
+
+The right factor's `4` is a fixed constant because the outer edge is the terminal edge, where the profile has already reached its plateau; the left factor's `c` is tied to the activation time because the inner edge is where the cone is switched on. The two edges play different roles in the construction — one is a cutoff of the source, the other a cutoff of the stress — and the weight encodes both. A reader who assumes `ζ` is a symmetric bump will get the derivative bookkeeping wrong at one of the two edges, which is exactly what `left_bound_to_weight` and its right-hand counterpart exist to prevent.
+
+### 4. What the audit did not check
+
+Whether the paper's displayed `ζ` has the same two constants. E92/E93 established that the *object* is the paper's: the domain, the positivity, the flat edges, the `δ^{-m}` loss and the `cζ` lower bound all match. The specific numerical asymmetry `c` versus `4` is a formalization choice that the paper's prose does not pin down, and this entry records it as such rather than claiming a clause match.
+
+*Evidence: `ActiveAnnulusWeight.lean:20–25,36–80`; `FlatCutoff.edge_of_pos`, `edge_nonneg`, `edge_pos`, `edge_contDiff`; `LeadingStressWeights.stress_lower_bound`, `physical_jet_bound`; E92 §2; E93.*
+
+---
+
+## E111 — The toolchain is pinned to a prerelease tag (2026-11-23)
+
+*Reading entry. Three files decide whether the build can be repeated: `lean-toolchain`, `lakefile.toml`, and the lock file. The first two pin tags, not commits.*
+
+### 1. The pins
+
+```
+lean-toolchain: leanprover/lean4:v4.34.0-rc2
+lakefile.toml:  mathlib        rev = "v4.34.0-rc2"
+                Comparator     rev = "v4.34.0-rc2"
+```
+
+All three agree, which is why the build reproduced on a clean runner (E73, 9,580 jobs, 28 min 35 s) and why the axiom print and Comparator runs are meaningful: the kernel, the library and the checker are the same generation. The repository also states the commit under audit, `f9e8bc5`, in its README and in the audit's citations.
+
+### 2. What a tag does not guarantee
+
+A git tag is a mutable ref. `rev = "v4.34.0-rc2"` resolves to whatever the tag points at when Lake fetches it. If the tag were moved or deleted, the same `lakefile.toml` would resolve to a different tree, and "clone and build" would no longer reproduce the artifact. A commit SHA would remove that risk. Lake's manifest (`lake-manifest.json`) normally records the resolved SHAs; this slice did not read it, so the audit does not claim the pins are hashes. What it can say is that the two declarations above are tags.
+
+### 3. Why it is worth recording rather than fixing
+
+The audit does not modify upstream. The point is for anyone reproducing: record the resolved SHAs at the time of the run, not just the tag, and keep the build log (E73 does — the full `build.log`, not a tail). The repository's own CI workflow checks out `f9e8bc5` explicitly and installs Lean through `elan`, so the *repository* is pinned by SHA; it is the *toolchain and dependencies* that are pinned by tag. That split is the useful thing to know.
+
+### 4. The prerelease itself
+
+`v4.34.0-rc2` is a release candidate, not a stable release. That is not a defect — the development may need features that only exist there — but it means the artifact is tied to a toolchain that upstream may replace. The audit's reproduction is therefore evidence about *this* toolchain at *this* tag, and the axiom footprints (`propext`, `Classical.choice`, `Quot.sound`) are footprints under it. Nothing in the mathematics depends on the version; the machine-checking does.
+
+*Evidence: `lean-toolchain:1`; `lakefile.toml:1–29`; `.github/workflows/kernel-check.yml`; `README.md` (commit `f9e8bc5`); E73.*
+
+---
+
+## E112 — The `sorry` count is five, and four of them are the challenge (2026-11-23)
+
+*Measurement entry. The README claims no reachable `sorry`, no `axiom`, no `native_decide`, no `unsafe`, no `implemented_by`. A raw token count over the whole tree returns five `sorry`s. Both statements are true; the difference is where the tokens are.*
+
+### 1. The counts
+
+Over `NavierStokesAndEuler/`, excluding `.lake/`:
+
+| Token | Raw occurrences | Declarations |
+|---|---|---|
+| `sorry` | 5 | 4, all in `ComparatorChallenges/` |
+| `axiom` | 4 | 0 (`^\s*axiom` returns nothing) |
+| `native_decide` | 0 | 0 |
+| `implemented_by` | 0 | 0 |
+| `unsafe` | 0 | 0 |
+
+The four `sorry`s are `ComparatorChallenges/NavierStokes.lean:277,284` and `ComparatorChallenges/Euler.lean:88,184`. Those files are the *challenge statements*: the theorem to be proved, with `sorry` as the placeholder the submitted solution fills. The fifth is prose — `ComparatorChallenges/NavierStokes.lean:29` says "including their intentional `sorry` challenge placeholders" — which is a docstring, not a term. So the library that proves the results contains no `sorry` at all, and the only holes in the repository are the ones the Comparator pipeline is designed to fill (and which E75/E79 show being filled).
+
+The four `axiom` tokens are likewise not declarations; no line in the tree begins with `axiom`. They occur in comments or strings, most likely the descriptions of Comparator's permitted-axiom policy.
+
+### 2. The size, for the record
+
+`find` over `NavierStokes/` and `Euler/` returns **2,655 `.lean` files** and **640,857 lines**. The README's figure of 641,332 lines is 475 lines larger, which is the `ComparatorChallenges/` directory — the count there includes the challenge statements, the engine count does not. The earlier audit figure of "816 modules" was modules under `NavierStokes/` only; the two libraries together are three times that, because the Euler development is large and the `Axis*` family alone is dozens of files.
+
+### 3. Why the distinction is not pedantic
+
+A public claim of "no `sorry`" invites the check above, and the check returns five. A reader who stops there concludes the claim is false. The right reading is scoped: no `sorry` in any module that the headline theorems depend on; four in the challenge files, where they are the interface, and one in a sentence about them. The audit's earlier phrasing — "no reachable `sorry`" — was the correct one, and this entry supplies the numbers behind it so that the next person to run `rg sorry` is not surprised.
+
+The same applies to `axiom`. The kernel axiom footprint printed by `#print axioms` is three axioms (`propext`, `Classical.choice`, `Quot.sound`); a text search for the word returns four hits that have nothing to do with the footprint. Token counts and kernel footprints are different measurements, and only the second one is evidence about what the theorem depends on.
+
+### 4. What this does and does not establish
+
+It establishes that the source tree contains no proof hole in the two libraries, and that the four holes in the repository are the challenge's. It does not establish that the proofs are correct — that is the kernel's job, and it was reproduced (E73). It does not establish that the statements are the paper's — that is E76 and E80–E82. And it does not establish that the constants are meaningful — that is the audit's standing finding.
+
+*Evidence: `rg -n '\bsorry\b'`, `rg -n '^\s*axiom\b'`, `rg -n '\bnative_decide\b'`, `rg -n '\bimplemented_by\b'`, `rg -n '\bunsafe\b'` over `NavierStokesAndEuler/` excluding `.lake/`; `find ... -name '*.lean' | wc -l`; `ComparatorChallenges/NavierStokes.lean:29,277,284`; `ComparatorChallenges/Euler.lean:88,184`; E73.*
+
+---
+
+## E113 — The headline theorem excludes finite-energy competitors only (2026-11-23)
+
+*Reading entry. `breakdownStatement` is the paper's Theorem 1.1 in Lean. Its negation is narrower than the English phrase "no global solution", and the difference is exactly the Clay alternative it targets.*
+
+### 1. The quantifier structure
+
+```
+def breakdownStatement : Prop :=
+  ∀ ν : ℝ, 0 < ν →
+    ∃ u p f : VelocityField, ∃ K : Set Space,
+      CandidateProperties ν u p f K ∧ ¬ Nonempty (GlobalFiniteEnergySolution ν f)
+```
+
+Three things to read off. The viscosity is universal (`∀ ν > 0`). The fields, the force and the support set are existential and chosen *together* — the theorem does not say that every force has this property, and it does not say that the force is independent of the solution. And the excluded object is `GlobalFiniteEnergySolution`, which carries smoothness on all of `ℝ³ × [0, ∞)`, divergence-freedom, the same force, zero datum, and a **uniform finite kinetic-energy bound** (E106).
+
+### 2. What is not excluded
+
+A global smooth solution with unbounded kinetic energy is not excluded by this statement. Neither is a global weak solution, nor a global solution with a different pressure gauge, nor a solution that exists for all time but fails to be smooth at some point. The only competitor ruled out is the one Clay's alternative (C) names: global, smooth, finite energy.
+
+That is faithful to the paper's own claim and to Fefferman's text (E76), and it is worth stating because the README's short version says "no global finite-energy solution exists" — accurate — while the paper's §1 prose can be skimmed as "no global solution". The formal statement is the weaker, correct one, and the audit has no finding that it should have been stronger: proving exclusion of an infinite-energy global solution would be a different theorem and is not what (C) asks.
+
+### 3. The dependence on the force
+
+Because `f` is existentially quantified inside the same block as `u` and `p`, the theorem's content is: there is a force, built from the same construction, for which the candidate blows up and no finite-energy global solution exists. `force_nonzero_of_no_global_solution` (`R3/CandidateBreakdown.lean:57`) shows the force must be nonzero somewhere in positive time, so the construction cannot degenerate to the unforced equation. The theorem therefore says nothing about the unforced alternatives (A) and (B), which is the scope statement the README and E76 both carry.
+
+### 4. Why the shape matters for the Clay reading
+
+Alternative (C) in Fefferman's statement is a *forced* breakdown: there exists an admissible datum and force for which no global solution exists. The Lean statement's `∃ u p f K` is exactly that existential, and the universal `∀ ν > 0` strengthens it from one viscosity to every positive viscosity. The audit's earlier E60 correction — that (C) does not require the force to be zero — is the same point from the other direction. What the statement does **not** do is resolve (A) or (B), which quantify over all admissible data and would require an existence theorem for the unforced equation, not a counterexample.
+
+*Evidence: `R3/ProblemStatement.lean:150–160`; `R3/Theorem.lean:48–60`; `R3/CandidateBreakdown.lean:57–66`; `R3/ProblemStatement.lean:119–136`; E60; E76.*
+
+---
+
+## E114 — The energy conclusions are proved for the same fields (2026-11-23)
+
+*Reading entry. Lemma 10.4 of the paper gives energy and dissipation bounds. The Lean counterpart is not a separate existence statement: it is a conjunction added to the same witnesses as Theorem 1.1.*
+
+### 1. The statement
+
+```
+theorem theorem_1_1_with_dissipation (ν : ℝ) (hν : 0 < ν) :
+  ∃ u p f K,
+    CandidateProperties ν u p f K ∧
+    ¬ Nonempty (GlobalFiniteEnergySolution ν f) ∧
+    IntervalIntegrable (CompactEnergy.l2Norm f) volume 0 1 ∧
+    IntegrableOn (CompactEnergy.dissipation u) (Ico 0 1) ∧
+    (∀ T ∈ Ico 0 1,
+      l2Sq u T + 2 * ν * ∫ t in 0..T, dissipation u t ≤ (cumulativeForceNorm f T)^2) ∧
+    2 * ν * ∫ t in Ico 0 1, dissipation u t ≤ (cumulativeForceNorm f 1)^2
+```
+
+The same `u p f K` satisfy the candidate properties, the non-existence, and the four energy conclusions. This is a stronger packaging than "there exist fields with the energy bounds": it prevents a proof from switching to a different, better-behaved solution for the energy estimate.
+
+### 2. What the inequality says
+
+It is the standard energy identity with the force term kept on the right: `½‖u(T)‖² + ν∫₀ᵀ‖∇u‖² ≤ ½(∫₀ᵀ‖f‖)²`, written with `l2Sq` and `dissipation` in place of the norms. The right-hand side is the square of the *cumulative* force norm, not zero, because the force is nonzero. The two integrability clauses are what make the totalized integrals finite rather than `∞`: `IntervalIntegrable (l2Norm f) 0 1` and `IntegrableOn (dissipation u) (Ico 0 1)`.
+
+The final line is the `T → 1` endpoint, stated on the half-open interval so that it does not assert integrability at the singular time. That is the same convention as the candidate's smoothness on `preSingularDomain`: everything is asserted strictly before `1`.
+
+### 3. Why this is not circular
+
+The energy bound is one of the candidate's fields (`energy_bounded : UniformFiniteEnergy (Ico 0 1) u`), so a reader could ask whether the dissipation theorem merely restates it. It does not: `energy_bounded` bounds `‖u(t)‖²` uniformly, while `candidate_energy_estimates` (`CompactEnergy`) derives the *integrated* dissipation inequality from the PDE, the divergence-free condition and the compact support. The uniform bound is an input to the derivation, not the conclusion. The audit did not read the body of `candidate_energy_estimates`; it read its statement and its use.
+
+### 4. What remains unplaced
+
+Lemma 10.4 is not one of the 74 numbered results this ledger counts (it is a lemma in §10, and the ledger's 74 includes the numbered results the index found). The energy conclusions are therefore evidence that the development has the paper's quantitative energy content, not a row in the placement table. Recorded here so that the table is not read as "everything outside the 13 is missing": some of it is present under a §10 lemma that the index did not label.
+
+*Evidence: `R3/Theorem.lean:62–82`; `R3/ProblemStatement.lean:108`; `CompactEnergy.candidate_energy_estimates`, `l2Sq`, `dissipation`, `cumulativeForceNorm`; `ns.txt` §10 (Lemma 10.4).*
+
+---
+
+## E115 — What "placed" means, and what thirteen of seventy-four does not say (2026-11-23)
+
+*Method entry. The ledger has moved four times in this slice. It is worth writing down exactly what a row asserts, because the number is easy to over-read in either direction.*
+
+### 1. The three statuses, precisely
+
+* **placed, statement read** — a Lean declaration exists whose *statement* matches the paper's numbered result clause by clause, and the audit read both. It does not mean the proof was read, recompiled, or checked for validity.
+* **partial** — some clauses have declarations and some do not. The row names which.
+* **cited in a docstring, unchecked** — a Lean file names the paper's result in a comment, and the audit has not read the declaration against the paper's text. This is the development asserting the correspondence, not the audit.
+* **unplaced** — no declaration was found, or none was read. It does **not** mean the result is absent from the formalization. E94, E95 and E98 each moved a row out of this column by finding a statement under a different name.
+
+### 2. The current table
+
+| Status | Count |
+|---|---|
+| placed, statement read | 13 |
+| partial | 0 |
+| cited-unchecked | 2 |
+| unplaced | 59 |
+| total | 74 |
+
+The 13 are the paper's spine: A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Propositions 5.3, 9.1, 9.5, 9.6, 9.9, 10.1, Corollary 10.6. The 59 include the appendices' supporting lemmas, the §6–§8 construction lemmas, and every estimate inside §7. The two cited-unchecked are Lemma 9.2 and Proposition 9.3.
+
+### 3. Why the spine first
+
+The audit chose the results the rest of the paper consumes, not the ones easiest to match. Theorem 4.6 is the existence theorem; Proposition 5.3 is the coefficient induction; 9.1, 9.5, 9.6 and 9.9 are the residual estimates and the iteration; 10.1 and 10.6 are the forcing and its periodic corollary. If a defect existed in the argument as opposed to the code, it would most likely be in one of these, because they are where the quantitative content lives.
+
+What the placements establish is that each of those results has a declaration whose statement is the paper's. What they do not establish is that the declaration's *proof* proves the paper's inequality — only that the inequality is the one being stated. That distinction has been the audit's bottom line since E67 and it has not changed.
+
+### 4. The number to quote
+
+"Thirteen of seventy-four numbered results are placed at statement level; none is known to be missing; none has been recompiled for this audit." That is four claims, and all four are true. Quoting only the first would overstate the completeness; quoting only the last would understate the work. The pair is the honest summary.
+
+*Evidence: this log, E91–E98; `CROSSWALK.md`; `formalization.yaml`; E73.*
+
+---
+
+## E116 — Two identities in the audit are the auditors' own (2026-11-23)
+
+*Method entry. The manuscript's §5 contains two computations that are not in the Lean tree and not in the paper: the measure scaling under the similarity change of variables, and the critical weight `b* = −(3−2h)/4`. They are the audit's own derivation, and the README says so. This entry states exactly what that means.*
+
+### 1. What the two identities are
+
+The first is the Jacobian of the map from physical to similarity coordinates: with `s = qX`, `r = q√(2X)`, the measure transforms with a factor of `q` and the radial weight with a factor of `√(2X)`. The second is the exponent at which the two viscous contributions balance, obtained by setting the radial weight `b−1` equal to the axial weight `b−2D(h)`; with `D(h) = ½−h` the solution is `b* = −(3−2h)/4`.
+
+### 2. Why they are not attributed to the source
+
+The Lean development has the *ingredients* — `CoordinateAlgebra.D`, the derivative weights, `SimilarityProfile.q`, `radialEnergy` — but it does not state either identity as a theorem, and the paper does not print either display. The audit derived them to explain why the two weights differ by `2h`, which is the anisotropic finding in `PHASE2-FINDINGS.md` and in the manuscript's §5. They are therefore marked as audit-derived wherever they appear, and they carry no formal verification.
+
+### 3. What would change if they were wrong
+
+The anisotropic *finding* would survive, because it is a direct computation from the tree's own derivative identities: `∂ₛ²` has weight `b−2`, `∂𝓏²` has weight `b−2D(h)`, and the Laplacian's two parts differ by `2h` for every admissible `h`. The critical weight `b*` is an interpretation of that difference, not the difference itself. The measure scaling is used only to explain the normalization, not to prove anything about the code.
+
+That is the right division of labour: the identity that matters is checked against declarations; the two explanatory computations are labelled and can be discarded without touching the finding.
+
+### 4. The general rule this records
+
+An audit that derives its own mathematics must mark the derivation, or a later reader will attribute it to the source and treat it as verified. The README's "Two identities in §5 are the auditors' own derivation" sentence is that mark. This entry is the log-side copy, so that anyone reading the entries without the README sees it too.
+
+*Evidence: `PHASE2-FINDINGS.md`; `MANUSCRIPT.tex` §5; `README.md` "What this audit did and did not establish"; `CoordinateAlgebra.D`; `SimilarityProfile.q`; `radialEnergy`; E93.*
+
+---
+
+## E117 — How a row moves: four searches that failed for the same reason (2026-11-23)
+
+*Method entry. Four ledger rows moved in this slice, and every move came from replacing a name search with a shape search. The pattern is worth recording because it is the only repeatable technique the audit has found for statement-level matching.*
+
+### 1. The four cases
+
+| Row | What the paper calls it | What the tree calls it | What the first search was |
+|---|---|---|---|
+| Proposition 9.1 | normalized linear residual | `globalGood` | "linear residual", "normalized" |
+| Proposition 5.3 | `q^{2h(N+1)−K_m}` | `slowOrder h (N+1)` | `2 * h * (N + 1)` |
+| Proposition 10.1(vi) | `u = p = 0` for small `t` | `theorem_1_1_with_initial_rest` | a field of `Properties` |
+| Theorem 4.6(iv) | `|T₀| ≥ cζ` | `stress_lower_bound` | `lower_bound`, `stable_lower` |
+
+Each first search was reasonable and each returned nothing. The successful search was: write down the *conclusion* as a type, then look for a declaration whose type has that shape — a conjunction with five `WaveClass` members, an exponent of the form `a − b*m`, a theorem with `∀ t, |t| ≤ r → u = 0`, a `∃ c > 0, c * zeta ≤ ‖stress‖`.
+
+### 2. Why the names diverge
+
+The Lean development is written by people solving the proof, not by people matching a paper. Names follow the proof's internal vocabulary: `globalGood` is what the coefficient is good *for*, `slowOrder` is the order in the slow expansion, `stress_lower_bound` names the object and the inequality. The paper's vocabulary is expository: "normalized linear residual" describes the object's role, not its construction. There is no reason for the two to coincide, and mostly they do not.
+
+### 3. The technique, stated as a procedure
+
+1. Extract the paper's conclusion as a formula, with every quantifier explicit.
+2. Decide which symbols are the paper's names for tree objects (via `CROSSWALK.md`).
+3. Search for the *shape*: `∃ C, ∀ x, ‖…‖ ≤ C * …`, `∀ m, ∃ C, …`, a conjunction of the right arity.
+4. When a candidate is found, check the hypotheses clause by clause, not just the conclusion.
+5. If nothing is found, record "unfound", not "absent", and say what was searched for.
+
+The fifth step is the one that keeps the log honest. Three of the four rows above were recorded as absent before they were found, and each time the record said what had been searched — which is why the correction was possible without re-reading everything.
+
+### 4. The cost of the technique
+
+A shape search over 2,655 files is slower than a name grep, and it can miss a statement whose shape was mis-transcribed. The four successes do not prove the remaining 59 are findable; they prove the method works when the shape is right. The audit's estimate for the rest — two weeks of one section per day — is an estimate for this procedure, not for a grep.
+
+*Evidence: E92, E93, E94, E95, E98; `CROSSWALK.md` "Method for the next pass"; this log's `Evidence` lines.*
+
+---
+
+## E118 — Three ways this audit's bottom line could be wrong (2026-11-23)
+
+*Method entry. An audit that cannot name its own failure modes is not an audit. These are the three concrete findings that would overturn the "no demonstrated defect" conclusion, in order of how likely they are to exist.*
+
+### 1. A clause mismatch in a placed row
+
+Any one of the 13 placements could be wrong in a clause the audit read too quickly. The most exposed are Theorem 4.6(iv) (a lower bound with an existential constant, where "for every `p` in the annulus" versus "for almost every" would matter), Proposition 5.3 (a filter statement, where the paper's display is pointwise), and Proposition 9.6 (four separate declarations, where the paper asserts one composed step). Each is recorded with its qualification; a reader who finds a clause that does not match should treat the row as unplaced.
+
+How to check: take the paper's display, take the declaration's type, and compare quantifier by quantifier. The audit's `Evidence` lines point at both.
+
+### 2. An undischarged hypothesis at an assembly boundary
+
+The second failure mode is structural: every boundary the audit read discharges its inputs, but the audit did not read every boundary. E96 checked §4 and §5; E67–E71 checked the stage estimates; E65/E66 checked the force. The unread boundaries are the §6–§8 construction lemmas — the dyadic charts, the pulse covariance, the five-moment repair — and the pressure-flux interface (`LEADS.md` §4). If a `StageEstimates` field is ultimately supplied by a hypothesis rather than a construction, it would be there.
+
+How to check: follow `ActualCandidateAssembly.assemble` field by field to its inputs and ask, for each, whether the producer is a theorem or a parameter.
+
+### 3. A reachable axiom or `sorry`
+
+The third is the cheapest to rule out and the most damaging if present. The current tree has no `sorry` in either library (E112), no `axiom` declaration, and the headline theorems' footprints are `propext`, `Classical.choice`, `Quot.sound` (E73). A reachable `sorryAx` would show up in that print; it does not. The remaining risk is not a hole but a *definition*: a `Classical.choice` that selects a schedule with no proof that the selection is nonempty. E66 and E71 traced the two selections the audit could find; a third, unread one would be the place to look.
+
+### 4. What is not on the list
+
+"The anisotropic weights are inconsistent" is not a failure mode of this audit, because E63 already retracted the claim that they prevent an order-by-order construction. "The constants are unusable" is not a failure mode either, because the audit never claimed they are used: it claimed they are existential, which E93's `c = min ml (min mr mm)` confirms. The bottom line is narrow on purpose: no demonstrated defect in the argument, and no independent verification of the estimates.
+
+*Evidence: E63; E65–E71; E73; E93; E96; E112; `LEADS.md` §4; `ActualCandidateAssembly.assemble`.*
+
+---
+
+## E119 — The evidence ledger, at the end of this slice (2026-11-23)
+
+*Summary entry. What has been machine-checked, what has been read, and what has only been asserted — stated once, in one table, so the three are not confused.*
+
+### 1. Machine-checked
+
+| Claim | Evidence |
+|---|---|
+| `lake build NavierStokes` succeeds from a clean clone | 9,580 jobs, exit 0, run `44987195620`, E73 |
+| headline footprints are three permitted axioms | `#print axioms` for the R3 theorems and the periodic corollary, no `sorryAx`, E73 |
+| Comparator accepts both NS challenges | builtin kernel and nanoda, run `45119134981`, E75 |
+| Comparator accepts both Euler challenges | 10,603 jobs, two kernels, E79 |
+| Euler paper-clause footprints | `maximalGradientNorm_limsup` printed, E84 |
+| no `sorry` in either library | 5 raw tokens, 4 in the challenge files, 0 in the libraries, E112 |
+| no `axiom` declaration | `^\s*axiom` returns nothing, E112 |
+
+### 2. Read, not compiled
+
+| Claim | Evidence |
+|---|---|
+| 13 of 74 numbered results placed clause by clause | E91–E98 |
+| Theorem 4.6 has no free inputs; §5's rate assumes only smoothness | E96 |
+| the profile link is a definition, not a compatibility theorem | E97 |
+| the force's smoothness is constructed, not assumed | E65, E66 |
+| the stage-estimate chain reaches the source wave class | E67–E71 |
+| periodic uniqueness and its integration layer | E85, E86 |
+| the periodic corollary's compression preserves the PDE | E70, E107 |
+| the uniqueness competitor class has no decay hypothesis | E106 |
+
+### 3. Asserted only
+
+| Claim | Status |
+|---|---|
+| the paper's argument is mathematically correct | not established; every row is statement-level |
+| no paper lemma is missing from the formalization | not established; 59 rows unplaced |
+| the constants are dimensionally consistent | not established; they are existential |
+| the encoded statement is Clay's (C) | established by E76's clause check, not by this slice |
+| the entire upstream project is audited | false by scope: Euler and the §6–§8 machinery are outside |
+
+### 4. The one-sentence version
+
+The kernel accepts the artifact, two external kernels accept the two challenges, and thirteen of the paper's seventy-four numbered results have a declaration whose statement is the paper's; none of that is a proof that the paper's inequalities are valid, and the audit's finding about constants is a statement about what the kernel was asked to check, not about whether the mathematics is wrong.
+
+*Evidence: this log, E65–E119; `README.md`; `CROSSWALK.md`; `formalization.yaml`.*

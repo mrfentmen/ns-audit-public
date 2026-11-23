@@ -280,15 +280,18 @@ coefficient series. 9.5's `6/5` is `CorrectionState.MeanResidualBounds`, stated 
 `1 + σ` for every admissible `σ` and evaluated at `sigma 0 = 1/5`; 9.6's cycle
 output is `CorrectionStep.gaugeTemporalStage_next_mean` at `σ + 1/10`, with the
 wave side at `gain h (j+1)`. The qualification carried: 9.6's four ordered
-corrections exist as four declarations, not one composed step theorem. What is
-left partial in the whole ledger is now only Proposition 10.1's short-time clause.
+corrections exist as four declarations, not one composed step theorem. What is left partial in the whole ledger is now nothing: E98 closed Proposition 10.1's
+short-time clause by finding `theorem_1_1_with_initial_rest` (`R3/Theorem.lean:31`), which
+proves `u = p = 0` for `|t| ≤ 3/8` — stronger than the paper's "sufficiently small `t ≥ 0`".
+The clause is load-bearing, not cosmetic: `R3/ParabolicScaling.compressedCandidate` consumes
+it to keep the compressed field smooth across the new `t = 0` (E107).
 
 ### The ledger
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 12 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9 |
-| partial | 1 | Proposition 10.1 (5 of 6 clauses) |
+| placed, statement read | 13 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1 |
+| partial | 0 | — |
 | cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
 | unplaced | 59 | the rest |
 | **total** | **74** | |
