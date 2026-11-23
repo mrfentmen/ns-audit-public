@@ -3707,3 +3707,93 @@ Absence of both, with heartbeats present, means the run was still working when i
 - **Nothing mathematical changes.** No fidelity finding is upgraded or downgraded by a capture bug.
 
 *Evidence: artifacts `comparator-check-logs` (run `44999798334`), `cmp-builtin-kernel` and `cmp-verdict-summary` (run `45013487446`); `leanprover/comparator` `Main.lean` at `19e111e2`. Superseded claims are named in §3 rather than deleted.*
+
+---
+
+## E75 — The Comparator check executes and passes: `Your solution is okay!` (2026-11-23)
+
+*Execution evidence. This is the check E73 explicitly did not perform and E74 left unexecuted. It closes the last empirical item on the whole-space side.*
+
+### 1. What was run
+
+`.github/workflows/comparator-check.yml` at `ec1ba19`, the version described in E74 §4.
+
+| item | value |
+|---|---|
+| run | `45119134981`, attempt 1, `workflow_dispatch` |
+| upstream | `openai/NavierStokesAndEuler` at `f9e8bc5` |
+| Comparator | `19e111e2` (`leanprover/comparator`, `v4.34.0-rc2`) |
+| toolchain | `leanprover/lean4:v4.34.0-rc2` on `ubuntu-24.04` |
+| started / comparator step | `05:39:19Z` / `05:44:40Z` |
+| comparator step duration | **7.3 min** (300-min cap, 360-min job cap) |
+| artifact | `cmp-builtin-kernel` (824 B), `comparator-builtin.log`, 20 lines |
+| config | `ComparatorChallenges/NavierStokes.json` with `enable_nanoda` stripped: builtin kernel only |
+
+The pre-comparator path cost 5.4 min, almost all of it disk cleanup and cache restore; `lake build NavierStokes` itself was 0.1 min off the cache.
+
+### 2. The log, in order
+
+```
+Building ComparatorChallenges.NavierStokes
+⚠ [8763/8763] Replayed ComparatorChallenges.NavierStokes
+warning: ComparatorChallenges/NavierStokes.lean:273:8: declaration uses `sorry`
+warning: ComparatorChallenges/NavierStokes.lean:280:8: declaration uses `sorry`
+Build completed successfully (8763 jobs).
+Exporting #[Nat, String, String.mk, Char, Quot, Quot.mk, Quot.lift, Quot.ind,
+  NavierStokes.Comparator.navier_stokes_breakdown_R3,
+  NavierStokes.Comparator.navier_stokes_breakdown_periodic,
+  propext, Quot.sound, Classical.choice, … eagerReduce] from ComparatorChallenges.NavierStokes
+Building NavierStokes.ComparatorSolution
+ℹ [9371/9371] Replayed NavierStokes.ComparatorSolution
+info: …:31:0: '…navier_stokes_breakdown_R3' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: …:32:0: '…navier_stokes_breakdown_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+Build completed successfully (9371 jobs).
+Exporting #[… same 32 targets …] from NavierStokes.ComparatorSolution
+Running Lean default kernel on solution.
+heartbeat 05:49:40Z log_bytes=2479 lean_procs=2
+Lean default kernel accepts the solution
+Your solution is okay!
+```
+
+Both theorems are in the export target list, so a single pass covers (C)'s and (D)'s statements.
+
+### 3. What the string means
+
+`Your solution is okay!` is printed by `compareIt` after four things have happened (`Main.lean:295–309`):
+
+1. the challenge module and the solution module were each built inside the landrun sandbox;
+2. both were exported by `lean4export` against the *same* 32-name target list, so the two exports describe the same constants;
+3. `verifyMatch` compared them, and an unmatched constant or a differing type would have thrown before this line;
+4. the solution export was replayed from scratch in a fresh `Lean.mkEmptyEnvironment` kernel, which printed `Lean default kernel accepts the solution`, and the `Quot`/`Quot.mk`/`Quot.lift`/`Quot.ind` post-check passed.
+
+So the statement `ComparatorChallenges/NavierStokes.lean` poses and the statement `NavierStokes.ComparatorSolution` proves are the same statement, under the permitted axiom set, checked by a kernel that had never seen the solution's environment.
+
+The two `sorry` warnings are the challenge's own statement holes: the challenge *asks* the question with `sorry` where the theorem is asserted (`:273`, `:280`). They are not in the solution export, which is separately reported clean by E73.
+
+### 4. E74's open question, now answered
+
+E74 §6 said the cause of the silent 210- and 355-minute runs was inferred, not isolated. It is now isolated:
+
+| run | wrapper | Duration | Result |
+|---|---|---|---|
+| `44999798334` | `systemd-run --pty` | 354.8 min, cancelled | no comparator output, no verdict |
+| `45013487446` | `systemd-run --pty` | 210.2 min, step timeout | no comparator output, no verdict |
+| `45119134981` | `--pipe`, relay self-tested | **7.3 min** | verdict |
+
+The same work, on the same cached build, finishes in seven minutes. The wrapper was not merely hiding output: with stdout a pipe, `--pty` hands the child a PTY whose buffer nobody drains, so the child blocks on its first few KB of writes. Both long runs were deadlocked, not slow. E74 §3 withdrew the "too slow for the platform" inference; this entry shows why it was wrong, not just that it was unsupported.
+
+### 5. Caveats that travel with the pass
+
+- **Builtin kernel only.** `enable_nanoda` was stripped so the statement check would not depend on a second kernel having compiled. `Comparator (nanoda as second kernel)` runs as a separate step of the same workflow with `continue-on-error`, and its log is the `cmp-nanoda-kernel` artifact of this run. A pass there is a second opinion on the replay; the statement comparison is already decided above.
+- **The sandbox was weaker than documented.** `landrun` logged, six times: `kernel supports Landlock ABI v8, so these default restrictions are not enforced: pathname UNIX socket connections (ABI v9), UDP bind/connect/send (ABI v10)`. The run therefore executed with fewer syscall restrictions than Comparator's README targets. This is a property of the runner's kernel, not of the change in E74, and it affects *isolation*, not the soundness of the comparison: a compromised sandbox would let code escape, not make a mismatch compare equal.
+- **Statement level is untouched.** Comparator answers "does this solution prove the statement this challenge poses". It does not answer "is the challenge statement the Clay statement". That remains the manuscript's §3 question, and it is a judgement about the encoded definition of solution, force and blow-up, not something a kernel decides.
+- **No estimate is reviewed.** Nothing here bears on the constants or the anisotropic weights. Every finding of E0–E72 stands exactly as it did.
+- **Upstream's project is still larger than this check.** Only the whole-space forced Navier–Stokes config was run; `ComparatorChallenges/Euler.json` was not.
+
+### 6. Where this leaves the audit
+
+E73 established the proof term's axiom footprint. E75 establishes that the term proves the challenge's statement. Together those are the two things the kernel and Comparator can be asked, and both have now been asked and answered on a clean clone at `f9e8bc5`.
+
+What remains is what no machine can settle: whether the encoded statement is the Clay statement (manuscript §3), and whether the estimates inside the proof are the right ones (the constants and weights of findings 1 and 2, which are human readings of the source).
+
+*Evidence: run `45119134981`, artifact `cmp-builtin-kernel`, `comparator-builtin.log` (20 lines). Supersedes the status statements in E74 §5 and the README's pre-verdict wording; E74's withdrawal of the timing inference stands and is now explained rather than merely retracted.*
