@@ -3618,7 +3618,7 @@ Two lines of the same run agree. Neither is an external checker.
 
 ### 4. What this does not establish
 
-- **No independent kernel.** `enable_nanoda: true` asks Comparator to re-check the exported proof term in a second implementation. This workflow builds and prints footprints; it does not run Comparator. The nanoda re-check remains a request, not a receipt — E72 §4 is unchanged by this entry, and it is now the only empirical item left on the Navier--Stokes side.
+- **No independent kernel.** `enable_nanoda: true` asks Comparator to re-check the exported proof term in a second implementation. This workflow builds and prints footprints; it does not run Comparator. The nanoda re-check remains a request, not a receipt — E72 §4 is unchanged by this entry, and it is now the only empirical item left on the Navier--Stokes side. *(Superseded: run `45119134981` obtained that receipt on both kernels; see E75 §7.)*
 - **No statement review.** A footprint is a fact about the proof term. It says nothing about whether the encoded statement is the Clay statement. §3 of the manuscript is about exactly that gap; this entry does not narrow it.
 - **No finding is upgraded.** Every finding of E0–E72 comes from reading. This run confirms that the terms elaborate under the printed axiom set; it does not confirm that any estimate inside them is true.
 - **The Euler development was not built.** The workflow targets `NavierStokes` only.
