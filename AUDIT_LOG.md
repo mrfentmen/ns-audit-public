@@ -6184,3 +6184,52 @@ E122 and E123 read this declaration's interface and its integrability layer and 
 The general lesson is the one E94 and E95 already taught from the other direction: grep the paper for the expression before treating a mismatch as a finding. Here the expression was the auditors', not the paper's.
 
 *Evidence: `.setup/paper/ns.txt:6225–6265` ((10.19) and the two interpolations), `:1847` (the only literal `6/5`); `R3/PressureFlux.lean:68–104,470–598`; `R3/LocalizedTensorBounds.lean:45–83,170–218`; `R3/WholeSpaceUniqueness.lean:44–68`; E122; E123; E125. Reading only — nothing compiled.*
+
+---
+
+## E129 — Proposition 6.6: four clauses placed, two components (2026-11-23)
+
+*Reading entry. The first row taken from the fifty-nine unplaced results is the §6.4 coefficient algebra, Proposition 6.6 (p. 73). It is a conjunction of six things, and four of them have declarations whose statements are the paper's. The other two exist as components rather than as statements, so the row moves to partial rather than placed.*
+
+### 1. What the paper asks
+
+`Proposition 6.6. Each class in Section 6.4 is closed under finite sums at a fixed exponent.` Then, with `M` the mean class and `W` the wave class:
+
+1. **Finite sums.** Closure of every §6.4 class at a fixed exponent, band-independent.
+2. **Products (6.30).** `M_α M_β ⊂ M_{α+β}` and `M_α W_β ⊂ W_{α+β}`.
+3. **Same-label wave products (6.31).** For `a_{γ,m} ∈ W_α`, `b_{γ,m'} ∈ W_β` with the same label, the product lies in `W_{α+β}` with harmonic `m+m'` when `m+m' ≠ 0`, and in `M_{α+β}` when `m+m' = 0` *after temporal cutoff*; before cutoff a zero harmonic satisfies the mean bounds on its labelled rectangle.
+4. **Distinct labels.** `(∂^I w_γ)(∂^J w_{γ'}) = 0` for `γ ≠ γ'`.
+5. **Operator table (6.32).** `∂_{R,Z,T}: C_α → C_α`; `D_r: C_α → C_{α−κs}`; `D_z = ε∂_Z: C_α → C_{α+1}`; `Q^{1+h}N_abs = c i0 N_i0: C_α → C_α`; `−ε∂_T: C_α → C_{α+1}`.
+6. **Finiteness.** Products, differentiation and angular averaging preserve finite band-independent harmonic sets at every fixed stage.
+
+### 2. What is matched
+
+| Clause | Lean | Status |
+|---|---|---|
+| 1, finite sums at a fixed exponent | `window_sum_memClass` (`LabelSumBounds.lean:369–395`), `UniformClass.sum` (`:417`) | matched |
+| 2, `M·M` and `M·W` | `MeanClass.bilinear` (`WeightedClasses.lean:429–437`), `MeanClass.bilinear_wave` (`:449–456`), `mean_wave_cmul` (`WaveInteractionBounds.lean:77–84`) | matched |
+| 3, `W·W` at `α+β` | `wave_cmul_wave` (`WaveInteractionBounds.lean:99–114`), zero harmonic via `HarmonicFields.angularMean_product` in `uniform_angularProduct` (`LabelSumBounds.lean:410–430`) | class level matched |
+| 4, distinct labels vanish | `jet_zero_off_window` (`:329–340`), `window_card_le` (`:319–327`), `finite_sum_jet_bound` (`:337–365`), `ActualCarrierGeometry.labelCarrier_disjoint:342` | matched, operational form |
+| 5, operator table | `UnweightedClass s (−κ) Vr` and `UnweightedClass s 1 Vz` at every consumer (`CurlClassBounds.lean:230,252,281,297,707,732,765`; `WaveInteractionBounds.lean:1066,1083`); `UnweightedClass s 1 (fun n x => s.epsilon n * …)` (`PrimaryMaterialDefect.lean:198`); `along_scaled_direction` (`LinearWaveResidual.lean:247–253`) | components only |
+| 6, band-independent harmonic sets | `Finset` support fields `hF : support ⊆ F` in `uniform_angularProduct`, `BandLimited`, `window_card_le` | matched |
+
+The quantitative part of clause 1 is stronger than the paper's phrasing in one respect and weaker in another, both worth naming. `finite_sum_jet_bound` bounds the number of contributing labels by a literal **2250**, independent of band and point, and multiplies the constant by that overlap bound rather than by the active cardinality — the file says so in its own comment ("Only its at-most-2250 locally supported derivatives contribute at `x`"). The paper's Lemma 6.3 gives `C·S_ref³` with `S_ref = ℓ²`, which grows with the dyadic level. A fixed 2250 and a growing `ℓ⁶` are not the same statement; they are both band-independent in the sense that matters for the sums, and neither is derived from the other here.
+
+### 3. What is not matched
+
+**Clause 3's pre-cutoff qualifier.** The paper is careful: before the temporal cutoff the coefficient algebra is used only on the labelled rectangle, and only after cutoff does Lemma 6.1 eliminate cross-label products. The tree carries the locality in a separate layer (`MeanLocalCoefficient.coefficient_mul`, `:41–70`, which localizes a coefficient to `A n` = the labelled rectangle and proves the product mean-class there). That is the right mechanism, and it is not the clause: no declaration states the two-wave product with the rectangle as its domain of validity.
+
+**Clause 5 as a table.** Three of the five rows are literally present as the classes the consumers demand: `D_r` enters every curl bound through `UnweightedClass s (−κ) Vr`, `D_z` through `UnweightedClass s 1 Vz`, and `ε∂_T` through the `s.epsilon n * …` class in `PrimaryMaterialDefect`. The remaining row is `Q^{1+h}N_abs`: `along_scaled_direction` proves `along (c • V) f = c · along V f`, and its docstring says this is "the manuscript's prefactor, for example `c = Q^{1+h}` multiplying `Nabs`". That is an identity plus a docstring, which is exactly the pattern E127 warned about. The class-preservation statement `C_α → C_α` for the scaled normal operator is not a single declaration in the tree.
+
+### 4. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 13 | 13 |
+| partial | 2 | 3 |
+| unplaced | 59 | 58 |
+| **total** | **74** | **74** |
+
+Proposition 6.6 is the first of the fifty-nine to be read, and it splits rather than placing. The section-level mapping in `CROSSWALK` called §6 an `object` match to `LabelSumBounds` and `PhysicalGraphBounds`; that judgement survives, at clause granularity, and it does not extend to the operator table.
+
+*Evidence: `.setup/paper/ns.txt:3206–3245` (§6 outline), `:3640–3710` (Proposition 6.6 and its proof); `LabelSumBounds.lean:313–430`; `WeightedClasses.lean:415–456`; `WaveInteractionBounds.lean:77–114`; `MeanLocalCoefficient.lean:41–70`; `CurlClassBounds.lean:230–297,707–769`; `PrimaryMaterialDefect.lean:182–210`; `LinearWaveResidual.lean:247–253`; `ActualCarrierGeometry.lean:342`; E127. Reading only — nothing compiled.*

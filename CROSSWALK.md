@@ -241,7 +241,7 @@ named declaration states it. "Agrees with `u_loc`, `p_loc` near the origin near 
 is `velocity_locally_eq` :231 / `pressure_locally_eq` :240 — stated for the periodic local
 model and consumed inside `of_periodic_local_model`, not as a whole-space field.
 
-### Partial (two)
+### Partial (three)
 
 Both rows this file formerly carried as "cited in a docstring, unchecked" are now read
 (E127), and neither citation is the paper's statement.
@@ -259,6 +259,18 @@ no tangential/radial split `(M_µ, M_{µ+1})` — stronger in exponent, but a di
 coefficient shadow, by its own docstring: the good class `α+1/2−3κ`, an all-order flat error,
 and the pointwise `R = G + F` identity. Proposition 9.3's source supports `⊂ Ω_γ`, the `C^∞`
 extensions, and the exact mean equations (9.6) are not in it.
+
+**Proposition 6.6** (p. 73) is the §6 row (E129). Four of its six clauses are matched
+outright: closure under finite sums (`window_sum_memClass`, `LabelSumBounds.lean:369`,
+with the fixed overlap constant 2250 rather than the active set's cardinality); the two
+product inclusions (6.30) (`MeanClass.bilinear`, `MeanClass.bilinear_wave`); the label
+vanishing (6.31) in its operational form (`jet_zero_off_window`, `window_card_le`,
+`labelCarrier_disjoint`); and preservation of band-independent harmonic sets (`Finset`
+support fields throughout). Two are matched only by components: (6.31)'s "before cutoff, on
+its labelled rectangle" qualifier lives in the locality layer (`MeanLocalCoefficient`)
+rather than in a two-wave statement, and (6.32)'s five operator rows are present as binder
+classes and one prefactor identity (`along_scaled_direction`), not as a single
+class-preservation table.
 
 **Proposition 9.1**, p. 102, the last row this file said it could not place. E94 places it.
 The paper's conclusion is class membership — the normalized linear residual, after the
@@ -305,9 +317,9 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 | Status | Count | Which |
 |---|---|---|
 | placed, statement read | 13 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1 |
-| partial — components exist, statement not matched | 2 | Lemma 9.2, Proposition 9.3 (E127) |
+| partial — components exist, statement not matched | 3 | Lemma 9.2, Proposition 9.3 (E127), Proposition 6.6 (E129) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 59 | the rest |
+| unplaced | 58 | the rest |
 | **total** | **74** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
