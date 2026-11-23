@@ -6126,3 +6126,61 @@ The "cited in a docstring, unchecked" bucket was two rows. Both are now read; ne
 The count 13/74 is unchanged, which is the honest outcome: reading the two rows did not place them, it established that the correspondence the source asserts is looser than the label suggests. This is the third time a docstring has over-claimed relative to its declaration (E90's twenty labels, E94's `globalGood`, and now these two), and the pattern is worth naming: the tree's docstrings are reliable about *what a declaration is for*, and unreliable about *which numbered paper result it is*.
 
 *Evidence: `.setup/paper/ns.txt:5242–5270` (Lemma 9.2), `:5272–5345` (Proposition 9.3); `CurlClassBounds.lean:757–769`; `WaveInteractionBounds.lean:77–96`; `WeightedClasses.lean:415–454`; `HarmonicWaveInteraction.lean:389–431`; `LinearWaveBounds.lean:896–935`; `ActualCarrierGeometry.lean:342`; `HarmonicResidual.lean:1472`; `LocalResidualGrouping.lean:220`; E94; E97. Reading only — nothing compiled.*
+
+---
+
+## E128 — There is no `6/5` in §10 to match (2026-11-23)
+
+*Reading entry. E125's second target said the pressure-flux estimate "is the place where the `6/5` exponent would have to match the paper's §10". That target rests on a false premise: the paper's §10 pressure flux contains no `6/5`. The exponent is internal to the Lean proof's Hölder pairing. What actually has to match is the radius envelope, and it does. The E125 target is retracted.*
+
+### 1. What the paper's §10 actually proves
+
+The pressure flux enters the difference-energy estimate (p. 123). The paper splits the pressure into a Riesz-transform part `π` and a commutator part `π*`, tests the equality against `a(t) χ_R w`, and bounds
+
+```
+|∫ π w · ∇χ_R| ≤ C_T R⁻¹ [ (B_R + 1) B_R^{1/2} + R^{−3/4} B_R^{3/4} ]        (10.19)
+```
+
+using two interpolations, not a `6/5` pairing:
+
+```
+‖φ³_R w‖₃ ≤ B_R^{1/2} ‖w‖₂^{1/2},     ‖φ³_R w‖₄ ≤ B_R^{3/4} ‖w‖₂^{1/4}.
+```
+
+`B_R` is the local energy bound. The Young-convolution step bounds the second sum in (10.18) in `L^{4/3}` by `C_T R^{−3/4}`, and `|∇χ_R| ≤ C R⁻¹ φ_R⁷` is what turns that into the `R⁻¹` outside. The exponents in play are `3`, `4`, `4/3` and the `R`-powers `−1`, `−3/4`; there is no `6/5` anywhere in the argument.
+
+The extracted text of the whole 166-page paper contains exactly one literal `6/5`, at (4.34), as a power of the radial variable (`f^{2x6/5}`) — not an integrability exponent, and 800 pages away from §10.
+
+### 2. What the Lean bound actually says
+
+`PressureFlux.exists_uniform_actual_pressure_flux_bound` (`R3/PressureFlux.lean:576–598`) produces one `CP ≥ 0` such that for every `R ≥ 1` and `t ∈ (0,T)`,
+
+```
+|∫ (p − q) ∂weight_R · (u − v)|
+  ≤ CP * ( (ℓ₆^{1/2} + 1) * (a_R / R + 1 / R²) + R^{−7/4} ℓ₆^{3/4} )
+```
+
+with `ℓ₆ = comparisonLpNorm 6 (cutoff_R⁴ • (u−v))` (`cutoffL6`) and `a_R = dissipationRoot` of the cut-off difference. Compare the second term: the paper's `R⁻¹ · R^{−3/4} B_R^{3/4}` is `R^{−7/4} B_R^{3/4}`, and the Lean term is `R^{−7/4} ℓ₆^{3/4}`. **The radius power is identical.** The first term carries the paper's `R⁻¹` factor as `a_R/R`, plus a stricter `1/R²` tail. So the envelope matches; the functionals differ (paper: local energy `B_R`; Lean: the cut-off `L⁶` norm and the dissipation root).
+
+The constant differs in a way worth recording: the paper's `C_T` depends on `T` through the `L^{4/3}` convolution bound, while the Lean `CP` is a function of `M₀, U₀, G₀` only — the three slice-norm bounds the statement takes as hypotheses. That is not a weakening: the `T`-uniformity is what `WholeSpaceUniqueness.candidate_unique_on_Icc` needs when it invokes the bound on `Icc 0 T` for arbitrary `T < 1` (`R3/WholeSpaceUniqueness.lean:60–68`).
+
+### 3. Where `6/5` actually comes from
+
+`6/5` is the Hölder conjugate of `6`, and it appears only where a product is placed in `L^{6/5}` to pair against an `L⁶` test:
+
+| Declaration | Role |
+|---|---|
+| `PressureFlux.holder_six_fifths_six` (`:68`) | the instance `HolderTriple (6/5) 6 1` |
+| `PressureFlux.norm_holder_pair_le` (`:83`) | `‖∫ f·g‖ ≤ ‖f‖_{6/5} ‖g‖₆` |
+| `LocalizedTensorBounds.cross_norm_bound` (`:46`) | `‖u‖‖w‖ ∈ L^{6/5}` from `u ∈ L³`, `w ∈ L²`, with the bound `‖u‖₃‖w‖₂` |
+| `LocalizedTensorBounds.quadratic_cutoff_bound` (`:58`) | the `L^{12/5}` interpolation that produces it |
+
+That is a proof strategy — bound the whole canonical flux through a Riesz functional on `L⁶` — not a claim about the paper's exponents. The paper reaches the same envelope through `L⁴` interpolation. Two routes, one envelope.
+
+### 4. What this corrects
+
+E122 and E123 read this declaration's interface and its integrability layer and did not compare the bound's exponents to §10. E125 then converted that gap into a target, and the target assumed the exponents had to agree. They do not, because they are not the same exponents. The audit carried a premise across three entries without checking the paper for the number.
+
+The general lesson is the one E94 and E95 already taught from the other direction: grep the paper for the expression before treating a mismatch as a finding. Here the expression was the auditors', not the paper's.
+
+*Evidence: `.setup/paper/ns.txt:6225–6265` ((10.19) and the two interpolations), `:1847` (the only literal `6/5`); `R3/PressureFlux.lean:68–104,470–598`; `R3/LocalizedTensorBounds.lean:45–83,170–218`; `R3/WholeSpaceUniqueness.lean:44–68`; E122; E123; E125. Reading only — nothing compiled.*
