@@ -76,7 +76,7 @@ jobs:
           docker run --rm -v /usr/share/fonts:/usr/share/fonts:ro pandoc/extra:latest \
             fc-cache -f || echo "fc-cache unavailable; font lookup may fail"
           for doc in CAVEMAN LAYMAN; do
-            sed -e 's/❌/✗/g' -e 's/✅/✓/g' "$doc.md" > "$doc.build.md"
+            sed -e 's/❌/✗/g' -e 's/✅/✓/g' -e 's/𝕋/T/g' "$doc.md" > "$doc.build.md"
             if docker run --rm -v "$PWD:/data" -v /usr/share/fonts:/usr/share/fonts:ro \
                  -w /data pandoc/extra:latest "$doc.build.md" -o "$doc.pdf" \
                  --pdf-engine=xelatex --toc --toc-depth=2 \
