@@ -4751,3 +4751,98 @@ Two limitations survive. The placement is statement-level: neither `stress_lower
 What this entry does establish is narrower and worth having: the one inequality E92 named as standing between the paper's central existence theorem and a clean placement is not open. It was closed in the source, under a name the paper does not use (`stress_lower_bound`, not `lower_bound` or `stable_lower`), and E92 searched for the paper's vocabulary rather than for the statement's shape — the same mistake E92's own §3 diagnosed in slice two and did not apply here.
 
 *Evidence: `ns.txt` lines 1592–1645 (pp. 32–33, item (iv) and display (4.27)); `LeadingStressWeights.lean:23,453,462,528,1089,1121,1137`; `ActiveAnnulusWeight.lean:424,634,644,648,1244`; `FinalSlowBase.lean:130,149,166`; `UniformCone.positive_uniform_margin`; `ConeAlgebra.true_cone_iff`.*
+---
+
+## E94 — Proposition 9.1 was in the tree under its output's name (2026-11-23)
+
+*Reading entry. Both E91 and E92 recorded Proposition 9.1 as unplaced, and the second of them stated it flatly: "no declaration was read that states that membership". A declaration states it, and it was found by searching for the conclusion's shape rather than for the paper's words — the correction E92 made to slice two and did not apply to its own row.*
+
+The paper's Proposition 9.1 (p. 102, `ns.txt:5185–5192`) concludes two class memberships: the normalized linear residual, after the prescribed source is added, **belongs to `W_{α+1/2−3κ_s}`**, and **the pressure amplitude `π_m` belongs to `W_{α+1/2}`**, with pulse-cutoff tails admissible because their derivatives vanish to infinite order. Its preamble adds a third: if `t_m ∈ W_α` then the curl correction `r_m ∈ W_{α+1/2−κ_s}`.
+
+All three are one conjunction in `LocalizedWaveBounds.lean:1014–1024` (`common_bounds_from_native_local`, repeated at `PeriodizedWaveBounds.lean:1256–1260`):
+
+```
+WaveClass s W α a.common.amplitude ∧
+WaveClass s W α (a.commonCorrected s d).amplitude ∧
+WaveClass s W (α + 1 / 2) a.common.pressure ∧
+WaveClass s W (α + 1 / 2 - κ) (a.common.curlCorrection s d) ∧
+WaveClass s W (α + 1 / 2 - 3 * κ) (a.globalGood s d)
+```
+
+Clause by clause:
+
+* **The residual.** The paper's object is "the normalized linear residual, after adding the prescribed source". The tree's name for that object is `globalGood` (`PeriodizedWaveBounds.lean:799`), documented as "An actual global good coefficient, assembled from the cutoff-and-curl formula on each native copy". It is the curl-built residual *after* the source has been absorbed — which is what the theorem's own split shows: `PrimaryResidualClass.Inputs.good_class` (`:249`) relates `constructedGood` to the coefficient, and `linear_bound_and_identity` (`CorrectionInitializationNoOptions.lean:180`) proves the literal identity `linearResidual = linearGood + excluded`, so the "good" object is residual-minus-explicit-tail by construction.
+* **The exponent.** `α + 1/2 − 3κ` appears verbatim, with `α` free. `κ` is the tree's `ChartScales.kappa`, the paper's `κ_s = 10⁻⁵`. The `α = 1/2` case degenerates to `1 − 3κ`, which is the constant the primary slice uses (`good_coefficients_class` `:257`, and `1 − 3κ_s` in the paper's own §9.5 proof, `ns.txt:5428`).
+* **The pressure.** `α + 1/2`, exact.
+* **The curl correction.** `α + 1/2 − κ`, exact, matching the paper's Lemma 7.7 sentence.
+* **The tails.** The paper's qualifier is not a hypothesis because the tree makes it a theorem: `FiniteHeadClass.waveClass_all_exponents` (`:119`) proves that a class supported in a fixed finite band belongs to **every** exponent with the *identical* weight, and `PeriodizedWaveBounds.common_outputs_zero_germ` supplies literal zero germs where no copy covers the point. So "apart from tails vanishing to infinite order" is discharged by a general principle, not assumed per-label.
+
+### What this changes
+
+Proposition 9.1 moves to placed. The ledger is 9 placed, 4 partial, 2 cited-unchecked, 59 unplaced of 74. And the crosswalk's "the one row it cannot place" sentence is itself now wrong, which is worth more than the row: the file had recorded a *search failure* as a *statement absence*, twice, and the failure was in the query. The paper says "normalized linear residual"; the tree says `globalGood`. Nothing in the tree is named after the paper's phrase.
+
+Two limitations, unchanged in kind. This is statement-level; nothing was recompiled. And the paper states the result per label and per harmonic `m`, while the Lean statement is the assembled global coefficient over the native copies with the label sum already taken — a route difference of the same sort E91 recorded for Proposition 10.1, not a clause difference, but not nothing either: the per-harmonic form is not exposed as its own declaration.
+
+*Evidence: `ns.txt:5168–5192, 5428` (pp. 101–102, 107); `LocalizedWaveBounds.lean:1014–1024`; `PeriodizedWaveBounds.lean:799,1256–1260`; `PrimaryResidualClass.lean:249,257`; `CorrectionInitializationNoOptions.lean:180`; `FiniteHeadClass.lean:96,119`; `ChartScales.kappa`; `ExponentLedger.signedBarGain`.*
+
+---
+
+## E95 — Proposition 5.3 closes except one clause; 9.5 and 9.6 move nearer (2026-11-23)
+
+*Reading entry. E91 recorded Proposition 5.3's bound as "no declaration with that exponent shape was found", citing a grep for `2 * h * (N + 1)` that returns nothing. It returns nothing because the tree spells the same quantity `slowOrder h (N + 1)` = `2 * (N+1) * h`, which slice two had already found and which this file then failed to reuse.*
+
+**Proposition 5.3, display (5.25)** (`ns.txt:2874–2881`): `|F_slow(U^[N])|_m ≤ C_{N,m} q^{2h(N+1) − K_m}` with `K_m` independent of `N`. The declaration is `BaseResidual.truncationResidual_rate` (`:1440`):
+
+```
+FiniteJetRate l (fun z => (cartesianChart h z).1)
+  (fun z => truncationResidual N h C f z.1 z.2) M (2 * (N : ℝ) * h - 2 - M)
+```
+
+`FiniteJetRate` (`DiagonalResidual.lean:37`) is `∃ C ≥ 0, ∀ᶠ x, ∀ m ≤ M, ‖iteratedFDeriv ℝ m f x‖ ≤ C * q x ^ r` — a bound by `C q^r`. Setting `M = m` gives exponent `2Nh − 2 − m`; the paper's is `2Nh + 2h − K_m`. They coincide at
+
+```
+K_m = m + 2 + 2h
+```
+
+so the loss is **exact**, not merely `N`-independent: linear in the derivative order, with the constant depending only on `h`. It is not a weakening. Two further points strengthen rather than weaken the row: one constant `C` serves every `m ≤ M`, where the paper allows `C_{N,m}`; and the docstring states the provenance — "Its rate is derived from the explicit omitted monomials, not supplied as a hypothesis", the proof being `finset_monomial_rate` applied to finitely many smooth coefficients.
+
+The proposition's remaining clause is **"every finite velocity sum is divergence-free"**, and that one is not placed. `SlowDivergence.radialFlux` is the mechanism the constructed bases use (`ConstructedSlowBase.lean:75`, `AssembledSlowBase.lean:575,1348`), and exact incompressibility at each order is the paper's (5.2), but no declaration read states the finite-prefix divergence statement as its own conclusion. Recorded as unfound, not assumed.
+
+**Proposition 9.5 (stage 0, `B₀ = 0.7`, `C*₀ = 1.2`)**. Three pieces now exist where E91 had one. `PrimaryPiece.linear_bound_and_identity` (`CorrectionInitializationNoOptions.lean:180`) proves `WaveClass p.strip P (7/10) p.linearGood` *and* the residual identity beside it, so the 0.7 is a proved class of the actual linear residual's good part, not just the arithmetic `residualWave 0 = 7/10`. `cumulative_bounds` (`:200`) proves the primary tuple's `1/2` amplitude, `17/25` curl difference and `1` pressure. `ActualInitialization.initialState` (`:173`) is the constructed stage-0 state, with `initial_state` (`ActualCycleCoherence.lean:73`) establishing the coherence predicate for it. What is still missing is one clause: no declaration states that the assembled stage-0 **mean** residual lies in class `6/5`. The arithmetic is `residualMean_formula` (`ActualIterationLedger.lean:235`); the class is not stated. Still partial, four of five clauses.
+
+**Proposition 9.6 (one cycle, `+1/10` on both orders)**. The arithmetic was already placed: `cycle_wave_output` and `cycle_mean_output` (`ActualIterationLedger.lean:239,243`) are exactly `+1/10`. The construction half now has a much sharper anchor than "traced": `WholeDomainStageBounds.physical_stage_estimates` (`WholeDomainPhysicalStageTheorem.lean:101`) proves, for **every** `j` and `m`, that the stage-`(j+1)` velocity and pressure obey `LogBound h (commonQ) … (gain h (j+1) − physicalLoss h m)`. And `residual_physical_gap` (`:251`) proves `h * residualWave J = gain h J + 7h/10`. Composing them identifies the paper's `B_j` with `gain h j` up to the fixed `7h/10` shift — so the stage estimate is the paper's `B_{j+1}` in the tree's own coordinates, not an analogue of it. What is missing is the mean-side companion: no declaration ties a stage-`(j+1)` mean residual to `residualMean (j+1)`. Still partial.
+
+### The ledger
+
+| Status | Count | Which |
+|---|---|---|
+| placed, statement read | 9 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 9.1, Proposition 9.9 |
+| partial | 4 | Proposition 10.1 (5 of 6), Proposition 5.3 (4 of 5), Proposition 9.5 (4 of 5), Proposition 9.6 (2 of 3) |
+| cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
+| unplaced | 59 | the rest |
+| **total** | **74** | |
+
+The manuscript's "the gap is therefore three named inequalities" is now two: Proposition 5.3's divergence clause, and Proposition 9.5's mean class. Both are single missing statements inside modules that are otherwise read. Neither is evidence of a defect; both are the kind of clause a structure name does not carry.
+
+*Evidence: `ns.txt:2874–2910, 5421–5425, 5475–5478` (pp. 55, 106–108); `BaseResidual.lean:1440`; `DiagonalResidual.lean:33,37`; `SlowExpansionResidual.lean:24`; `AxisSourceRegularity.lean:98`; `CorrectionInitializationNoOptions.lean:180,200`; `ActualInitialization.lean:173`; `ActualCycleCoherence.lean:73`; `ActualIterationLedger.lean:231,235,239,243,251`; `WholeDomainPhysicalStageTheorem.lean:101`; `ConstructedSlowBase.lean:75`; `AssembledSlowBase.lean:575`.*
+
+---
+
+## E96 — Theorem 4.6 has no free inputs; §5 is proved from smoothness alone (2026-11-23)
+
+*Reading entry, the discharge walk E93 deferred. Question: does the construction prove Theorem 4.6, or restate it with the work assumed at a boundary? Answer for §4 and §5: proved. One wiring question is left open and is stated at the end.*
+
+**§4's input is a theorem, not a parameter.** `NominalConeAssembly.assembly_exists` (`:1482`) takes `d : PreparedOutgoing.PreparedProfile`; `PreparedOutgoing.exists_prepared` (`:36`) is `Nonempty PreparedProfile`, built by choosing the reset bound and the exponent together against a clean-cone cap (`OutgoingCone.exists_ordered_profile_cone`). `exists_nominal_cone` (`:1517`) composes them:
+
+```
+obtain ⟨d⟩ := PreparedOutgoing.exists_prepared
+obtain ⟨W, hW⟩ := exists_certificate d
+```
+
+so the witness is produced from nothing, and `NominalConeAssembly.certificate` discharges the cone obligations from stored witness data rather than assuming them — its own docstring: "Every component uses the stored witness." No hypothesis of Theorem 4.6 is an unproved existential at this boundary.
+
+**§5's residual rate assumes only smoothness.** `truncationResidual_rate` needs `0 < h < 1/2`, a `PhysicalApproach` filter, an open `O` containing the box, `N`, `C`, a `SlowProfiles f`, and `ContDiffOn ℝ ∞` of finitely many coefficients `j ≤ N`. There is no estimate among the hypotheses; the exponent comes out. That is the strongest single answer this audit has produced to the question "is the analytic content proved or posited", and it is narrower than it sounds: it says the *truncation* residual's rate is derived, not that every stage estimate in §9 is.
+
+**What is left open, and it is a wiring question.** Two profile constructions coexist. §4's cone and lower bound are stated for `W.controls.extendedProfiles W.heat W.separated` (`NominalProfile.lean:2503`), while §5's residual statements take a `SlowProfiles f` argument that `GlobalSlowProfiles.profiles` constructs, and `ActualCandidateAssembly.assemble` draws its `f` from that second family. No declaration read in this pass identifies the two. That is not a claim of defect — the assemblies may meet through a bridge in the Establishes/Actual* layer that this slice did not open — but until such a declaration is read, "Theorem 4.6 is discharged" remains true clause by clause at each boundary and unproved as a single composition. It is the next target, and it is a smaller target than the one this entry closed.
+
+*Evidence: `NominalConeAssembly.lean:1404,1431,1482,1512,1517`; `PreparedOutgoing.lean:22,36,119,121`; `NominalProfile.lean:2481,2503,2523`; `BaseResidual.lean:1440,1479`; `WorldDomain`-free check: `GlobalSlowProfiles.lean` `profiles`, `AssembledSlowBase.lean:575`; `ActualCandidateAssembly.lean` (`assemble`, `estimates`).*

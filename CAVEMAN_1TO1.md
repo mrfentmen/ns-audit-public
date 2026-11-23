@@ -737,7 +737,7 @@ So nobody misquotes the cave. This paper does **not** claim, and its evidence do
 ## WHERE TO LOOK (the paper bibliography, in caveman)
 
 - **The repo itself**: OpenAI, `NavierStokesAndEuler`, commit `f9e8bc5`.
-- **This audit**: A. El Sayad and John, the audit log, entries E0–E93.
+- **This audit**: A. El Sayad and John, the audit log, entries E0–E96.
 - **Lean 4**: de Moura and Ullrich, CADE-28, 2021.
 - **Mathlib**: the Mathlib community, CPP 2020.
 - **Leray 1934**: the original weak-solution construction for viscous flow in all of space.
@@ -772,3 +772,5 @@ Every unit of the paper, and where it is handled here.
 Nothing in the paper is skipped here. What is *added* is only caveman phrasing, plus the arithmetic in §6.3 that the paper states in words (`horizonTime (n+1) ≤ horizonTime n − timeWidth n / 3`), which is a restatement of constants already in the text, not a new claim.
 
 **Reading aids.** The START HERE block, the reading paths, the glossary and the `In human words` boxes are aids for human readers. They add no claims. The 33 subsections above are unchanged, and every one of them still corresponds to exactly one subsection of the paper.
+
+**Later audit entries (E94–E96), which do not touch this file.** Nothing above changed. Three rows of `CROSSWALK.md` did: Proposition 9.1 is now placed — the statement is in `LocalizedWaveBounds`, under the tree's name `globalGood` rather than the paper's "normalised linear residual", and its tail qualifier is the theorem `waveClass_all_exponents`; Proposition 5.3's exponent is `truncationResidual_rate` at `2Nh − 2 − M`, the paper's `2h(N+1) − K_m` with `K_m = m + 2 + 2h`; and the discharge walk found §4's input produced by `exists_prepared` and §5's rate assuming smoothness alone, with one unread link between the tree's two profile constructions.

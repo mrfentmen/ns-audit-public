@@ -860,7 +860,7 @@ Caveman: **A** — no hand, all goo safe. **B** — same, ring-world. **C** — 
 
 ---
 
-## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E75)
+## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E96)
 
 Caveman wrote this file first. Then the audit kept digging. Four things got better. Caveman writes them down so the two papers do not disagree.
 
@@ -912,4 +912,30 @@ Cost first, because caveman had no idea: the Euler tower had to be built from no
 
 What that means in caveman: the two Euler answers do prove the two Euler questions, and two different brains agree. What it does **not** mean: caveman read **zero** lines of the Euler proof's inside. Not one estimate, not one constant. The Euler side is now checked at the door and at the judge, and nowhere else. Said plain so it cannot be read as more.
 
-*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E79. If this file and the paper disagree, the paper is right and caveman is wrong.*
+### 16.7 The last missing row — caveman looked with the wrong word (E94–E96)
+
+Caveman wrote "Prop 9.1 not found, not in the tree." That was **wrong**, and wrong twice, because two passes wrote it down.
+
+Why wrong: the paper calls the object *"the normalized linear residual"*. The tree calls the same object `globalGood` — "good" meaning the residual left after the source is absorbed. Caveman went looking for the paper's word. The tree has no such word on any rock. Look for the **shape** instead, and there it is, in `LocalizedWaveBounds.lean`, five lines that are the whole proposition:
+
+- leftover rock sits in `W` at `α + 1/2 − 3κ` — that is the paper's `W_{α+1/2−3κ_s}`;
+- pressure sits one half-power higher, at `α + 1/2` — exact;
+- the curl correction sits at `α + 1/2 − κ` — the Lemma 7.7 sentence.
+
+And the "apart from tails" clause — the part that sounds like a promise — is a **theorem**, not a promise: `waveClass_all_exponents`. Any pile that only has finitely many bands sits in *every* class, same weight, no new constant. Tails vanish to infinite order, so the tail question closes by itself.
+
+Then the other two. `Prop 5.3`'s number was not missing either. `truncationResidual_rate` prints `2Nh − 2 − M`. Paper prints `2h(N+1) − K_m`. Same number with `K_m = m + 2 + 2h` — **exact**, and the loss grows with the derivative, never with `N`. Caveman had been grepping for `2 * h * (N + 1)`; the tree writes `slowOrder`.
+
+So what is left is not three sentences. It is two: "every finite sum has no bunching" (5.3), and "stage-0 mean leftover sits at 6/5" (9.5). Two single clauses, in modules otherwise read.
+
+### 16.8 Does the proof actually prove the theorem? (E96)
+
+Fat question, asked late. Two answers.
+
+**§4 has no free inputs.** The assembly needs a "prepared profile". That profile is *built from nothing* — `exists_prepared` → `exists_nominal_cone`. Nothing handed in at the door.
+
+**§5 asks for smoothness and nothing else.** The residual rate theorem needs `0 < h < 1/2`, a shrinking filter, an open box, and finitely many smooth coefficients. **No estimate among the hypotheses.** The exponent comes out. That is the strongest answer this audit has: the analytic content of §5.3 is derived, not assumed.
+
+One honest gap left, and caveman states it plain: there are **two** profile constructions in the tree. The cone is proved for the witness's extended profile; the residual rates are proved for the profile that `GlobalSlowProfiles` builds. No declaration caveman read ties those two together. That is not "a hole" — the bridge may exist in a layer nobody opened — but until someone reads it, "Theorem 4.6 is discharged" is true gate by gate and not yet proved as one chain.
+
+*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E96. If this file and the paper disagree, the paper is right and caveman is wrong.*

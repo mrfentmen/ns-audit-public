@@ -248,25 +248,44 @@ model and consumed inside `of_periodic_local_model`, not as a whole-space field.
 That is the development asserting the correspondence, like the twenty labels in E90, but
 neither statement was compared clause by clause.
 
-### Unplaced (64)
+**Proposition 9.1**, p. 102, the last row this file said it could not place. E94 places it.
+The paper's conclusion is class membership — the normalized linear residual, after the
+prescribed source is added, lies in `W_{α+1/2−3κs}`, and the pressure amplitude in
+`W_{α+1/2}`. Both are in `LocalizedWaveBounds.lean:1014–1024`
+(`common_bounds_from_native_local`, repeated at `PeriodizedWaveBounds.lean:1256–1260`),
+as a five-part conjunction that also carries the curl correction at `α+1/2−κ`. The tree
+calls the residual object `globalGood` (`PeriodizedWaveBounds.lean:799`: "assembled from
+the cutoff-and-curl formula on each native copy"), never "linear residual"; that is the
+whole reason two earlier passes missed it. The paper's tail qualifier is a theorem, not a
+hypothesis: `FiniteHeadClass.waveClass_all_exponents` (`:119`) puts a finitely banded
+class in *every* exponent with the identical weight. Statement-level only; the per-label,
+per-harmonic form is not exposed as its own declaration.
 
-Sixty, and slice three moved five of them (below). **Proposition 9.1** (p. 101) is the one
-this file still cannot place: its conclusion is class membership, `W_{α+1/2−3κs}`, and no
-declaration read states that membership. `ExponentLedger.signedBarGain` contains the
-gain `1/2 − 3κ`, but an exponent in an arithmetic ledger is not a class statement. The
-rest are sections 4–10 and the appendices at result level. A grep for `2 * h * (N + 1)`
-returns nothing under that spelling, which is why slice three stopped grepping for the
-paper's expressions and started grepping for the shape: `slowOrder h n = 2 * n * h` was
-there all along, under a name the paper does not use.
+### Unplaced (59)
+
+Fifty-nine, and slice three moved five of them (below). They are sections 4–10 and the
+appendices at result level. A grep for `2 * h * (N + 1)` returns nothing under that
+spelling, which is why slice three stopped grepping for the paper's expressions and
+started grepping for the shape: `slowOrder h n = 2 * n * h` was there all along, under a
+name the paper does not use. The same lesson cost the 9.1 row two passes: the paper says
+"normalized linear residual", the tree says `globalGood`.
+
+Proposition 5.3's bound is now placed but for one clause — `truncationResidual_rate`
+(`BaseResidual.lean:1440`) carries exponent `2Nh − 2 − M`, which is the paper's
+`2h(N+1) − K_m` at `K_m = m + 2 + 2h`, exact and `N`-independent. What is missing is
+"every finite velocity sum is divergence-free" as a stated conclusion. Propositions 9.5
+and 9.6 each move to four of five and two of three clauses respectively (E95): the stage
+bound `gain h (j+1) − physicalLoss h m` in `WholeDomainPhysicalStageTheorem.lean:101`
+composes with `residual_physical_gap` to identify the paper's `B_j` with `gain h j`.
 
 ### The ledger
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 8 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 9.9 |
-| partial | 4 | Proposition 10.1 (5 of 6 clauses), Proposition 5.3, Proposition 9.5, Proposition 9.6 |
+| placed, statement read | 9 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 9.1, Proposition 9.9 |
+| partial | 4 | Proposition 10.1 (5 of 6), Proposition 5.3 (4 of 5), Proposition 9.5 (4 of 5), Proposition 9.6 (2 of 3) |
 | cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
-| unplaced | 60 | the rest, including Proposition 9.1 |
+| unplaced | 59 | the rest |
 | **total** | **74** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered

@@ -501,6 +501,18 @@ The paper's artifact index gives exact paths and line numbers. In words, the imp
 
 ---
 
+## WHAT CHANGED AFTER THIS FILE WAS WRITTEN (E94–E96)
+
+Three things, and the first is a correction to this file's own claim that one result of the paper could not be found in the tree.
+
+- **Proposition 9.1 was there.** The paper calls the object "the normalised linear residual"; the tree calls it `globalGood`. Searches for the paper's phrase returned nothing, and two passes recorded that as an absence. The statement is `LocalizedWaveBounds`: the residual in class `α + 1/2 − 3κ`, the pressure in `α + 1/2`, the curl correction in `α + 1/2 − κ`. The paper's "apart from tails vanishing to infinite order" is not a caveat but a theorem — a quantity supported in finitely many bands lies in *every* class with the same weight.
+- **The two other partial results came closer.** Proposition 5.3's bound prints `2Nh − 2 − M` in the tree where the paper prints `2h(N+1) − K_m`; those are the same number when `K_m = m + 2 + 2h`, so the derivative loss is exact and does not grow with the truncation. Proposition 9.6's stage bound in `WholeDomainPhysicalStageTheorem` is stated with `gain h (j+1)`, which composes with the ledger identity `h·B_j = gain h j + 7h/10` — the paper's bookkeeping, in the tree's coordinates.
+- **The discharge question got a first answer.** Theorem 4.6's inputs are produced, not assumed: the profile it needs is a theorem about existence, and the assembly takes it from there. And the §5 residual rate assumes smoothness and nothing else — no estimate appears among its hypotheses. One thing is still unread: the tree contains two profile constructions, one for the cone and one for the residual rates, and no declaration this audit read identifies them. That is a target, not a defect.
+
+Counts after these entries: of the paper's 74 numbered results, 9 are placed at statement level (was 8), 4 are partial, 2 are cited but unchecked, and 59 are unplaced.
+
+---
+
 ## WHERE THIS FILE SITS
 
 There are three versions of this work. The formal paper is the record. The caveman files are for holding the shape in your head. This file is for the reader who wants the argument, in order, without the apparatus.
