@@ -198,13 +198,13 @@ jobs:
       # the builtin kernel: a statement check that does not depend on a second
       # kernel having compiled.
       #
-      # 240 minutes, not "however long it takes". The job cap is 360, so this
-      # leaves over an hour of job budget for the uploads that follow. If it
-      # fires, the step fails, the job continues, and `comparator-builtin.log`
-      # is uploaded with whatever it had reached.
+      # 300 minutes, not "however long it takes". The job cap is 360, so this
+      # leaves an hour of job budget for the uploads that follow. If it fires,
+      # the step fails, the job continues, and `comparator-builtin.log` is
+      # uploaded with whatever it had reached.
       - name: Comparator (builtin kernel)
         working-directory: upstream
-        timeout-minutes: 210
+        timeout-minutes: 300
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -220,26 +220,56 @@ jobs:
           export COMPARATOR_LANDRUN=/tmp/landrun-bin
           ls -l "$COMPARATOR_LEAN4EXPORT" "$COMPARATOR_LANDRUN"
           # The README wraps its own invocation in `systemd-run --user` to guard a
-          # landrun escape fixed in Linux 7.1. Runners have no user systemd
-          # session, so that wrapper is usually unavailable; the log records which
-          # mode ran instead of implying the stronger one.
-          if systemd-run --user --pty -- true >/dev/null 2>&1; then
-            echo "sandbox wrapper: systemd-run --user AVAILABLE"
-            WRAP=(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pty
+          # landrun escape fixed in Linux 7.1. The first version of this workflow
+          # used `--pty`; runs 44999798334 and 45013487446 then spent 355 and 210
+          # minutes under it and uploaded logs holding two lines of systemd
+          # chatter and nothing from Comparator. Comparator prints "Building
+          # <module>" before it does any work (Main.lean:115), so an empty log is
+          # a capture failure, not a slow phase.
+          #
+          # `--pipe` connects the child's stdout to ours and is the flag meant for
+          # redirected output. It is not trusted on that basis: the wrapper has to
+          # echo a marker back through the same relay before it is used.
+          WRAP=()
+          if systemd-run --user --pipe -- true >/dev/null 2>&1; then
+            CAND=(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pipe
                   -E "PATH=$PATH" --working-directory "$PWD" --)
+            if [ "$("${CAND[@]}" bash -c 'echo WRAPPER-RELAY-OK' 2>&1)" = "WRAPPER-RELAY-OK" ]; then
+              echo "sandbox wrapper: systemd-run --user --pipe AVAILABLE, stdout relay verified"
+              WRAP=("${CAND[@]}")
+            else
+              echo "sandbox wrapper: systemd-run present but NOT relaying stdout; running comparator directly"
+              echo "consequence: no guard against the known landrun escape in this run"
+            fi
           else
-            echo "sandbox wrapper: systemd-run --user UNAVAILABLE; running comparator directly"
+            echo "sandbox wrapper: systemd-run --user --pipe UNAVAILABLE; running comparator directly"
             echo "consequence: no guard against the known landrun escape in this run"
             WRAP=()
           fi
           echo "phase-start comparator-builtin $(date -u +%H:%M:%SZ)"
           START=$SECONDS
+          LOG="$GITHUB_WORKSPACE/comparator-builtin.log"
+          : > "$LOG"
+          # Liveness, independent of Comparator's own output: bytes captured and
+          # live Lean processes every five minutes. Without this, a silent child
+          # and a dead child look the same in the artifact.
+          (
+            while :; do
+              sleep 300
+              printf 'heartbeat %s log_bytes=%s lean_procs=%s\n' \
+                "$(date -u +%H:%M:%SZ)" \
+                "$(wc -c < "$LOG" 2>/dev/null || echo 0)" \
+                "$(pgrep -fc 'lean|lake' 2>/dev/null || echo 0)" >> "$LOG"
+            done
+          ) &
+          HB=$!
           # `stdbuf -oL` wraps the *producer*, not `tee`: on a timeout the runner
           # sends SIGINT, then SIGTERM 7.5s later, and a block-buffered producer
           # would lose the tail precisely when it becomes the only evidence.
           "${WRAP[@]}" stdbuf -oL -eL bash -c \
             "lake exe comparator ComparatorChallenges/NavierStokesBuiltin.json" 2>&1 \
-            | tee "$GITHUB_WORKSPACE/comparator-builtin.log"
+            | tee -a "$LOG"
+          kill "$HB" 2>/dev/null || true
           echo "phase-end comparator-builtin $(( SECONDS - START ))s"
 
       - name: Upload builtin-kernel log
@@ -262,8 +292,10 @@ jobs:
           export COMPARATOR_LANDRUN=/tmp/landrun-bin
           export COMPARATOR_NANODA=/tmp/nanoda/target/release/nanoda_bin
           WRAP=()
-          if systemd-run --user --pty -- true >/dev/null 2>&1; then
-            WRAP=(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pty
+          if systemd-run --user --pipe -- true >/dev/null 2>&1 \
+             && [ "$(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pipe \
+                     -E "PATH=$PATH" --working-directory "$PWD" -- bash -c 'echo WRAPPER-RELAY-OK' 2>&1)" = "WRAPPER-RELAY-OK" ]; then
+            WRAP=(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pipe
                   -E "PATH=$PATH" --working-directory "$PWD" --)
           fi
           if [ ! -x "$COMPARATOR_NANODA" ]; then

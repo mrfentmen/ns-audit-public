@@ -3631,3 +3631,79 @@ Public repository, so the run draws no private minutes; the only budget that mat
 **Verdict.** (D)'s axiom footprint is no longer inferred. It was printed on a clean clone at `f9e8bc5`, together with its paper corollary and both adapters, and it is the permitted set with no `sorryAx`. What remains empirical for this development is the external Comparator/nanoda re-check — a different tool answering a different question — and what remains at statement level is untouched by any of it.
 
 *Execution evidence: run `44987195620`, artifact `kernel-check-logs`. The findings of E0–E72 remain textual; this entry does not re-derive any of them.*
+
+---
+
+## E74 — The Comparator log was empty, and the emptiness was our wrapper (2026-11-23)
+
+*Correction entry. It withdraws a conclusion drawn on 2026-11-22 from a log that could not have contained the evidence, and it replaces it with the capture fix.*
+
+### 1. What was recovered
+
+Both Comparator attempts finished and both uploaded artifacts, so the question "how far did it get" had an answer waiting:
+
+| run | head | outcome | comparator step | artifact | comparator output |
+|---|---|---|---|---|---|
+| `44999798334` | `f249c4d` | cancelled at job cap | 354.8 min | `comparator-check-logs` | 2 lines |
+| `45013487446` | `330caa8` | step timeout | 210.2 min | `cmp-builtin-kernel` | 2 lines |
+
+The two lines, verbatim and identical in both:
+
+```
+Running as unit: run-u2.service; invocation ID: a564b14596fd440db16865944ccf96ea
+Press ^] three times within 1s to disconnect TTY.
+```
+
+Both lines are `systemd-run`'s own. Neither is Comparator's.
+
+### 2. Why that is a capture failure and not a slow phase
+
+`Comparator.compareIt` (`Main.lean:295–309` at `19e111e2`, the rev in the lake manifest) is:
+
+```
+safeLakeBuild challengeModule   ->  IO.println s!"Building {target}"   (Main.lean:115)
+safeExport challengeModule      ->  IO.println s!"Exporting {decls}…"  (Main.lean:135)
+safeLakeBuild solutionModule    ->  "Building …"                        (:115)
+safeExport solutionModule       ->  "Exporting …"                       (:135)
+verifyMatch                     ->  "Running Lean default kernel …"     (:212)
+                                    "Lean default kernel accepts …"     (:222)
+IO.println "Your solution is okay!"                                     (:309)
+```
+
+`Building {target}` is printed **before** `runSandBoxed` spawns `lake build`. Nothing expensive precedes it. A process that ran for 210 minutes without emitting it did not reach the first statement of `compareIt`, or its stdout never reached the `tee`. The second is the only one consistent with a 210-minute wall time.
+
+The first version of the workflow wrapped the run in `systemd-run --user --pty`, on the strength of a probe (`systemd-run --user --pty -- true`) that succeeded. The probe asked whether the unit *starts*. It never asked whether a child's stdout comes back through the PTY relay into a pipe, and with the runner's stdout being a pipe it does not.
+
+### 3. What is withdrawn
+
+- **"Comparator needs more than 355 minutes."** Not established. 355 minutes elapsed, and no observation of Comparator's progress exists in either run. Whether the process was working, waiting, or blocked at startup is unknown.
+- **"It does not fit the platform ceiling."** Same defect: it rested on elapsed time with no captured evidence of what the time was spent on.
+- **"The sandbox rebuild of the challenge is not the cost."** This one survives, but on different grounds: the challenge module pre-built outside the sandbox in 0.1 min (`ComparatorChallenges.NavierStokes`, 8,763 jobs, "Built … (4.4s)"), with two expected `sorry` warnings on the challenge's own statement holes.
+
+No entry of E0–E73 depended on these, and none is affected. The withdrawal is confined to the machine-time attribution.
+
+### 4. What was changed
+
+`.github/workflows/comparator-check.yml`, this repository:
+
+1. `--pty` → `--pipe` for both wrapped invocations, which is the flag that connects a child's stdout to the caller's redirected stdout.
+2. The wrapper is no longer trusted on the strength of a start probe. It must echo `WRAPPER-RELAY-OK` back through the same relay; if it does not, the run proceeds unwrapped and the log says so, rather than dying silently behind a wrapper that eats output.
+3. A five-minute heartbeat writes `date`, captured byte count, and live lean/lake process count into the same log. A silent child and a dead child are distinguishable in the artifact from now on.
+4. The builtin step cap rises from 210 to 300 min, inside the 360-min job cap.
+
+### 5. What would count as a verdict
+
+Either of two strings from `Main.lean`, and nothing else:
+
+- `Your solution is okay!` (`:309`) — the challenge and the solution export to the same statement, the builtin kernel replayed the solution in a fresh environment, the quotient post-check passed, and no axiom outside `permitted_axioms` was used.
+- `Lean default kernel rejects the solution` (`:224`) or `… kernel rejected the solution` (`:198`) — a defect, with the failing export attached.
+
+Absence of both, with heartbeats present, means the run was still working when it was cut. Absence of both with no heartbeats means the capture broke again.
+
+### 6. What this entry does not establish
+
+- **No verdict.** The Comparator check has still not produced one. E73's axiom footprint stands on its own, and it is not this check: a footprint is what the proof term names, not whether the term inhabits the statement the challenge poses.
+- **The cause is inferred, not isolated.** `--pipe` plus a verified relay is the fix for the observed symptom; it has not yet been observed working on this project's config. The next run's first screen decides it.
+- **Nothing mathematical changes.** No fidelity finding is upgraded or downgraded by a capture bug.
+
+*Evidence: artifacts `comparator-check-logs` (run `44999798334`), `cmp-builtin-kernel` and `cmp-verdict-summary` (run `45013487446`); `leanprover/comparator` `Main.lean` at `19e111e2`. Superseded claims are named in §3 rather than deleted.*
