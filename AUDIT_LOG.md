@@ -4615,3 +4615,65 @@ These are the paper's own analytic core. Theorem 4.6 and Corollary 10.6 are plac
 No verdict changes. This entry corrects an arithmetic error in the audit's own bookkeeping and moves three rows; it says nothing about whether the paper's argument is sound.
 
 *Evidence: paper text at `.setup/paper/ns.txt` (166 pages, 485,170 characters); statements at pp. 32–34, 55, 101, 106, 107, 114, 117–118, 125; `PeriodicPaperTheorem.lean:148,155`; `formalization.yaml:122–126`; `NominalProfile.lean:2481,2523–2594,2637`; `NominalConeAssembly.lean:1251,1362,1431,1482,1517`; `R3CompactCandidate.lean:24,90,94,179,231,240,248`; `CurlClassBounds.lean:757`; `LinearWaveBounds.lean:896`.*
+
+---
+
+## E92 — Pass two, slice three: one more result placed, four partly (2026-11-23)
+
+*Reading entry. E91 left the analytic core as the gap. This slice read those statements at page level and searched the tree by shape rather than by name — which is what the previous slice recommended and had not done.*
+
+### 1. Proposition 9.9 is placed whole
+
+**Proposition 9.9** (p. 114): "There are smooth fields (uloc, ploc) on Ω∗, obtained by summing the finite corrections above, such that div uloc = 0 and all conclusions of Theorem 3.1 hold."
+
+That is `LocalPaper.local_theorem` (`LocalPaperTheorem.lean:179`): `∃ h qstar Xa Xext heatNormalization, ∃ A D u : VelocityField, ∃ p : PressureField, Properties h qstar Xa Xext heatNormalization A D u p`. The `Properties` structure (`:53`) is the clause list, and it is Theorem 3.1's list in order: `exponent_small` (`0 < h ∧ h < 1/100`), `scale_positive`, `edges_ordered` (`0 < Xa ∧ Xa < Xext`), four `ContDiffOn ℝ ∞` on `preterminal`, `direct_angular`, `decomposition` (`u w = spatialCurl A w + D w`), `divergence_free`, three `JointResidualLimits.AwayExtensions`, three `UniformJetsOnScaleStrips`, `residual_flatness` (`∀ m r, ∃ C δ, q < δ → ‖iteratedFDeriv m residual‖ ≤ C q^r`), `exterior` (heat velocity and pressure, zero residual), and `angular_growth` (`|τ^A u − e₀| ≤ C τ^{2h}`). Divergence-freeness is a field, not a consequence.
+
+The proof obtains the fields from `LocalResidualFlatness.selected_schedule`; no finite-stage or schedule hypothesis is left to the caller. This is the summed local field the whole-space assembly consumes, and it is now read at statement level rather than inferred from a module name.
+
+### 2. Theorem 4.6(vi) is placed, and (iv) is half placed
+
+**Part (vi)** (pp. 33–34): two fixed disjoint intervals `Ipos`, `Imean` inside `(Xa, Xv)` with `sup Ipos < inf Imean`, on which `U = 0` and `E = cpatch(1+η²)^{-1}X^{-1/2−λ}`.
+
+It is `ReservedPatches` (`ReservedPatches.lean`). The `Slot` inductive has four constructors — `modulation`, `heat`, `positive`, `mean` — and the log offsets are `(-14,-9)` for `.positive` and `(-8,-3)` for `.mean` relative to the pulse entrance, four five-log-unit windows. `offsets_separated` proves disjointness *with order*, which is the paper's `sup Ipos < inf Imean` for the corresponding intervals; `window` and `closedPatch` are those intervals in `X`; and `radialClosedPatch = Icc (√(2·left)) (√(2·right))` is exactly the `Jpos`, `Jmean` conversion in the paper's symbol table (p. 21: "the images of Ipos and Imean under X ↦ √(2X)").
+
+The field formula is the paper's: `clean_fields` gives `U = 0 ∧ E = xAmplitude XR η · X^{-(1/2 + λ)}`, and `xAmplitude_shape` gives `xAmplitude XR η = xAmplitude XR 0 / (1 + η²)`, so the product is `c(η-independent) · (1+η²)^{-1} · X^{-1/2-λ}` — `cpatch` is `xAmplitude XR 0`. `heated_fields` carries it through the heat correction for every slot except `.heat`, and `right_before_switch` plus `clock_inside_wait` put all four windows inside the shaped wait, which is the paper's `(Xa, Xv)` containment. Not one named declaration says "both intervals lie in `(Xa, Xv)`"; it follows from two inequalities.
+
+**Part (iv)** (p. 33) is two inequalities in one display, `|T₀| ≥ cζ` and `|∂^αT₀| ≤ C_α ζ δ^{-m_α}`, with `δ = min{1, log(X/Xa), log(Xb/X)}`. The weight is in the tree verbatim: `ActiveAnnulusWeight.weight c a b y = FlatCutoff.edge c (y−a) · FlatCutoff.edge 4 (b−y)` evaluated at `y = log X` (`radialWeight`), and `edgeDistance a b y = min 1 (min (y−a) (b−y))` — that is `δ` in log coordinates, with the same three arguments in the same order. `weight_flat_left` and `weight_flat_right` prove every iterated derivative of the weight vanishes at both edges, which is the paper's "every radial derivative of ζ vanishes at Xa, Xb"; `radialWeight_flat_left/right` do it in `X`. The `δ^{-m}` loss is `distance_power_le_left` and `left_bound_to_weight`: `C · edge c (y−a) / (y−a)^n ≤ (C / edge 4 (b−a−d)) · weight / edgeDistance^N`. `LeadingStressWeights.weighted_bounds` assembles the two charts into `ActiveAnnulusWeight.WeightedBounds` from the actual modulated witness, so the derivative tower is stated for the real stress, not a model.
+
+The lower bound is **not** placed. What exists is `stress_ne_zero`, which needs `FullTrueCone` and gives `T₀ ≠ 0` — nonvanishing, not a comparison against `ζ`. A strict cone margin is not a quantitative lower bound of the form `cζ`; nothing in the tree supplies the constant. So (iv) is placed for the derivative bound and the flatness, and open for `|T₀| ≥ cζ`. Theorem 4.6 therefore moves from four parts to five, not to six, and stays in the partial column. That is the one inequality between the paper's central existence theorem and a clean placement.
+
+### 3. Proposition 5.3 is partial: the exponent is a definition, the loss is not
+
+**Proposition 5.3** (p. 55): every finite velocity sum is divergence-free and `|Fslow(U[N])|_m ≤ C_{N,m} q^{2h(N+1) − K_m}` with `K_m` independent of `N`.
+
+The `2h(N+1)` is a definition with the paper's own sentence in its docstring: `SlowExpansionResidual.slowOrder h n = 2 * n * h`, "The manuscript's slow order `λ_n = 2nh`". `slowOrder_succ` gives `slowOrder h (n+1) = slowOrder h n + 2h`, so truncating at `N` puts the first uncancelled term at `slowOrder h (N+1) = 2h(N+1)`. That is not an inference from a name: `recurrence_truncation_of_zero` (`SlowExpansionResidual.lean`) proves that when the retained coefficient equations hold, the physical residual equals `pairTail N w K − w (N+1) · A N` exactly — the retained orders cancel identically and only order `N+1` and the pair tail survive. `transportTail` carries `q^(e − 1 + slowOrder h (N+1)) * Z2 …` as a literal term. Divergence-freeness is `divergence_slowVelocity_eq_zero`, via the exact divergence-coefficient series.
+
+The `K_m` is what is missing. The derivative losses in `transportCoefficient` are spread across `T`, `Z`, `Z2` and the recurrence; no declaration states a single constant `K_m` independent of `N` that bounds the whole truncated residual at derivative order `m`. `SharpPhysicalCarrier.derivativeCost h = 1 + 3h/2` is a cost of that shape but belongs to the sharp phase estimate of §7/§9, not to (5.26), and substituting it would be an assumption rather than a placement. Recorded as partial: exponent and divergence placed, `K_m` not.
+
+### 4. Propositions 9.5 and 9.6 are partial: the arithmetic is exact, the construction is elsewhere
+
+**Proposition 9.5** (p. 106) ends: the stage-0 fields "form a state at stage 0 in the sense of Definition 9.4; in particular, their residual orders are `B₀ = 0.7` and `C*₀ = 1.2`." **Proposition 9.6** (p. 107) ends: there is a state at stage `j+1` with `B_{j+1} = B_j + 1/10`, `C*_{j+1} = C*_j + 1/10`.
+
+Those numbers are in the tree and they are exact. `ActualIterationLedger.sigma = ExponentLedger.stageParameter`, with `sigma_zero : sigma 0 = 1/5` and `sigma_succ : sigma (J+1) = sigma J + 1/10`. The residual orders are `residualWave J = ExponentLedger.waveExponent (sigma J)` and `residualMean J = ExponentLedger.meanExponent (sigma J)`, and the two formulas are `residualWave_formula : residualWave J = J/10 + 7/10` and `residualMean_formula : residualMean J = J/10 + 6/5`. At `J = 0` that is `0.7` and `1.2`; the increments are `1/10`; `cycle_wave_output` and `cycle_mean_output` state that one cycle adds exactly one increment. `fixed_ledger` collects the whole schedule — one `κ`, the accuracy sequence, the gain, monotonicity, divergence to infinity — with no stage-dependent choice.
+
+What is *not* placed is the existence half: that a state in the sense of Definition 9.4 actually exists at each stage with those orders. That is the subject of `ActualStageEstimates` and `GluedStageEstimates`, which E67–E71 read down to the source wave class but did not match clause by clause against Definition 9.4. So 9.5 and 9.6 are partial with the arithmetic half proved and the construction half traced, not matched.
+
+**Proposition 9.1** (p. 101) stays unplaced. Its conclusion is class membership — the normalized linear residual belongs to `W_{α+1/2−3κs}` — and no declaration was read that states that membership. `ExponentLedger` contains the gain `1/2 − 3κ` in `signedBarGain` and in `signed_curl_after_divergence`, and `SignedMeanGain`/`CorrectionAnalyticStep` carry stage-level gains, but an exponent appearing in a ledger is not the class statement. Recorded as unfound with that pointer, not as placed.
+
+### 5. The ledger
+
+| Status | Count | Which |
+|---|---|---|
+| placed, statement read | 7 | A.4, B.2, B.10, C.2, Lemma 4.7, Corollary 10.6, Proposition 9.9 |
+| partial | 5 | Theorem 4.6 (5 of 6, (iv) half), Proposition 10.1 (5 of 6), Proposition 5.3, Proposition 9.5, Proposition 9.6 |
+| cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
+| unplaced | 60 | the rest, including Proposition 9.1 |
+| **total** | **74** | |
+
+Two results moved (9.9 to placed, 4.6(vi) inside a partial that improved by one part) and two moved into partial with their arithmetic halves proved. Nothing moved out.
+
+### 6. What this does and does not change
+
+It does not change a verdict. Every row is a statement-level correspondence; not one estimate in §5 or §9 was checked for validity, and the two results that matter most for the argument — Theorem 4.6's uniform lower bound and Proposition 5.3's `N`-independent loss — are exactly the two that did not close. What changed is the shape of the gap: it is no longer "these results were never looked for". It is now three named inequalities, in three named modules, each with the paper's display beside it.
+
+*Evidence: `ns.txt` lines 1592–1665, 2874–2905, 5185–5192, 5421–5426, 5475–5477, 5794–5798 (pages 33–34, 55, 101, 106–108, 114); `LocalPaperTheorem.lean:53,179`; `ReservedPatches.lean` (`Slot`, `offsets_separated`, `clean_fields`, `radialClosedPatch`); `ActiveAnnulusWeight.lean:24,36,190`; `LeadingStressWeights.lean` (`weighted_bounds`, `stress_ne_zero`); `SlowExpansionResidual.lean` (`slowOrder`, `recurrence_truncation_of_zero`, `transportTail`); `ActualIterationLedger.lean` (`sigma`, `residualWave_formula`, `residualMean_formula`, `cycle_wave_output`, `fixed_ledger`); `ExponentLedger.lean` (`signedBarGain`).*

@@ -2,7 +2,7 @@
 %  Statement-Design Arbitrage and Verification Limits:
 %  A Forensic Code Audit of the openai/NavierStokesAndEuler Repository
 %
-%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E91.
+%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E92.
 %  All code citations are to commit f9e8bc5.
 % =====================================================================
 % Compile with LuaLaTeX or XeLaTeX: the Lean listings are quoted verbatim,
@@ -180,7 +180,7 @@ similarity ansatz, dependent type theory, proof auditing, statement design.
 
 \noindent\textbf{Data availability:} commit \texttt{f9e8bc5} of
 \texttt{openai/NavierStokesAndEuler}; audit log
-\file{ns-audit/AUDIT\_LOG.md}, entries E0--E91. Every code citation below is a
+\file{ns-audit/AUDIT\_LOG.md}, entries E0--E92. Every code citation below is a
 \file{path:line} pair in that commit. Kernel acceptance was reproduced on the
 \file{NavierStokes} library; see \S\ref{sec:limits}.
 
@@ -1626,10 +1626,22 @@ lemma is missing from the formalization. That is the remaining work, recorded in
 ile{ns-audit/CROSSWALK.md}. E91 put the paper into the tree as text and corrected
 its count: 74 numbered results, not 57. Six are now placed at statement level, two
 partially (Theorem~4.6 in four of its six parts, Proposition~10.1 in five of its six
-clauses), two are named by a docstring without a statement check, and sixty-four are
-unplaced --- including Proposition~5.3 and Propositions~9.1, 9.5, 9.6 and 9.9. It is
-where a defect would sit if one exists:, and it is where a defect would sit if one exists:
-a kernel check cannot compare an argument against the argument it formalizes.
+clauses), two are named by a docstring without a statement check, and sixty are
+unplaced. E92 places Proposition~9.9 whole --- the summed local field, with
+divergence-freeness as a field of its own statement --- and finishes Theorem~4.6's
+part~(vi), the two reserved intervals, in \texttt{ReservedPatches}: disjoint log
+windows, $U=0$, and $E = c(1+\eta^2)^{-1}X^{-1/2-\lambda}$ on each. Part~(iv) is
+half placed. The weight $\zeta$, its flatness at both edges and the
+$\delta^{-m_\alpha}$ loss are the tree's own \texttt{ActiveAnnulusWeight.weight}
+and \texttt{edgeDistance}, read at $y=\log X$; the uniform lower bound
+$|T_0| \ge c\zeta$ is not stated anywhere, and a strict cone margin is not one.
+Propositions~5.3, 9.5 and 9.6 are partial: each has an exact arithmetic half ---
+the truncation exponent $2h(N+1)$ is the definition \texttt{slowOrder}, and
+$B_0 = 7/10$, $C^*_0 = 6/5$ with $1/10$ increments are \texttt{residualWave}
+and \texttt{residualMean} --- and an analytic half not matched clause by clause.
+The gap is therefore three named inequalities rather than an unsearched corpus,
+and it is where a defect would sit if one exists: a kernel check cannot compare
+an argument against the argument it formalizes.
 
 \subsection{Implications beyond this repository}
 
@@ -1726,7 +1738,7 @@ OpenAI, \emph{NavierStokesAndEuler}, GitHub repository, commit
 \bibitem{audit}
 A.~El Sayad and John, \emph{Forensic audit log for
 \texttt{openai/NavierStokesAndEuler}}, \file{ns-audit/AUDIT\_LOG.md}, entries
-E0--E91 (companion document).
+E0--E92 (companion document).
 
 \bibitem{lean}
 L.~de~Moura and S.~Ullrich, \emph{The \Lean{}~4 theorem prover and programming

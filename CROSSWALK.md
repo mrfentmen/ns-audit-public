@@ -240,23 +240,23 @@ neither statement was compared clause by clause.
 
 ### Unplaced (64)
 
-Including the ones a referee would ask about first. **Proposition 5.3** (p. 55), the
-coefficient induction and the `q^{2h(N+1)−K_m}` residual bound: no declaration with that
-exponent shape was found. **Propositions 9.1, 9.5, 9.6, 9.9** (pp. 101, 106, 107, 114), the
-residual estimates, the stage iteration and the summed local field. A grep for
-`2 * h * (N + 1)` and for the `K_m` loss returns nothing, which is not evidence of
-absence — the bound may be stated under other names, or carried inside the `LogBound` /
-`physicalLoss` machinery of `WholeDomainStageBounds`. It is recorded as unfound, not as
-missing.
+Sixty, and slice three moved five of them (below). **Proposition 9.1** (p. 101) is the one
+this file still cannot place: its conclusion is class membership, `W_{α+1/2−3κs}`, and no
+declaration read states that membership. `ExponentLedger.signedBarGain` contains the
+gain `1/2 − 3κ`, but an exponent in an arithmetic ledger is not a class statement. The
+rest are sections 4–10 and the appendices at result level. A grep for `2 * h * (N + 1)`
+returns nothing under that spelling, which is why slice three stopped grepping for the
+paper's expressions and started grepping for the shape: `slowOrder h n = 2 * n * h` was
+there all along, under a name the paper does not use.
 
 ### The ledger
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 6 | A.4, B.2, B.10, C.2, Lemma 4.7, Corollary 10.6 |
-| partial | 2 | Theorem 4.6 (4 of 6 parts), Proposition 10.1 (5 of 6 clauses) |
+| placed, statement read | 7 | A.4, B.2, B.10, C.2, Lemma 4.7, Corollary 10.6, Proposition 9.9 |
+| partial | 5 | Theorem 4.6 (5 of 6 parts, (iv) half), Proposition 10.1 (5 of 6 clauses), Proposition 5.3, Proposition 9.5, Proposition 9.6 |
 | cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
-| unplaced | 64 | the rest |
+| unplaced | 60 | the rest, including Proposition 9.1 |
 | **total** | **74** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
