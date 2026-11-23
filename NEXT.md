@@ -1,12 +1,28 @@
-# NEXT — the queue for the remaining 55 numbered results
+# NEXT — the queue for the remaining 54 numbered results
 
-Generated from the paper's own text at `.setup/paper/ns.txt`, cross-checked against the ledger
-in `CROSSWALK.md`. The grep of numbered statements returns 85 lines; deduplicating by result
-name gives **74**, which is the ledger's denominator exactly. Fourteen are placed, five are
-partial, and the 55 below are unplaced.
+Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
+returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
+extracted text, of which fourteen are placed, five are partial, and **fifty-four are unplaced**.
+The ledger in `CROSSWALK.md` carries **74** as its denominator and therefore 55 unplaced. The
+two counts differ by one, and the difference is recorded below rather than smoothed away.
 
 This file is a work order, not a finding. Nothing here has been read yet, and no row below
 carries any audit conclusion.
+
+## The one-entry gap against the ledger
+
+| Source | Total | Placed | Partial | Unplaced |
+|---|---|---|---|---|
+| `CROSSWALK.md` ledger | 74 | 14 | 5 | 55 |
+| `ns.txt` extraction here | 73 | 14 | 5 | 54 |
+
+The extraction finds no result named 6.3, 6.4, 6.5, 9.4 or B.9, and no statement whose name is
+indented or split across lines, so the missing entry is not simply a parsing failure of the
+obvious kind. It is either a statement the text extraction dropped — for instance one set
+inside an equation or figure block — or a miscount carried in the ledger since the first
+version. Resolving it costs one pass over the paper's table of contents against the ledger and
+should be done before the ledger is cited again as an exact denominator. The fifty-four rows
+below are the concrete work items either way; none of them depends on which total is right.
 
 ## How to use it
 
