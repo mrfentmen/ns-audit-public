@@ -3916,6 +3916,7 @@ Same status for `actual_stage_endpoints` and `endpointInputs_of_run`: definition
 |---|---|---|---|---|---|
 | `45127159922` | `e515e89` | success | 25 | 358,372 | **45** |
 | `45127609292` | `40fdaf9` | success | 25 | 376,181 | **0** |
+| `45145721571` | `c57d63f` | success | 25 | 377,204 | **0** |
 
 The first run is green by exit status and wrong by content. `lmmono9-regular` has no ∀ (U+2200), ∃, ℝ, ν or ∧, so every Lean listing quoting one rendered a blank: forty-five `Missing character` warnings, no LaTeX error, exit 0. That is why the log was read rather than the tick. The `literate` table already mapped ∀/∃/ℝ/∧ to math for `listings`, but `\ct{...}` is `\texttt`, which goes through the text font and never consults those mappings; ν was absent from the table as well.
 
@@ -3928,6 +3929,8 @@ The first run is green by exit status and wrong by content. `lmmono9-regular` ha
 - Establishes: the paper compiles under the engine it names, on a clean checkout, and every Unicode symbol in its Lean quotations reaches the page.
 - Does not establish: that any line of the mathematics is correct. Typesetting is not checking.
 - Remaining typographic noise: 33 overfull hboxes in the first run, 23 in the fixed one, plus 8 underfull. Zero `LaTeX Warning` lines in both. Cosmetic; not chased further.
+
+The third run rebuilds after the E79 sync, which lengthened the abstract by six lines and the scope paragraph by seven. Same 25 pages, same zero missing characters, zero `LaTeX Warning` lines, 23 overfull and 8 underfull boxes — the typographic noise did not move either. The committed `MANUSCRIPT.pdf` is that run's artifact.
 
 `MANUSCRIPT.pdf` is committed beside the source, and `typeset.yml` reproduces it. The workflow is manual only: a red build of the paper must not block anything else.
 
