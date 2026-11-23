@@ -195,27 +195,37 @@ lists "Corollary 10.6 (Navier–Stokes on ℝ³/ℤ³)" →
 `NavierStokes.Comparator.navier_stokes_breakdown_periodic`, status `proved`. Two
 independent anchors, so this row is `cited` *and* checked.
 
-### Partial (two)
+### Placed (two)
 
 **Theorem 4.6**, pp. 32–34, the paper's central existence claim. `NominalProfile.Witness`
 (`NominalProfile.lean:2481`) is the bundled object — axis stage, controls, outgoing
 specification, heat witness, separation bound, small debt — and it is produced, not
 assumed: `assembly_exists` (`NominalConeAssembly.lean:1482`) and
-`exists_assembly_threshold` (`NominalProfile.lean:2637`). Four of the theorem's six parts
-have a named declaration:
+`exists_assembly_threshold` (`NominalProfile.lean:2637`). All six parts have a named
+declaration:
 
 | Part | Paper | Lean |
 |---|---|---|
 | (i) smoothness, `E = √(2X)F > 0`, pressure (4.25) | p. 33 | `Witness.fields_smooth` :2523, `E_eq_sqrt_f` :2527, `E_positive` :2530, `pressure_canonical` :2543 |
 | (ii) pressure balance and tangential residuals | p. 33 | `pressure_canonical` again (integrated form); stress support in `TerminalStress` / `LeadingStress` |
 | (iii) cone margin (4.26) | p. 33 | `NominalConeAssembly.Certificate` :1362, `initial_cones` :1431, `activation_cone` :1251, `exists_nominal_cone` :1517 |
+| (iv) flat weight `ζ`, `\|T₀\| ≥ cζ`, `\|∂^αT₀\| ≤ C_α ζ δ^{−m_α}` | p. 33 | `ActiveAnnulusWeight.weight`, `radialWeight`, `edgeDistance`; `weight_flat_left/right`; `LeadingStressWeights.stress_lower_bound` :1121, `physical_jet_bound` :1137 |
 | (v) five vanishing moments (4.28), heat exterior (4.29), `U = V₀ = 0` past `Xb` | p. 33 | `five_moments` :2536, `moments_after` :2576, `heat_agreement` :2564, `U_outgoing` :2589, `mass_outgoing` :2594 |
+| (vi) two reserved intervals `I_pos`, `I_mean` carrying (4.30) | pp. 33–34 | `ReservedPatches.Slot`, `offsets_separated`, `clean_fields`, `xAmplitude_shape`, `radialClosedPatch` |
 
-Part (iv) — the weight `ζ`, `\|T₀\| ≥ cζ`, `\|∂^αT₀\| ≤ C_α ζ δ^{−m_α}` — is not
-matched clause by clause: the stress modules are the right family but the `δ^{−m}`
-bookkeeping was not traced. Part (vi) — two reserved intervals `I_pos`, `I_mean` carrying
-(4.30) — was not located at all. So the object exists and four of six parts are placed;
-two are not.
+Part (iv) closed in E93, which also corrects E92: the lower bound was recorded as
+unstated, and it is not. `stress_lower_bound` is
+`∃ c > 0, c · zeta v X ≤ ‖stress … (η, X)‖` on `activeLeft < X < activeRight`,
+`η ∈ [−1, 1]` — the paper's display, with `ζ` the same flat weight and no `α` anywhere in
+the statement. The constant is not the cone margin. It is `min ml (min mr mm)` from
+`exists_global_lower_bound` (`ActiveAnnulusWeight.lean:424`): two edge-collar constants
+plus `UniformCone.positive_uniform_margin` on the compact interior. The cone margin by
+itself gives only nonvanishing (`stress_ne_zero` :462), which is where E92's reading
+stopped. The derivative half bounds the whole `n`-th Fréchet derivative, which is at
+least as strong as the paper's per-index `m_α`. Placement is statement-level: nothing was
+recompiled.
+
+### Partial (one)
 
 **Proposition 10.1**, pp. 117–118. `R3CompactCandidate.Properties`
 (`R3CompactCandidate.lean:24`): velocity and pressure smooth on `preSingularDomain`,
@@ -253,8 +263,8 @@ there all along, under a name the paper does not use.
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 7 | A.4, B.2, B.10, C.2, Lemma 4.7, Corollary 10.6, Proposition 9.9 |
-| partial | 5 | Theorem 4.6 (5 of 6 parts, (iv) half), Proposition 10.1 (5 of 6 clauses), Proposition 5.3, Proposition 9.5, Proposition 9.6 |
+| placed, statement read | 8 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 9.9 |
+| partial | 4 | Proposition 10.1 (5 of 6 clauses), Proposition 5.3, Proposition 9.5, Proposition 9.6 |
 | cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
 | unplaced | 60 | the rest, including Proposition 9.1 |
 | **total** | **74** | |

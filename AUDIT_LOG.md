@@ -4677,3 +4677,77 @@ Two results moved (9.9 to placed, 4.6(vi) inside a partial that improved by one 
 It does not change a verdict. Every row is a statement-level correspondence; not one estimate in §5 or §9 was checked for validity, and the two results that matter most for the argument — Theorem 4.6's uniform lower bound and Proposition 5.3's `N`-independent loss — are exactly the two that did not close. What changed is the shape of the gap: it is no longer "these results were never looked for". It is now three named inequalities, in three named modules, each with the paper's display beside it.
 
 *Evidence: `ns.txt` lines 1592–1665, 2874–2905, 5185–5192, 5421–5426, 5475–5477, 5794–5798 (pages 33–34, 55, 101, 106–108, 114); `LocalPaperTheorem.lean:53,179`; `ReservedPatches.lean` (`Slot`, `offsets_separated`, `clean_fields`, `radialClosedPatch`); `ActiveAnnulusWeight.lean:24,36,190`; `LeadingStressWeights.lean` (`weighted_bounds`, `stress_ne_zero`); `SlowExpansionResidual.lean` (`slowOrder`, `recurrence_truncation_of_zero`, `transportTail`); `ActualIterationLedger.lean` (`sigma`, `residualWave_formula`, `residualMean_formula`, `cycle_wave_output`, `fixed_ledger`); `ExponentLedger.lean` (`signedBarGain`).*
+
+---
+
+## E93 — The lower bound was in the module: Theorem 4.6(iv) closes (2026-11-23)
+
+*Reading entry. E92 recorded that `|T₀| ≥ cζ` "is not stated anywhere" and that "a strict cone margin is not a quantitative lower bound of the form `cζ`". The second sentence is true and the first is false: the declaration is in `LeadingStressWeights.lean`, the file E92 already had open, three hundred lines below the one it read.*
+
+### 1. The declaration
+
+`LeadingStressWeights.stress_lower_bound` (`:1121`):
+
+```
+theorem stress_lower_bound (hcone : FullTrueCone v) :
+    ∃ c : ℝ, 0 < c ∧ ∀ p : Point,
+      p.1 ∈ Ioo (NominalConeAssembly.activeLeft W) (NominalConeAssembly.activeRight W) →
+      p.2 ∈ Icc (-1 : ℝ) 1 → c * zeta v p.1 ≤ ‖stress v.profiles F.data.h p‖
+```
+
+Term by term against the paper's display `|T₀| ≥ cζ` on `(Xa, Xb) × [−1, 1]` (p. 33):
+
+* `zeta` (`:1089`) is `radialWeight (activationTime ^ 2) (leftEdge W) (rightEdge W) X` — the flat weight of item (iv): positive on the open annulus, zero outside it, every radial derivative vanishing at both edges. E92 placed that half; it is the same object.
+* `stress` (`:23`) is `(LeadingStress.theta, LeadingStress.axial)`, the literal two leading components, on the actual modulated witness.
+* The domain is `activeLeft < X < activeRight` with `η ∈ [−1, 1]`, which is `(Xa, Xb) × [−1, 1]` under `leftEdge = log Xa`, `rightEdge = log Xb`.
+* The quantifier is `∃ c, 0 < c` with no `α` in the statement — the paper's "constant `c > 0`, independent of `α`".
+
+### 2. Why nonvanishing was, in fact, enough
+
+E92 stopped at `stress_ne_zero` (`:462`), which gives `T₀ ≠ 0`, and concluded that no quantitative version existed. The quantitative version is not derived from the cone *inequality*; it is derived from nonvanishing on a compact set together with the two edge factors, and the cone enters only as the hypothesis that supplies nonvanishing.
+
+The chain: `weighted_bounds` (`:528`) applies `kappa_lt_one` and `logStress_ne_zero` to `ActiveAnnulusWeight.actual_edge_join` (`:1244`), which calls `weightedBounds_of_edge_factors` (`:648`), which calls `exists_global_lower_bound` (`:424`). There the constant is built:
+
+```
+let m := min ml (min mr mm)
+```
+
+`ml` and `mr` are the collar constants of the two `EdgeFactor`s — the activation collar at `Xa` and the terminal collar at `Xb` — and `mm` is `UniformCone.positive_uniform_margin` applied to `Icc (−1) 1 ×ˢ Icc (a+d) (b−d)`: the positive minimum of a continuous nowhere-zero norm over a compact set. So `c` is a minimum of three positive constants, each produced by an argument, not assumed.
+
+This is why E92's second sentence was right and its conclusion was not. A cone margin alone does give only an inequality in the cone's own coordinates, not `cζ`; `ConeAlgebra.true_cone_iff` converts the margin into a forbidden direction, and `stress_ne_zero` uses exactly that. What produces `cζ` is the separate compactness-and-edge-factor argument above. Both statements are needed and both exist; E92 saw the first and did not look for the second.
+
+`weightedBounds_of_edge_factors` (`:648`) is the general form: `WeightedBounds`' first component *is* `∃ m > 0, ∀ p ∈ K, ∀ y ∈ Ioo a b, m · weight c a b y ≤ ‖T (p,y)‖`. So the lower bound and the derivative tower are the two halves of one structure, and E92 placed one half of a record whose other half was `.1`.
+
+### 3. The derivative half is stronger than the paper asks
+
+`physical_jet_bound` (`:1137`) gives, for every `n`, a `C > 0` and an `N` with
+
+```
+‖iteratedFDeriv ℝ n (fun p => stress … (p.2, p.1)) (η, X)‖ ≤ C * zeta v X / distance v X ^ N
+```
+
+with `distance v X = edgeDistance (leftEdge W) (rightEdge W) (log X)` — that is `δ`. The paper asks for a constant `m_α` per multi-index `α`; the tree bounds the full `n`-th Fréchet derivative, which dominates every mixed partial of order `n`, so the paper's display follows with `m_α := N_{|α|}`. Order-by-order is a strengthening of index-by-index here, not a weakening.
+
+`FinalSlowBase.leading_lowerBound` (`:149`) restates the lower bound in the `weight` / `leadingStress` spelling on `annulus W`, and `leading_radial_jets` (`:166`) restates the tower. `leading_stress_eq` (`:130`) identifies `leadingStress` with `BaseResidual.stressPair (coefficients H v) 0`, the coefficients the velocity is actually built from — so this is the object in the proof, not a stand-in for it.
+
+### 4. The cost, stated plainly
+
+The statement is existential in exactly the sense the paper claims, so this is a placement and not a defect. The audit's constant theme applies unchanged: `c = min ml (min mr mm)` is a minimum of three margins, no numeral is printed, and no dependence on `h`, `λ` or the profile parameters is exposed. An argument that needed `c` to beat a specific quantity would not be served by this statement. Item (iv) does not ask for that, and §5's `(5.43)` uses `ζ` and `δ` as weights rather than using `c`.
+
+### 5. Theorem 4.6 is placed, whole
+
+Six of six parts. (i), (ii), (iii), (v) from E91; (vi) from E92; (iv) here. The theorem moves out of the partial column, which leaves Proposition 10.1 (five of six clauses), Proposition 5.3 (exponent without `K_m`), Proposition 9.5 and Proposition 9.6 (arithmetic without the Definition 9.4 match).
+
+| Status | Count | Which |
+|---|---|---|
+| placed, statement read | 8 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 9.9 |
+| partial | 4 | Proposition 10.1 (5 of 6 clauses), Proposition 5.3, Proposition 9.5, Proposition 9.6 |
+| cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
+| unplaced | 60 | the rest, including Proposition 9.1 |
+| **total** | **74** | |
+
+Two limitations survive. The placement is statement-level: neither `stress_lower_bound` nor `physical_jet_bound` was recompiled for this entry, and this tree has never been compiled by this audit. And placing the clauses of Theorem 4.6 says nothing about whether §5–§9 discharges them; that question is untouched by this slice and is not advanced by it.
+
+What this entry does establish is narrower and worth having: the one inequality E92 named as standing between the paper's central existence theorem and a clean placement is not open. It was closed in the source, under a name the paper does not use (`stress_lower_bound`, not `lower_bound` or `stable_lower`), and E92 searched for the paper's vocabulary rather than for the statement's shape — the same mistake E92's own §3 diagnosed in slice two and did not apply here.
+
+*Evidence: `ns.txt` lines 1592–1645 (pp. 32–33, item (iv) and display (4.27)); `LeadingStressWeights.lean:23,453,462,528,1089,1121,1137`; `ActiveAnnulusWeight.lean:424,634,644,648,1244`; `FinalSlowBase.lean:130,149,166`; `UniformCone.positive_uniform_margin`; `ConeAlgebra.true_cone_iff`.*
