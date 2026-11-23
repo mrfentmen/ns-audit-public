@@ -71,6 +71,32 @@ jobs:
           echo "phase-end build-euler $(( SECONDS - START ))s"
           du -sh .lake/build 2>/dev/null || true
 
+      # E81 found that the challenge's C1 clause (velocity sup plus gradient
+      # sup) is weaker than the paper's gradient-only clause. The gradient
+      # theorem exists in the development, but Comparator can only target a
+      # name that both modules declare, and the challenge declares only the
+      # sum. Adding a matching challenge statement would mean authoring a
+      # statement here, not auditing one upstream, so this step prints the
+      # axiom footprint of the strong theorem instead. `continue-on-error`
+      # keeps a probe failure from taking the statement check down with it.
+      - name: Probe the paper-clause theorems
+        working-directory: upstream
+        continue-on-error: true
+        timeout-minutes: 15
+        run: |
+          cat > ProbePaperClauses.lean <<'EOF'
+          import Euler.EulerSingularity
+          import Euler.EulerC1Limsup
+
+          #print axioms EulerPacketInduction.maximalGradientNorm_limsup
+          #print axioms EulerPacketInduction.maximalVorticity_integral_infinite
+          #print axioms EulerPacketInduction.exists_compact_smooth_euler_singularity
+          EOF
+          set +e
+          lake env lean ProbePaperClauses.lean 2>&1 \
+            | tee "$GITHUB_WORKSPACE/euler-paper-clause-probe.log"
+          echo "probe exit: ${PIPESTATUS[0]}"
+
       - name: Build comparator and lean4export
         working-directory: upstream
         timeout-minutes: 20
@@ -139,6 +165,7 @@ jobs:
             comparator-build.log
             landrun-build.log
             nanoda-build.log
+            euler-paper-clause-probe.log
             upstream/lake-manifest.json
           if-no-files-found: warn
 
