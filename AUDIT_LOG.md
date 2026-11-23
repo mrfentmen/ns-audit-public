@@ -4213,7 +4213,7 @@ E81 therefore has **two** soft clauses, not one: row 4 and row 5. Its table has 
 
 ### 5. What this entry does not do
 
-It compares two arguments with their formal counterparts; it does not re-prove either, does not read the construction, and does not touch Sections 3--5. The probe dispatched as run `45158640147` asks the runner for the axiom footprint of `EulerPacketInduction.maximalGradientNorm_limsup`, the theorem behind E81's row 5; its result is recorded separately when it lands.
+It compares two arguments with their formal counterparts; it does not re-prove either, does not read the construction, and does not touch Sections 3--5. The probe dispatched as run `45158640147` printed the axiom footprint of `EulerPacketInduction.maximalGradientNorm_limsup`, the theorem behind E81's row 5: `[propext, Classical.choice, Quot.sound]`, no `sorryAx` (E84).
 
 *Evidence: papers §6.3 at `:2666`--`:2726` of the extracted text; `Euler/OrdinaryEulerContinuation.lean:20`, `:43`, `:53`, `:65`, `:124`; `Euler/OrdinaryEulerGradientControl.lean:41`; `Euler/OrdinaryBKMReduction.lean:23`, `:34`; `Euler/OrdinaryEulerBKM.lean:20`, `:37`; `Euler/OrdinaryLogarithmicGradient.lean`; `Euler/ComparatorSobolevEvolution.lean`; `Euler/EulerFiniteLifespan.lean`; `Euler/ComparatorMaximalFields.lean`.*
 
@@ -4260,3 +4260,41 @@ All sixteen fields of `PeriodicPaper.CandidateProperties` are then constructed, 
 It does not read the proof of `PeriodicUniqueness.classical_uniqueness_on_Icc`, which is the load-bearing lemma for both `MaximalLifespan` and `PeriodicViscosity`; it reads its interface and its call sites only. It does not read `exists_compression_scale`'s construction beyond its statement and use, nor `ParabolicScaling.compressedCandidate`'s body. The periodization half is now read; the uniqueness proof is the remaining sampled piece, and this entry does not claim it.
 
 *Evidence: `PeriodicLocalization.lean:62`, `:136`, `:155`, `:176`, `:192`, `:252`; `PeriodizePDE.lean:32`, `:117`, `:133`; `PeriodicPaperTheorem.lean:113`, `:160`; `PeriodicPaperSupport.lean:58`, `:79`; `PeriodicPaperScalingSupport.lean:82`; `PeriodicViscosity.lean:18`; `MaximalLifespan.lean` (`candidate_admissible_lifespans`, `candidate_greatest_lifespan`, `periodic_bound_on_slab`); `f9e8bc5`.*
+
+---
+
+## E84 — The strong gradient theorem's axiom footprint, printed (2026-11-23)
+
+*Execution evidence. E81 row 5 and E82 §5 left one thing open: the development proves `maximalGradientNorm_limsup`, the paper's gradient clause, but that theorem is not in `ComparatorChallenges/Euler.json`, so `#print axioms` had never been run on it. Run `45158640147` prints it.*
+
+### 1. The run
+
+| item | value |
+|---|---|
+| run | `45158640147`, workflow `comparator-check-euler.yml`, dispatched from `a5226ea` |
+| upstream | `openai/NavierStokesAndEuler` at `f9e8bc5` |
+| cache | `lake-build-ubuntu-f9e8bc5-euler-v1` restored, so the build is a replay |
+| build | `Build completed successfully (10603 jobs)` |
+| probe | `lake env lean ProbePaperClauses.lean`, exit 0 |
+
+The probe file is described in the workflow comments. Comparator cannot target a name the challenge module does not declare, and the challenge declares only the $C^1$ sum; adding a matching challenge statement would mean authoring a statement rather than auditing one. So the probe asks the kernel for axioms instead.
+
+### 2. The output, verbatim
+
+```
+'EulerPacketInduction.maximalGradientNorm_limsup' depends on axioms: [propext, Classical.choice, Quot.sound]
+'EulerPacketInduction.maximalVorticity_integral_infinite' depends on axioms: [propext, Classical.choice, Quot.sound]
+'EulerPacketInduction.exists_compact_smooth_euler_singularity' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+```
+
+### 3. What it settles
+
+The paper's gradient clause is proved in the development, and its proof uses only the three axioms the challenge permits. It is not a `sorry`, not an extra axiom, not `native_decide`. E81's row-5 weakening is therefore a **statement** choice, not a gap in what the artifact knows: the repository knows the paper's clause; the challenge does not ask for it.
+
+### 4. What it does not settle
+
+This is not a Comparator check. There is no export, no `landrun` replay and no nanoda second kernel on `maximalGradientNorm_limsup` — the library build checks the term, the probe prints its axioms, and the statement-level gap in E81 stays exactly as wide: the *accepted* statement is the weaker one. The run's comparator phase re-executes E79's target set and is not new evidence.
+
+*Evidence: run `45158640147`, artifact `euler-toolchain-logs`, file `euler-paper-clause-probe.log` (350 bytes); `euler-build.log` tail; workflow step "Probe the paper-clause theorems" at the commit above.*
