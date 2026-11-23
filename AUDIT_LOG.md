@@ -4295,7 +4295,7 @@ The paper's gradient clause is proved in the development, and its proof uses onl
 
 ### 4. What it does not settle
 
-This is not a Comparator check. There is no export, no `landrun` replay and no nanoda second kernel on `maximalGradientNorm_limsup` — the library build checks the term, the probe prints its axioms, and the statement-level gap in E81 stays exactly as wide: the *accepted* statement is the weaker one. The run's comparator phase re-executes E79's target set and is not new evidence.
+This is not a Comparator check. There is no export, no `landrun` replay and no nanoda second kernel on `maximalGradientNorm_limsup` — the library build checks the term, the probe prints its axioms, and the statement-level gap in E81 stays exactly as wide: the *accepted* statement is the weaker one. The run's comparator phase re-executes E79's target set; it has since returned, and E87 records what it found.
 
 *Evidence: run `45158640147`, artifact `euler-toolchain-logs`, file `euler-paper-clause-probe.log` (350 bytes); `euler-build.log` tail; workflow step "Probe the paper-clause theorems" at the commit above.*
 
