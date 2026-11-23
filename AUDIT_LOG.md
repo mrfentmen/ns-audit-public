@@ -4335,6 +4335,50 @@ E83's caveat is discharged at this layer. The uniqueness lemma is not a black bo
 
 ### 4. What remains below it
 
-The proof rests on `PeriodicIntegration`: `cubeIntegral_mul_partial`, `cubeIntegral_partial_eq_zero`, `hasDerivAt_cubeIntegral_of_contDiffOn`. These are used as black boxes here and were not read line by line; they are the integration-by-parts and differentiation-under-the-integral foundation for the whole periodic development. That is now the next unread layer, and it is a smaller one than the uniqueness theorem was.
+The proof rests on `PeriodicIntegration`: `cubeIntegral_mul_partial`, `cubeIntegral_partial_eq_zero`, `hasDerivAt_cubeIntegral_of_contDiffOn`. These are used as black boxes here; E86 reads them.
 
 *Evidence: `PeriodicUniqueness.lean:643` and the lemmas cited above (`:24`–`:641`); `PeriodicViscosityUniqueness.lean:65`, `normalize_residual`; call sites `MaximalLifespan.lean:93`, `PeriodicViscosity.lean:56`; `f9e8bc5`.*
+
+---
+
+## E86 — The periodic integration layer, read (2026-11-23)
+
+*Reading entry. E85 stopped at three black boxes in `PeriodicIntegration`. This entry opens them. The question is the one E63 taught us to ask of every boundary: is this an assumption wearing a lemma's name, or is it proved?*
+
+### 1. The integral is real
+
+`cubeIntegral` (`PeriodicIntegration.lean:27`) is `∫ y, f (toSpace y) ∂(volume.restrict (Icc 0 1))` — ordinary product Lebesgue measure on `Fin 3 → ℝ`, restricted to the unit cube, pulled back along the continuous linear equivalence `toSpace` (`:19`). There is an `IsFiniteMeasure` instance, proved from `isCompact_Icc.measure_lt_top`. So the energy in E85 is the squared `L²` norm on the torus, not a Riemann sum, a finite partial sum, or a stand-in functional.
+
+`spatialPartial i f x` (`:34`) is the Fréchet derivative `fderiv ℝ f x (coordinateVector i)`, so a "partial derivative" in this development is the actual derivative, not a symbol.
+
+### 2. Integration by parts is derived from Mathlib's divergence theorem
+
+`cubeIntegral_partial_eq_zero` (`:123`) is the load-bearing identity: a genuine coordinate derivative of a `C¹` unit-periodic field integrates to zero. Its proof:
+
+1. Assemble the coordinate box `Icc (0 : Coords) 1` and the vector field `F k = if k = i then g else 0`, with `F'` the matching derivative field.
+2. Discharge the hypotheses of Mathlib's `integral_divergence_of_hasFDerivAt_off_countable'` at `n = 2` on a box with corners `0` and `1`, using `countable_empty` for the exceptional set.
+3. Supply `hboundary`, that opposite faces agree: this is exactly where periodicity enters, through `hp x i`, and `insertNth_one_eq` is the small lemma that the face shift `insertNth 1 y` is the corner shift `insertNth 0 y` plus `Pi.single i 1`, which `toSpace_single` translates into `coordinateVector i`.
+
+Nothing about integration by parts is assumed; the divergence theorem is quoted from Mathlib and instantiated. `cubeIntegral_mul_partial` (`:181`) is then a short corollary: periodicity of the product, the product rule `partial_mul`, and `cubeIntegral_add`. Not a second theorem, an application.
+
+### 3. The transport and pressure cancellations are derived, not stipulated
+
+`cubeIntegral_fderiv_apply` (`PeriodicUniqueness.lean:341`) expands the pairing over the three coordinates via `fderiv_apply_eq_sum`, then applies `cubeIntegral_mul_partial` term by term. `cubeIntegral_fderiv_apply_zero` (`:367`) is that plus `div v = 0`. `cubeIntegral_transport_energy_zero` gets the energy version by differentiating `‖w‖²` and halving. `cubeIntegral_laplacian_energy` (`:414`) runs the same argument twice per coordinate and lands on minus the sum of squared coordinate derivatives — the Dirichlet form, with the sign produced by the identity rather than imposed. `cubeIntegral_pressure_energy_zero` turns the pressure pairing into `fderiv p · w` through `inner_pressureGradient`, then invokes `_zero` with `div w = 0`.
+
+That last line is why E85's remark about gauge freedom is correct: the pressure never needs normalizing because it is paired against a divergence-free field and killed by the same identity that kills the transport. The two cancellations are one mechanism, applied twice.
+
+### 4. Differentiation under the integral
+
+`hasDerivAt_cubeIntegral_of_hasDerivAt` (`:274`) is Mathlib's `hasDerivAt_integral_of_dominated_loc_of_deriv_le`, with the dominating constant obtained by `exists_bound_of_continuousOn` on the compact `closedBall t ε × cube`. `hasDerivAt_cubeIntegral_of_contDiffOn` (`:305`) specializes it to jointly `C¹` fields by producing the continuous derivative field from `continuousOn_fderiv_of_isOpen`. So `energyRate` in E85 is a genuine derivative of `energy`; the balance is not two independent functionals that happen to be related.
+
+### 5. Why the uniqueness conclusion is pointwise, not almost everywhere
+
+`eq_zero_on_cube_of_nonneg_of_integral_eq_zero` (`:206`) converts zero integral of a continuous nonnegative field into vanishing on the closed cube. The step that makes it work is `cube_subset_closure_interior`: `cube ⊆ closure (interior cube)`, so `Measure.eqOn_of_ae_eq` plus continuity upgrades an a.e. statement to one holding on the faces as well. Without that, E85's final step would give equality a.e., and "two classical solutions agree" would be a weaker claim than the theorem states.
+
+### 6. Assessment
+
+This layer was the last place in the periodic chain where an assumed energy identity could have been hiding, and it is not there. The IBP is a divergence-theorem instantiation, the cancellations are corollaries of it, the time derivative is a dominated-convergence derivative, and the a.e.-to-pointwise upgrade is explicit. With E85 and E86, the periodic uniqueness route from `PeriodicPaper.GlobalSmoothSolution` down to the energy identity is read.
+
+Two honest limits. First, `UnitPeriods` is invariance under the elementary translations `x + e_i` only; full lattice periodicity is not assumed at this layer and is not needed, because face matching is a one-step condition. Second, the read stops at Mathlib — `integral_divergence_of_hasFDerivAt_off_countable'` and `hasDerivAt_integral_of_dominated_loc_of_deriv_le` are trusted as kernel-checked library theorems, not re-read.
+
+*Evidence: `PeriodicIntegration.lean:19, 27, 34, 123, 181, 274, 305, 206`; `PeriodicUniqueness.lean:341, 367, 414` and `cubeIntegral_pressure_energy_zero`; `f9e8bc5`.*

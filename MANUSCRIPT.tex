@@ -2,7 +2,7 @@
 %  Statement-Design Arbitrage and Verification Limits:
 %  A Forensic Code Audit of the openai/NavierStokesAndEuler Repository
 %
-%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E85.
+%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E86.
 %  All code citations are to commit f9e8bc5.
 % =====================================================================
 % Compile with LuaLaTeX or XeLaTeX: the Lean listings are quoted verbatim,
@@ -180,7 +180,7 @@ similarity ansatz, dependent type theory, proof auditing, statement design.
 
 \noindent\textbf{Data availability:} commit \texttt{f9e8bc5} of
 \texttt{openai/NavierStokesAndEuler}; audit log
-\file{ns-audit/AUDIT\_LOG.md}, entries E0--E85. Every code citation below is a
+\file{ns-audit/AUDIT\_LOG.md}, entries E0--E86. Every code citation below is a
 \file{path:line} pair in that commit. Kernel acceptance was reproduced on the
 \file{NavierStokes} library; see \S\ref{sec:limits}.
 
@@ -217,7 +217,7 @@ corollary is examined in \S\ref{sec:periodic} as alternative (D): its statement,
 its derivation from the whole-space theorem, and its comparator bridge in both
 directions. That examination is a reading of the statement and the architecture
 of the proof, not an independent audit of the periodic development's own
-machinery---the periodization lemmas and periodic uniqueness are read rather than sampled (E83, E85), though not re-proved---and the one empirical obligation it left, the axiom print, is
+machinery---the periodization lemmas, the periodic uniqueness theorem and the integration-by-parts layer beneath it are read rather than sampled (E83, E85, E86), though not re-proved---and the one empirical obligation it left, the axiom print, is
 discharged in (E73). The Euler development in the same repository was outside
 this paper until E79, which runs its Comparator challenge end to end: the
 library builds from a clean clone (10,603 jobs, 50 min 11 s), both Euler
