@@ -270,20 +270,25 @@ started grepping for the shape: `slowOrder h n = 2 * n * h` was there all along,
 name the paper does not use. The same lesson cost the 9.1 row two passes: the paper says
 "normalized linear residual", the tree says `globalGood`.
 
-Proposition 5.3's bound is now placed but for one clause — `truncationResidual_rate`
-(`BaseResidual.lean:1440`) carries exponent `2Nh − 2 − M`, which is the paper's
-`2h(N+1) − K_m` at `K_m = m + 2 + 2h`, exact and `N`-independent. What is missing is
-"every finite velocity sum is divergence-free" as a stated conclusion. Propositions 9.5
-and 9.6 each move to four of five and two of three clauses respectively (E95): the stage
-bound `gain h (j+1) − physicalLoss h m` in `WholeDomainPhysicalStageTheorem.lean:101`
-composes with `residual_physical_gap` to identify the paper's `B_j` with `gain h j`.
+Propositions 5.3, 9.5 and 9.6 are placed as of E97. 5.3's exponent is
+`truncationResidual_rate` (`BaseResidual.lean:1440`), `2Nh − 2 − M` — the paper's
+`2h(N+1) − K_m` at `K_m = m + 2 + 2h`, exact and `N`-independent — and its
+divergence clause is `divergence_slowVelocity_eq_zero` (`SlowExpansionResidual.lean:915`),
+stated for the actual Euclidean divergence of the finite sum, with
+`divergence_slowVelocity` (`:885`) proving that divergence *equals* the finite
+coefficient series. 9.5's `6/5` is `CorrectionState.MeanResidualBounds`, stated as
+`1 + σ` for every admissible `σ` and evaluated at `sigma 0 = 1/5`; 9.6's cycle
+output is `CorrectionStep.gaugeTemporalStage_next_mean` at `σ + 1/10`, with the
+wave side at `gain h (j+1)`. The qualification carried: 9.6's four ordered
+corrections exist as four declarations, not one composed step theorem. What is
+left partial in the whole ledger is now only Proposition 10.1's short-time clause.
 
 ### The ledger
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 9 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 9.1, Proposition 9.9 |
-| partial | 4 | Proposition 10.1 (5 of 6), Proposition 5.3 (4 of 5), Proposition 9.5 (4 of 5), Proposition 9.6 (2 of 3) |
+| placed, statement read | 12 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9 |
+| partial | 1 | Proposition 10.1 (5 of 6 clauses) |
 | cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
 | unplaced | 59 | the rest |
 | **total** | **74** | |

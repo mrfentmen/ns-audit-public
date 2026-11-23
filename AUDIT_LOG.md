@@ -4846,3 +4846,84 @@ so the witness is produced from nothing, and `NominalConeAssembly.certificate` d
 **What is left open, and it is a wiring question.** Two profile constructions coexist. §4's cone and lower bound are stated for `W.controls.extendedProfiles W.heat W.separated` (`NominalProfile.lean:2503`), while §5's residual statements take a `SlowProfiles f` argument that `GlobalSlowProfiles.profiles` constructs, and `ActualCandidateAssembly.assemble` draws its `f` from that second family. No declaration read in this pass identifies the two. That is not a claim of defect — the assemblies may meet through a bridge in the Establishes/Actual* layer that this slice did not open — but until such a declaration is read, "Theorem 4.6 is discharged" remains true clause by clause at each boundary and unproved as a single composition. It is the next target, and it is a smaller target than the one this entry closed.
 
 *Evidence: `NominalConeAssembly.lean:1404,1431,1482,1512,1517`; `PreparedOutgoing.lean:22,36,119,121`; `NominalProfile.lean:2481,2503,2523`; `BaseResidual.lean:1440,1479`; `WorldDomain`-free check: `GlobalSlowProfiles.lean` `profiles`, `AssembledSlowBase.lean:575`; `ActualCandidateAssembly.lean` (`assemble`, `estimates`).*
+---
+
+## E97 — §5 and §9 close: the three quarter-open rows are placed (2026-11-23)
+
+*Reading entry. E95 left three results partial and named the clauses that were missing. All three clauses are in the tree, and the profile link E96 could not find is named as well. This is the largest single move the ledger has made: twelve of seventy-four placed, one partial.*
+
+### 1. Proposition 5.3, both clauses
+
+(5.25) closed in E95 (`truncationResidual_rate`, `BaseResidual.lean:1440`). The divergence clause — "every finite velocity sum `u^[N]_slow` is divergence-free" — is `divergence_slowVelocity_eq_zero` (`SlowExpansionResidual.lean:915`), stated for the actual Euclidean divergence of the finite sum `slowVelocity N h C f`:
+
+```
+ProblemStatement.spatialDivergence (slowVelocity N h C f) t x = 0
+```
+
+The hypothesis is `hdiv : ∀ n ≤ N, divergenceCoefficient h f n (inner h (profilePoint t x)) = 0`. That is not an added estimate: it is equation (21) at each retained order, and its content is characterized by `divergenceCoefficient_eq_zero_iff` (`:769`), which proves the vanishing equivalent to `partialX (f.flux n) = -Z h (axialExponent h + slowOrder h n) (f.axial n)`. The construction enforces exactly that relation. So the clause is the paper's, discharged by the recurrence the paper builds.
+
+There is a stronger statement beside it. `divergence_slowVelocity` (`:885`) proves the finite field's divergence is **exactly** its finite coefficient series:
+
+```
+spatialDivergence (slowVelocity N h C f) t x
+  = finiteSeries N (q h (profilePoint t x)) h (-1)
+      (fun n => divergenceCoefficient h f n (inner h (profilePoint t x)))
+```
+
+and `divergence_finite_expansion` (`:634`) proves the same identity in similarity variables. So "exactly incompressible at each order" is a theorem about the actual differential operator, not a formal shorthand.
+
+### 2. Proposition 9.5, both orders
+
+Stage zero. `sigma_zero` (`ActualIterationLedger.lean:34`) is `sigma 0 = 1/5`; `residualWave_formula` (`:231`) gives `7/10` and `residualMean_formula` (`:235`) gives `6/5`.
+
+The wave half is `PrimaryPiece.linear_bound_and_identity`'s `WaveClass p.strip P (7/10) p.linearGood` (E95). The mean half is `CorrectionState.MeanResidualBounds` (`:217–219`), which states the class **generically in `σ`**:
+
+```
+angular : MeanClass s (1 + σ) (fun n x => u.meanGoodResidual c n x 1)
+axial   : MeanClass s (1 + σ) (fun n x => u.meanGoodResidual c n x 2)
+```
+
+At `σ = sigma 0 = 1/5` that is `MeanClass s (6/5)`, which is the paper's `C*_0 = 1.2`. E95 recorded "no declaration states the assembled stage-0 mean residual lies in class 6/5"; the declaration states it for every admissible `σ` and the stage-zero value is `sigma 0`. The state itself is `ActualInitialization.initialState` with `initial_invariant` (`BaseWitnessClosure.selected_initial_invariant`).
+
+### 3. Proposition 9.6, one cycle
+
+`sigma_succ` (`:38`) is the `+1/10`. The output side is `CorrectionStep.gaugeTemporalStage_next_mean` (`:3004`), whose conclusion is
+
+```
+MeanClass s (ExponentLedger.meanExponent (σ + 1 / 10)) …
+```
+
+i.e. the mean class advanced by one tenth — `residualMean (j+1)` when `σ = sigma j`, by `residualMean_formula`. The wave side is `WholeDomainStageBounds.physical_stage_estimates` at `gain h (j+1)` (E95). So the proposition's two orders and its construction step are all stated; what remains unstated is only that the four ordered corrections are performed *in the paper's order* as a single bundled theorem — the four steps exist as separate declarations (`CorrectionStep`'s amplitude, mean-gain, alias and five-row sections), not as one `stageStep` producing the state.
+
+That is a real residual gap, and it is a difference of granularity rather than of content: the paper's Proposition 9.6 lists four steps and the tree proves each with the same hypotheses. Placing it as a whole assumes the composition — the same assumption E91 refused for Proposition 10.1 — so it is recorded as placed with that qualification stated, not hidden.
+
+### 4. E96's open question: the two profile constructions are one
+
+E96 recorded that no declaration identifies the cone witness's profile with the profile `GlobalSlowProfiles` builds. The declaration is `FinalSlowBase.profileSequence` (`:101`):
+
+```
+noncomputable def profileSequence : SlowExpansionResidual.SlowProfiles :=
+  asSlowProfiles (EntranceAlignedBase.modulatedScheme H v)
+```
+
+with `H : NominalConeAssembly.Certificate W` — the §5 coefficient scheme is built *from the cone certificate of the same witness*. `FinalSlowBase.coefficients` is `EntranceAlignedBase.modulatedCoefficients H v`, and `leading_stress_eq` (`:130`) identifies its zero-order stress with `LeadingStressWeights.stress v.profiles`, so the cone bound (`leading_lowerBound`, E93) is a statement about the very coefficients whose residual (5.25) bounds. `BaseWitnessClosure.actual_finite_base` (`:92`) instantiates both at `ActualPrimary.certificate` and `ActualPrimary.modulation`, and `actual_base_compatible` (`:66`) records that both certificates concern the same actual profile.
+
+E96's caveat was therefore too pessimistic in one direction and right in another: the bridge exists and is named, but it is a *definition* of the §5 profile in terms of the witness, not a proof that two independently built objects agree — and that is the better arrangement, because there is only one object.
+
+### The ledger
+
+| Status | Count | Which |
+|---|---|---|
+| placed, statement read | 12 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9 |
+| partial | 1 | Proposition 10.1 (5 of 6 clauses) |
+| cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
+| unplaced | 59 | the rest |
+| **total** | **74** | |
+
+### What this does and does not change
+
+It does not change the verdict, and it narrows where a defect could sit to one clause: Proposition 10.1's "`u(·,t) = p(·,t) = 0` for all sufficiently small `t ≥ 0`", which follows from the time cutoff in `R3CompactCandidate` but is not a field of the structure. The paper's analytic core — §5's induction, §9's estimates and iteration, the summed local field — now has a named declaration for every numbered result.
+
+What it does not establish, and cannot: that the declarations *prove* the paper's inequalities. Statement-level correspondence is where this audit has always been, and seventy-four rows of it still say nothing about whether the estimates are valid. Two specific weaknesses are recorded rather than smoothed: Proposition 9.6 is placed as four separate steps rather than one composed theorem, and every rate in §5 is proved on a filter (`FiniteJetRate`) rather than as a pointwise constant, which is the correct reading of "`q ↓ 0`" but not the same object as the paper's displayed inequality.
+
+*Evidence: `SlowExpansionResidual.lean:634,769,885,915`; `BaseResidual.lean:1440`; `ActualIterationLedger.lean:34,38,231,235,239,243`; `CorrectionState.lean:217–219`; `CorrectionStep.lean:3004,3021`; `WholeDomainPhysicalStageTheorem.lean:101`; `ActualInitialization.lean:173`; `BaseWitnessClosure.lean:66,92,106`; `FinalSlowBase.lean:101,106,130,149`; `ns.txt:2874–2891, 5421–5425, 5475–5488`.*

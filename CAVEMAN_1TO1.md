@@ -737,7 +737,7 @@ So nobody misquotes the cave. This paper does **not** claim, and its evidence do
 ## WHERE TO LOOK (the paper bibliography, in caveman)
 
 - **The repo itself**: OpenAI, `NavierStokesAndEuler`, commit `f9e8bc5`.
-- **This audit**: A. El Sayad and John, the audit log, entries E0–E96.
+- **This audit**: A. El Sayad and John, the audit log, entries E0–E97.
 - **Lean 4**: de Moura and Ullrich, CADE-28, 2021.
 - **Mathlib**: the Mathlib community, CPP 2020.
 - **Leray 1934**: the original weak-solution construction for viscous flow in all of space.
@@ -773,4 +773,4 @@ Nothing in the paper is skipped here. What is *added* is only caveman phrasing, 
 
 **Reading aids.** The START HERE block, the reading paths, the glossary and the `In human words` boxes are aids for human readers. They add no claims. The 33 subsections above are unchanged, and every one of them still corresponds to exactly one subsection of the paper.
 
-**Later audit entries (E94–E96), which do not touch this file.** Nothing above changed. Three rows of `CROSSWALK.md` did: Proposition 9.1 is now placed — the statement is in `LocalizedWaveBounds`, under the tree's name `globalGood` rather than the paper's "normalised linear residual", and its tail qualifier is the theorem `waveClass_all_exponents`; Proposition 5.3's exponent is `truncationResidual_rate` at `2Nh − 2 − M`, the paper's `2h(N+1) − K_m` with `K_m = m + 2 + 2h`; and the discharge walk found §4's input produced by `exists_prepared` and §5's rate assuming smoothness alone, with one unread link between the tree's two profile constructions.
+**Later audit entries (E94–E97), which do not touch this file.** Nothing above changed. Five rows of `CROSSWALK.md` moved: Proposition 9.1 is placed — the statement is in `LocalizedWaveBounds`, under the tree's name `globalGood` rather than the paper's "normalised linear residual", and its tail qualifier is the theorem `waveClass_all_exponents`; Proposition 5.3 is placed in both clauses, its exponent at `2Nh − 2 − M` (the paper's `2h(N+1) − K_m` with `K_m = m + 2 + 2h`) and its divergence in `divergence_slowVelocity_eq_zero`; Propositions 9.5 and 9.6 are placed, their `6/5` and `+1/10` read off `MeanResidualBounds` at `σ = 1/5` and `gaugeTemporalStage_next_mean` at `σ + 1/10`. The discharge walk found §4's input produced by `exists_prepared`, §5's rate assuming smoothness alone, and the two profile constructions identified by `FinalSlowBase.profileSequence`, which defines the §5 profile from the cone certificate. The ledger is 12 placed, 1 partial (Proposition 10.1's short-time vanishing), 2 cited-unchecked, 59 unplaced.

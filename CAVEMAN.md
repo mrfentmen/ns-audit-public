@@ -860,7 +860,7 @@ Caveman: **A** — no hand, all goo safe. **B** — same, ring-world. **C** — 
 
 ---
 
-## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E96)
+## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E97)
 
 Caveman wrote this file first. Then the audit kept digging. Four things got better. Caveman writes them down so the two papers do not disagree.
 
@@ -938,4 +938,18 @@ Fat question, asked late. Two answers.
 
 One honest gap left, and caveman states it plain: there are **two** profile constructions in the tree. The cone is proved for the witness's extended profile; the residual rates are proved for the profile that `GlobalSlowProfiles` builds. No declaration caveman read ties those two together. That is not "a hole" — the bridge may exist in a layer nobody opened — but until someone reads it, "Theorem 4.6 is discharged" is true gate by gate and not yet proved as one chain.
 
-*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E96. If this file and the paper disagree, the paper is right and caveman is wrong.*
+### 16.9 The last three holes got filled (E97)
+
+Caveman said two sentences were missing. Both were in the tree too.
+
+- **No-bunching for the finite sum (Prop 5.3).** `divergence_slowVelocity_eq_zero`, and it is stated for the *real* 3D divergence of the summed field, not for a picture in the zoom coordinates. Better: the theorem next to it says that divergence **equals** the finite coefficient list exactly (`divergence_slowVelocity`). So "exactly no bunching at every order" is measured, not claimed.
+- **Stage-zero mean sits at 6/5 (Prop 9.5).** `MeanResidualBounds` says the class is `1 + σ`, for every allowed `σ`. Stage zero has `σ = 1/5`. So `1 + 1/5 = 6/5`. The paper writes one number; the tree writes the whole family and one special case is the paper's number.
+- **One cycle adds a tenth (Prop 9.6).** Output side is `gaugeTemporalStage_next_mean` at `σ + 1/10`.
+
+And the two-profile worry from 16.8 is gone. `FinalSlowBase.profileSequence` **builds** the slow profile out of the same cone certificate — the cone paper and the residual paper are the same rock. Caveman was wrong to call it two rocks. It is one rock with two names.
+
+One honest line stays: Prop 9.6's four corrections are four separate theorems, not one big "do all four" theorem. Placing it means caveman assumes they can be chained. That is a small assumption and caveman says it out loud.
+
+So the score is **12 placed, 1 partial, 2 named-only, 59 untouched, of 74**. The one partial row is the little-time-vanishing clause of Prop 10.1.
+
+*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E97. If this file and the paper disagree, the paper is right and caveman is wrong.*
