@@ -6295,3 +6295,58 @@ That is a placement under the rule this audit uses elsewhere: a clause counts as
 A grep of the whole tree for `Lemma 7.7`, `Proposition 7.2` and "pulse inverse" returns **no docstring match at all**. Every other section the crosswalk maps has at least one file naming a paper result (`§4.4`, `§4.6`, `§8.1`, `§8.2`, `§8.3`, `§10.2`, and `CurlClassBounds`'s own "Lemma 9.2" — which E127 showed was wrong). §7's correspondence is therefore entirely `object`-basis, which is why the section-level row was labelled that way and why this placement had to be made by reading statements rather than by following a citation.
 
 *Evidence: `.setup/paper/ns.txt:4396–4442` (Lemma 7.7 and proof), `:4002–4016` (7.13); `CurlClassBounds.lean:198–211,458–462,592–654,700–739,757–769,850–884`; `WeightedClasses.lean` (`MemClass`, `band_smul`, `mono_exponent`); E127. Reading only — nothing compiled.*
+
+---
+
+## E131 — Lemma 8.7: the five-row algebra is placed, its two class bounds are not (2026-11-23)
+
+*Reading entry. The §8 row is the five-moment correction, Lemma 8.7 (p. 98). The linear algebra matches the paper's displayed blocks row for row. The quantitative half — the two class memberships and the explicit inverse bounds — exists only as components. The row is partial, and the ledger moves to 14 placed, 4 partial, 56 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 8.7` assumes the slow base satisfies (8.24) on the reserved interior interval `I_m`, and solves the five radial moment equations (8.25). The solution is displayed explicitly as two blocks:
+
+```
+A_theta = ( mu2        mu2 e^{2d}        mu2 e^{4d}
+            2a mu^{-2-2l}  2a mu^{-2-2l} e^{d(-2-2l)}  2a mu^{-2-2l} e^{2d(-2-2l)}
+            -a mu^{-2l}   -a mu^{-2l} e^{-2dl}      -a mu^{-2l} e^{-4dl} )
+
+A_z = ( mu1        mu1 e^{d}
+        a mu^{1-2l}  a mu^{1-2l} e^{d(1-2l)} )
+
+(u0,u1,u2) = A_theta^{-1} (0, -Pq, -Jz,q),   (s0,s1) = A_z^{-1} (0, -Jtheta,q)
+```
+
+`A_theta` enforces zero angular momentum and the targets `-Pq, -Jz,q`; `A_z` enforces zero axial flux and the target `-Jtheta,q`. Since `Gq = 0` the two blocks exhaust the five equations. The inverse is linear in the target triple, smooth in the slow variables, and the correction is bounded `S_alpha -> M_alpha`.
+
+### 2. What matches
+
+| Paper's object | Lean | Status |
+|---|---|---|
+| the three angular row exponents `2, -2-2l, -2l` | `FiveRowRank.angularPowers` (`:78`) | exact |
+| the two axial row exponents `1, 1-2l` | `FiveRowRank.axialPowers` (`:79`) | exact |
+| the five equations as one predicate on a base and a correction | `FiveRowRank.FiveRows` | present |
+| the two preserving rows (zero angular momentum, zero axial flux) | `fiveRows_mass_zero` (`DefectIncrementBounds.lean:621`), `fiveRows_preserve_masses` (`:635`) | matched |
+| the three cancelling rows, with signs | `linearRows_eq_neg_of_fiveRows` (`DefectIncrementBounds.lean:650-700`), whose own docstring says "The three moment rows are exactly those solved in (35), including the minus sign and factor one half in the axial pressure moment" | matched: `linearRows o base h = -defects o base m W` |
+| invertibility of the moment matrix | `PowerMomentMatrix.powerEvaluationMatrix_det_ne_zero` (`:143`) | general Vandermonde-type nonsingularity, not the two displayed blocks |
+
+The exponent match is the strongest single check in this row. The paper's `A_theta` rows carry `mu^2`, `mu^{-2-2l}`, `mu^{-2l}`; its `A_z` rows carry `mu^1`, `mu^{1-2l}`; and the tree's two power families are `![2, -2 - 2*l, -2*l]` and `![1, 1 - 2*l]`. That is the same five weights, in the same order, including the sign convention on the third row that `defects` carries.
+
+### 3. What does not match
+
+* **The explicit block inverses.** `powerEvaluationMatrix_det_ne_zero` gives nonsingularity for the general `n`-point moment matrix. It is not `A_theta` and `A_z`, and it carries no inverse norm. E105 already recorded the consequence: no inverse bound, so no "the inverse may deteriorate as `lambda -> 0` but no uniformity is required" statement.
+* **The two class conclusions.** The paper concludes the correction is `S_alpha -> M_alpha` with the matching bound. The tree states the row solutions pointwise (`linearRows ... = -defects ...`) and separately carries mean-class membership of the increments (`CorrectionState.MeanResidualBounds`, E97; `MeanIncrementBounds`). No single declaration states "the five-row solve maps `S_alpha` to `M_alpha`".
+* **`Gq = 0` exhaustiveness.** That the two blocks exhaust the five equations is a fact about the base, used in the paper's Step 2. The tree's `FiveRows` is a predicate the caller supplies; no declaration derives it from (8.24).
+
+### 4. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 14 | 14 |
+| partial | 3 | 4 |
+| unplaced | 57 | 56 |
+| **total** | **74** | **74** |
+
+Three of the four partials are now of the same shape: a paper result whose *algebra* is in the tree exactly and whose *quantitative* half is assembled from pieces rather than stated. That pattern is worth naming once, because it is the most likely place for a real defect to hide: the algebra is the part a reader checks, and the bounds are the part the kernel never weighs (finding 1).
+
+*Evidence: `.setup/paper/ns.txt:4955-5040` (Lemma 8.7 and the display), `:5014-5030` (Step 2, the two blocks and `Gq = 0`), `:5041` (Lemma 8.8, the defect gain); `FiveRowRank.lean:19-93`; `DefectIncrementBounds.lean:621-700`; `PowerMomentMatrix.lean:143`; `CorrectionState.lean:453-472`; E97; E105. Reading only — nothing compiled.*

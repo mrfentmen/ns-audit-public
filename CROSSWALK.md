@@ -317,9 +317,9 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 | Status | Count | Which |
 |---|---|---|
 | placed, statement read | 14 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130) |
-| partial — components exist, statement not matched | 3 | Lemma 9.2, Proposition 9.3 (E127), Proposition 6.6 (E129) |
+| partial — components exist, statement not matched | 4 | Lemma 9.2, Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.7 (E131) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 57 | the rest |
+| unplaced | 56 | the rest |
 | **total** | **74** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
