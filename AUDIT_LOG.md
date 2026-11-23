@@ -5972,3 +5972,90 @@ The ledger moved once: Proposition 10.1, from 5 of 6 clauses to placed. Everythi
 3. **The `§6` chart lemmas.** The dyadic charts and the label sum are the least-read part of the spine, and E67–E71 stopped at the source wave class rather than at the chart geometry.
 
 *Evidence: this log, E98–E124; `README.md`; `CROSSWALK.md`; E119.*
+
+---
+
+## E126 — The extended profile is identified at order zero, not as a whole (2026-11-23)
+
+*Reading entry. E96 left a wiring question: does anything connect the cone witness's extended profile with the profile `GlobalSlowProfiles` builds? E97 answered "they are one object" by pointing at `FinalSlowBase.profileSequence`. That is true of the §5 sequence and false of the witness's extended profile. This entry states exactly which equality exists.*
+
+### 1. The two objects are different types
+
+`NominalProfile.Witness.profiles` (`NominalProfile.lean:2501–2502`) is
+
+```
+noncomputable def profiles : ProfileHistories.Profiles W.domain :=
+  W.controls.extendedProfiles W.heat W.separated
+```
+
+a record of *histories*: `f`, `U`, `pressure` (and `I`, `M`, `E`) as functions on `W.domain`. `GlobalSlowProfiles.profiles s n` is a `Coefficient S` — four `EvenProfile`s named `phi`, `axial`, `beta`, `pressure` — produced by the well-founded recursion `sequence s n` from a `Scheme s`. They cannot be equal as terms: one is a history record, the other is an order-indexed coefficient family.
+
+The comparison has to go through two conversions:
+
+* `xProfile f (X, η) = f (√(2X), η)` (`GlobalSlowProfiles.lean:1134–1135`, `PositiveAxisExistence.lean:436–440`), the `R → X` view;
+* `asSlowProfiles s` (`GlobalSlowProfiles.lean:1762–1766`), which applies `xProfile` to the four components of `profiles s n`.
+
+### 2. What is identified, and it is order zero
+
+`AssembledSlowBase.nominalScheme W` (`:1117–1124`) builds a `Scheme` from `schemeFromHierarchy (nominalHierarchy W) ... (nominalBaseData W ...)`. `nominalBaseData` (`:1000–1015`) calls `baseDataOfProfile d W.axis.normalization W.profiles ...`, and `baseDataOfProfile` (`:739–755`) sets `fields := baseFields d C P hD` with `P = W.profiles`. `baseFields` (`:638–642`) is
+
+```
+phi := constant S C * radialPullback P.f ...
+axial := radialPullback P.U ...
+pressure := radialPullback P.pressure ...
+```
+
+and the three identifying theorems are `baseFields_phi` (`:644–647`), `baseFields_axial` (`:649–651`), `baseFields_pressure` (`:653–655`):
+
+```
+xProfile (baseFields d C P hD).phi p = C * P.f p
+xProfile (baseFields d C P hD).axial p = P.U p
+xProfile (baseFields d C P hD).pressure p = P.pressure p
+```
+
+for `0 ≤ p.1`. Composed with `profiles_zero`, these say: **the order-zero coefficient of `GlobalSlowProfiles.profiles (nominalScheme W)` is the witness's extended profile, componentwise**, up to the normalization `C = W.axis.normalization`.
+
+`ConstructedSlowBase.nominalCoefficients_zero_fields` (`:1314–1329`) states the same thing in the coefficients the construction actually uses:
+
+```
+(nominalCoefficients W).phi 0 p = W.axis.normalization * W.f p ∧
+(nominalCoefficients W).axial 0 p = W.U p ∧
+(nominalCoefficients W).pressure 0 p = W.Pi p
+```
+
+and `W.f`, `W.U`, `W.Pi` are `W.profiles.f`, `.U`, `.pressure` by definition (`NominalProfile.lean:2487–2499`). This is the declaration the question asks for, with one qualifier: it is order zero.
+
+### 3. What ties all orders together, and what it is not
+
+`ConstructedSlowBase.nominal_coefficientMatches` (`:218–222`) proves
+
+```
+BasePrefixIdentity.CoefficientMatches F.data.h W.axis.normalization
+  (nominalCoefficients W) (asSlowProfiles (nominalScheme W))
+```
+
+and `AssembledSlowBase.coefficients_fields_eq` (`:373–380`) proves, for every `n` and every `p` with `0 ≤ p.1`, `|p.2| ≤ 1`, that the constructed `phi`, `axial` and `pressure` at order `n` equal those of `asSlowProfiles s`, where `s = nominalScheme W`. So the constructed coefficients and the `GlobalSlowProfiles` sequence agree at **every** order — on the profile window. That is a genuine all-order identification.
+
+It is not an identification of the witness's extended profile, because the sequence's positive-order coefficients are built from `nominalHierarchy W` (the local ACT hierarchy), not from `W.profiles`. `W.profiles` supplies the base data and the order-zero values; the recursion supplies `n ≥ 1`. The all-order equality is between `asSlowProfiles (nominalScheme W)` and the *constructed* coefficients, both of which are downstream of the same scheme.
+
+### 4. The §5 sequence uses the modulated profile, not the cone profile
+
+`FinalSlowBase.profileSequence H v := asSlowProfiles (EntranceAlignedBase.modulatedScheme H v)` (`:101–102`). `modulatedScheme` (`EntranceAlignedBase.lean:802–803`) is `scheme W H v.profiles v.finiteModification ...`, where `v : ModulatedProfileAssembly.Witness ld` is the *modulated* witness, not the nominal `W`. The base equality is `rfl` in the other direction:
+
+```
+modulated_base_eq : (modulatedScheme H v).base = (modifiedScheme W v.profiles v.finiteModification).base
+```
+
+(`EntranceAlignedBase.lean:808–809`), and `modulated_baseFields_eq` is likewise `rfl`. So `profileSequence` is defined from `v.profiles`, and the relation between `v.profiles` and `W.profiles` is modulation: `LeadingStressWeights.stress_outside` (`:98–116`) proves the *stress* agrees outside the repair patch, not the profile. No declaration states `v.profiles = W.profiles`.
+
+### 5. The answer
+
+**No declaration identifies the cone witness's extended profile with the profile `GlobalSlowProfiles` builds as a whole.** What exists is a three-link chain:
+
+1. `W.profiles` is the `f`, `U`, `pressure` source of `nominalBaseData`, hence of `nominalScheme W`'s base;
+2. at order zero, `baseFields_*` and `nominalCoefficients_zero_fields` prove the built coefficients equal `W.profiles` componentwise (with the normalization);
+3. at every order, `coefficients_fields_eq` / `nominal_coefficientMatches` prove the constructed coefficients equal `asSlowProfiles (nominalScheme W)` on the profile window.
+
+E97's sentence "the two constructions are one" is right about the §5 sequence — it is *defined* as `asSlowProfiles (modulatedScheme ...)`, so there is no second object to identify — but it should not be read as an equality between the witness's extended profile and the recursive sequence. The honest statement is: the sequence is built *from* the profile at order zero and *from the local hierarchy* at positive orders, and the only equality theorems are the two above. For the residual estimates this is enough, because they consume the coefficients and the base; for a claim that "the extended profile is the GlobalSlowProfiles profile", it is not.
+
+*Evidence: `NominalProfile.lean:2487–2502`; `GlobalSlowProfiles.lean:1134–1140,1762–1766`, `profiles`, `profiles_zero`; `AssembledSlowBase.lean:373–380,638–655,739–755,1000–1015,1117–1124,1229–1255,1314–1329`; `ConstructedSlowBase.lean:218–222`; `EntranceAlignedBase.lean:802–815`; `FinalSlowBase.lean:99–112`; `LeadingStressWeights.lean:98–116`; E96; E97.*
