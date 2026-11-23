@@ -215,7 +215,7 @@ What caveman did **not** do at first: print axioms for the torus theorems. Only 
 
 What caveman checked next: the **official** question-checker, Comparator. It exports the challenge and the answer against the same list of names, confirms both describe the same constants, and replays the answer in a fresh kernel. Green: `Lean default kernel accepts the solution`, `Your solution is okay!` (E75). Both theorems sit in that target list, so one pass covers whole space and torus together.
 
-What is still open: the config also asks the second, independent rock (nanoda) to check the same proof. It is a different tool from Lean, and it runs as its own step of the same workflow with its own log. One kernel has now checked the question; the second is a second opinion on the replay, not a second statement check.
+And the second, independent rock got thrown: nanoda, written by different people in a different language, replayed the same exported proof and said `nanoda kernel accepts the solution`. Lean's own kernel then said `Lean default kernel accepts the solution`, and the run ended `Your solution is okay!` (E75 §7). Two kernels, one answer. That is a second opinion on the replay, not a second statement check: the comparison happened once, on the two exports.
 
 ---
 

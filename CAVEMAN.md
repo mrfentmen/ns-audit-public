@@ -890,7 +890,7 @@ Then the **official** question-checker ran, and it is a different animal from `#
 
 Why it took so long to hear that: caveman had wrapped the runner in a pipe nobody drained. The tool was shouting into a blocked cave for 210 minutes, then 355. Nothing was slow. Same work, once the pipe was fixed: **7 minutes** (E74, E75).
 
-One thing still open: the config also asks a **second** rock, nanoda, to check the same proof with a different tool. It runs as its own step of the same workflow, with its own log. One rock has checked the question; the second is a second opinion on the replay.
+And the **second** rock got thrown too. Its own step, its own log, and a checker built by other people in another language: nanoda replayed the same exported proof and said `nanoda kernel accepts the solution`. Then Lean's own kernel said `Lean default kernel accepts the solution`, then `Your solution is okay!` (E75 §7). Two kernels, different code, same answer.
 
 ---
 

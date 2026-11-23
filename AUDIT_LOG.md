@@ -3784,7 +3784,7 @@ The same work, on the same cached build, finishes in seven minutes. The wrapper 
 
 ### 5. Caveats that travel with the pass
 
-- **Builtin kernel only.** `enable_nanoda` was stripped so the statement check would not depend on a second kernel having compiled. `Comparator (nanoda as second kernel)` runs as a separate step of the same workflow with `continue-on-error`, and its log is the `cmp-nanoda-kernel` artifact of this run. A pass there is a second opinion on the replay; the statement comparison is already decided above.
+- **Builtin kernel only.** `enable_nanoda` was stripped so the statement check would not depend on a second kernel having compiled. `Comparator (nanoda as second kernel)` runs as a separate step of the same workflow with `continue-on-error`, and §7 records what it returned: it passed, so a second kernel did re-check the replay. The statement comparison is decided above, and it is decided once.
 - **The sandbox was weaker than documented.** `landrun` logged, six times: `kernel supports Landlock ABI v8, so these default restrictions are not enforced: pathname UNIX socket connections (ABI v9), UDP bind/connect/send (ABI v10)`. The run therefore executed with fewer syscall restrictions than Comparator's README targets. This is a property of the runner's kernel, not of the change in E74, and it affects *isolation*, not the soundness of the comparison: a compromised sandbox would let code escape, not make a mismatch compare equal.
 - **Statement level is untouched.** Comparator answers "does this solution prove the statement this challenge poses". It does not answer "is the challenge statement the Clay statement". That remains the manuscript's §3 question, and it is a judgement about the encoded definition of solution, force and blow-up, not something a kernel decides.
 - **No estimate is reviewed.** Nothing here bears on the constants or the anisotropic weights. Every finding of E0–E72 stands exactly as it did.
@@ -3796,4 +3796,24 @@ E73 established the proof term's axiom footprint. E75 establishes that the term 
 
 What remains is what no machine can settle: whether the encoded statement is the Clay statement (manuscript §3), and whether the estimates inside the proof are the right ones (the constants and weights of findings 1 and 2, which are human readings of the source).
 
-*Evidence: run `45119134981`, artifact `cmp-builtin-kernel`, `comparator-builtin.log` (20 lines). Supersedes the status statements in E74 §5 and the README's pre-verdict wording; E74's withdrawal of the timing inference stands and is now explained rather than merely retracted.*
+### 7. Addendum — the nanoda second kernel, executed
+
+The same run's step 17 (`Comparator (nanoda as second kernel)`, started `05:51:47Z`) finished green; the job completed `06:02:09Z`, about 23 minutes wall for the whole workflow. Its artifact is `cmp-nanoda-kernel` (807 B, 22 lines).
+
+It differs from §2 in exactly one place, and the difference is the point:
+
+```
+Running nanoda kernel on solution
+nanoda kernel accepts the solution
+Running Lean default kernel on solution.
+Lean default kernel accepts the solution
+Your solution is okay!
+```
+
+`runExternalKernel` is consulted before `runBuiltinKernel` (`Main.lean:290–291`), so nanoda's verdict came first and the builtin replay second; either rejection would have thrown before the final line. This invocation used upstream's own config with `enable_nanoda` left in place, not the stripped variant of §1.
+
+What this adds: the exported proof was re-checked by a second implementation (`nanoda_lib` 0.4.32, Rust, built from `0da9f98f`), which does not share Lean's kernel. What it does not add: a second *statement* comparison. `verifyMatch` ran once, on the two exports; both kernels are checking the same solution export afterwards.
+
+The landrun caveat of §5 applies unchanged: `kernel supports Landlock ABI v8` on all six sandbox invocations of this run, so the ABI v9 and v10 restrictions (pathname UNIX sockets, UDP) were not enforced.
+
+*Evidence: run `45119134981`; artifacts `cmp-builtin-kernel` (824 B, 20 lines), `cmp-nanoda-kernel` (807 B, 22 lines), `cmp-verdict-summary` (1,040 B). Supersedes the status statements in E74 §5 and the README's pre-verdict wording; E74's withdrawal of the timing inference stands and is now explained rather than merely retracted.*

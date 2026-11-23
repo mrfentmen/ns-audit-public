@@ -135,7 +135,7 @@ The one phrase to read carefully is "support". A periodic pattern that is not id
 
 What was done later: the axiom check was run on the periodic side too, on a clean clone, on a rented Linux machine. All five declarations that matter — the periodic theorem, its paper corollary, and both adapters between them — depend only on `propext`, `Classical.choice` and `Quot.sound`, exactly the set the configuration permits, with no `sorryAx` (E73). Before that run the answer was inferred rather than seen (E70, E72).
 
-What this does not give you: the configuration also asks a second, independent checker (nanoda) to re-verify the exported proof. That is a different tool from Lean, and it runs as a separate step of the same workflow with its own log. Its outcome is a second opinion on the replay; the statement comparison above is already decided by the first kernel.
+A second, independent checker also ran: nanoda, a Rust implementation that re-verifies the exported proof without Lean's kernel. It accepted the solution, Lean's kernel accepted it too, and the run ended with `Your solution is okay!` (E75 §7). Two implementations, one answer. That is a second opinion on the replay rather than a second statement comparison, which happened once, on the exports.
 
 ---
 
