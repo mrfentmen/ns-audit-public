@@ -19,7 +19,9 @@ The audit's two findings:
 |---|---|
 | `MANUSCRIPT.tex` | The audit paper. LuaLaTeX or XeLaTeX. |
 | `MANUSCRIPT.pdf` | The typeset paper: 25 pages, LuaLaTeX, built by `typeset.yml` (E78). |
-| `AUDIT_LOG.md` | The working log: entries E0–E88, every `path:line` citation behind the paper. |
+| `CAVEMAN.pdf`, `LAYMAN.pdf` | The two standalone reader editions, typeset by the same workflow. |
+| `AUDIT_LOG.md` | The working log: entries E0–E89, every `path:line` citation behind the paper. |
+| `CROSSWALK.md` | The published paper against the Lean tree, section by section, with each mapping labelled `cited`, `object` or `family` (E89). |
 | `PHASE2-FINDINGS.md` | Second-pass findings: the anisotropic weights, the three "free doors", the packets. |
 | `LEADS.md` | Working reading notes, not promoted to log entries: statement fidelity end to end, the estimate chain down to its floor, the pressure-flux bodies, and the unused alternate branch (E77). |
 | `CAVEMAN.md` | The whole thing rewritten in caveman. Every finding, plus §13–15: the equation symbol by symbol, why 3D is the hard case, and the four Clay doors A–D. |

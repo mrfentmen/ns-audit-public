@@ -4485,3 +4485,55 @@ Not the mathematics. The sandbox wrapper, as E74 and E75 recorded: a `systemd-ru
 At `f9e8bc5`, on a clean clone, in a sandbox, the two Euler statements designated by `formalization.yaml:72--94` are accepted by two independent kernels, with axiom footprint `propext`, `Classical.choice`, `Quot.sound` and no `sorryAx`. The statement-level caveats of E81 and E82 stand exactly as recorded: the checked `C¹` limsup is the sum of the velocity and gradient suprema where the paper asserts the gradient alone, and the lifespan class is not proved to contain the paper's jointly smooth solution. Not one estimate inside the Euler development has been read.
 
 *Evidence: run `45158640147`, job `137637992292`, step 18; artifact `euler-nanoda-kernel` (`comparator-euler-nanoda.log`, 2,574 bytes); nanoda commit `0da9f98f`; timestamps 10:47:45Z (fetch), 10:48:09Z (binary), 10:58:20Z–11:13:37Z (phase, 917 s), 11:05:29Z (nanoda verdict), 11:13:40Z (job end).*
+
+---
+
+## E89 — The paper against the tree: a first crosswalk (2026-11-23)
+
+*Reading entry. First pass at the one question E76–E88 never asked: whether the published paper's own argument corresponds to the Lean development that claims to formalize it.*
+
+### 1. The paper exists, and the audit had not used it
+
+`formalization.yaml` names two sources: *Finite time blowup for Navier–Stokes* and *Finite time blowup for the Euler equation*, both linked from the repository README. The first is 166 pages, 482,455 extractable characters, with a ten-section structure and three appendices:
+
+```
+1 Introduction (1)            6 Auxiliary torus and separation (62)
+2 Physical description (3)    7 Oscillatory realization (73)
+3 Proof outline (6)           8 Compactly supported mean corrections (88)
+4 Leading order flow (24)     9 Residual improvement, local field (100)
+5 Correcting the base flow (45)  10 Compact forcing, whole-space breakdown (116)
+A Radial moments, heat exterior (126)   B Axis profiles (144)   C Stress cone (157)
+```
+
+Until this entry the audit had checked the paper only where E76, E80, E81 and E82 forced it: at the level of *statements*. The paper's proof had never been held against the tree. That matters because a kernel check cannot tell you whether the argument formalized is the argument published.
+
+### 2. What the tree says about the correspondence
+
+The development names the paper's sections in exactly five docstrings:
+
+| File | Citation |
+|---|---|
+| `RadialSchedule.lean:76` | Section 4.4 |
+| `FlatCutoff.lean:25` | Section 4.6 |
+| `GraphCalculus.lean:141`, `ExponentLedger.lean:14` | §8.1 |
+| `GaussianTailFlat.lean:11` | Section 8.2 |
+| `Covariance.lean:206` | Section 8.3 |
+| `SignedCovariance.lean:384`, `ExponentLedger.lean:14` | §10.2 |
+
+Five distinct anchors, all in the middle and late sections; nothing cites §2–§3, §5–§7 or any appendix. `ExponentLedger.lean:14` also pins the paper's numeric choice — `κ = 10⁻⁵`, fixed in §8.1 and again in §10.2, with the ledger proved uniformly for `0 ≤ κ ≤ 10⁻⁵` and `σ ≥ 1/5` in exact rationals rather than floating point.
+
+The paper's §3.2 names four compatibility results, and those four are the cleanest spine available for a section-level map: Proposition A.4 (exterior and axis pressure), Proposition B.2 (inner solution), Corollary B.10 (joining and moment matching), Proposition C.2 (the cone condition). Each lands in a named module family — `AppendixHeatResults`, `AxisProfile`, `AxisSeries`/`PowerMomentMatrix`, `MatchingConeBounds`/`ActivationCone` — by object identity, not by assertion. §3.4's four construction steps likewise land on `PulseAmplitude`/`PrimaryPulseBounds`, the `MeanRankUpdate` family, `FiveRowRank` (whose docstring says "the five linear rows of the manuscript"), and the summation modules.
+
+`CROSSWALK.md` records the full table: thirteen rows (ten sections, three appendices), each with pages, content, modules and a **basis** label — `cited`, `object`, or `family`.
+
+### 3. What the crosswalk does not establish
+
+Eight of thirteen rows rest on object identity or family resemblance, not on the paper naming the module or the module naming the paper. A row saying §5 lands in `CorrectionStep` does not say the section's lemmas are all there, in order, with the same hypotheses. And no page-level citation exists yet: the paper's page numbers are taken from its own table of contents, not from the statement being matched.
+
+The gap this exposes is the one worth naming. The paper has numbered propositions and lemmas; the tree has 816 modules under `NavierStokes/`. Nothing yet shows a one-to-one correspondence, and nothing yet shows that no paper lemma is missing from the formalization. A defect, if there is one, is more likely to sit in that distance than in a kernel that has now been run twice on every target.
+
+### 4. Status of the pass
+
+This is pass one of the two-week job, scoped honestly: the paper's structure is extracted, the five explicit anchors are found, the spine from §3.2 and §3.4 is mapped, and the weak rows are marked weak rather than dressed up. Pass two is per-result: take each numbered statement in the paper, locate the declaration by conclusion shape, check hypotheses clause by clause, and record `paper page → file:line` — including the ones that cannot be found.
+
+*Evidence: `cdn.openai.com/pdf/32d9f210-.../navier-stokes.pdf` (166 pages); `formalization.yaml:20--34`; section citations listed above; module inventory 816 files, 429,279 lines under `NavierStokes/`; `CROSSWALK.md`.*
