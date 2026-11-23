@@ -2,7 +2,7 @@
 %  Statement-Design Arbitrage and Verification Limits:
 %  A Forensic Code Audit of the openai/NavierStokesAndEuler Repository
 %
-%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E90.
+%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E91.
 %  All code citations are to commit f9e8bc5.
 % =====================================================================
 % Compile with LuaLaTeX or XeLaTeX: the Lean listings are quoted verbatim,
@@ -180,7 +180,7 @@ similarity ansatz, dependent type theory, proof auditing, statement design.
 
 \noindent\textbf{Data availability:} commit \texttt{f9e8bc5} of
 \texttt{openai/NavierStokesAndEuler}; audit log
-\file{ns-audit/AUDIT\_LOG.md}, entries E0--E90. Every code citation below is a
+\file{ns-audit/AUDIT\_LOG.md}, entries E0--E91. Every code citation below is a
 \file{path:line} pair in that commit. Kernel acceptance was reproduced on the
 \file{NavierStokes} library; see \S\ref{sec:limits}.
 
@@ -1623,7 +1623,12 @@ unchecked. Five paper sections are cited in the source at all (\S4.4, \S4.6,
 \emph{object} or \emph{family}. The map therefore settles no lemma. It does not
 show that each numbered result of the paper has a declaration, nor that no paper
 lemma is missing from the formalization. That is the remaining work, recorded in
-\file{ns-audit/CROSSWALK.md}, and it is where a defect would sit if one exists:
+ile{ns-audit/CROSSWALK.md}. E91 put the paper into the tree as text and corrected
+its count: 74 numbered results, not 57. Six are now placed at statement level, two
+partially (Theorem~4.6 in four of its six parts, Proposition~10.1 in five of its six
+clauses), two are named by a docstring without a statement check, and sixty-four are
+unplaced --- including Proposition~5.3 and Propositions~9.1, 9.5, 9.6 and 9.9. It is
+where a defect would sit if one exists:, and it is where a defect would sit if one exists:
 a kernel check cannot compare an argument against the argument it formalizes.
 
 \subsection{Implications beyond this repository}
@@ -1721,7 +1726,7 @@ OpenAI, \emph{NavierStokesAndEuler}, GitHub repository, commit
 \bibitem{audit}
 A.~El Sayad and John, \emph{Forensic audit log for
 \texttt{openai/NavierStokesAndEuler}}, \file{ns-audit/AUDIT\_LOG.md}, entries
-E0--E90 (companion document).
+E0--E91 (companion document).
 
 \bibitem{lean}
 L.~de~Moura and S.~Ullrich, \emph{The \Lean{}~4 theorem prover and programming

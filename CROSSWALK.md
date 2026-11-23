@@ -1,7 +1,7 @@
 # CROSSWALK — the paper against the Lean development
 
-**Status: first pass complete, second pass begun.** Section level throughout, plus one
-slice of result-level mapping. Read the limits at the bottom before quoting anything here.
+**Status: first pass complete, second pass under way.** Section level throughout, plus two
+slices of result-level mapping. Read the limits at the bottom before quoting anything here.
 
 ## What this file is for
 
@@ -170,16 +170,98 @@ three angular) in disjoint halves of the patch; `MomentRepair` is the general in
 system that consumes them. `FiveRowRank` supplies the rank statement the paper's rows
 need.
 
-## What is still unplaced
+## Pass two, slice two: the paper as text, and a denominator that was wrong
 
-Of the paper's 57 numbered results, six have a mapping that has been checked at the level
-of the statement (Propositions A.4, B.2, B.10, C.2 from pass one, plus Lemma 4.7 and
-Section 8.6 here). Fifty-one do not. Notable among them: Theorem 4.6 (the core
-construction, the paper's central existence claim), Proposition 5.3 (the coefficient
-induction), Propositions 9.1 and 9.5 (the residual estimates and the iteration), and
-Proposition 10.1 with Corollary 10.6 (the forcing and the periodic corollary). Those are
-not failures to find a module; they are results whose Lean counterpart has not been
-matched by statement, and they are the ones a referee would ask about first.
+The 166-page paper had been read in a viewer. It is now extracted to text in the
+gitignored `.setup/paper/ns.txt` (`pypdf`, 166 pages, 485,170 characters, the PDF's own
+page markers kept), so every row below can cite a page.
+
+The first thing that changed is the count. E89 and E90 said "57 numbered results".
+Counting distinct `(kind, number)` labels at line start gives **74** — 3 theorems, 26
+propositions, 38 lemmas, 7 corollaries — 73 of which have at least one
+statement-length occurrence. The 57 was a rough figure that was never checked against
+the text. It is withdrawn, and the ledger below uses 74.
+
+### Placed (one)
+
+**Corollary 10.6**, p. 125. `PeriodicPaper.breakdownStatement` and `periodic_corollary`
+(`PeriodicPaperTheorem.lean:148,155`): for every `ν > 0` a velocity, pressure and force
+satisfying `CandidateProperties` — smooth on `preSingularDomain`, periodic on the cube,
+compact spatial support inside `fundamentalInterior`, zero initial velocity,
+divergence-free, residual equal to the force, `SpeedUnboundedAtOne` — together with
+`¬ Nonempty (GlobalSmoothSolution ν f)`. That is the corollary clause for clause. It is
+also the one numbered result the repository itself aligns: `formalization.yaml:122–126`
+lists "Corollary 10.6 (Navier–Stokes on ℝ³/ℤ³)" →
+`NavierStokes.Comparator.navier_stokes_breakdown_periodic`, status `proved`. Two
+independent anchors, so this row is `cited` *and* checked.
+
+### Partial (two)
+
+**Theorem 4.6**, pp. 32–34, the paper's central existence claim. `NominalProfile.Witness`
+(`NominalProfile.lean:2481`) is the bundled object — axis stage, controls, outgoing
+specification, heat witness, separation bound, small debt — and it is produced, not
+assumed: `assembly_exists` (`NominalConeAssembly.lean:1482`) and
+`exists_assembly_threshold` (`NominalProfile.lean:2637`). Four of the theorem's six parts
+have a named declaration:
+
+| Part | Paper | Lean |
+|---|---|---|
+| (i) smoothness, `E = √(2X)F > 0`, pressure (4.25) | p. 33 | `Witness.fields_smooth` :2523, `E_eq_sqrt_f` :2527, `E_positive` :2530, `pressure_canonical` :2543 |
+| (ii) pressure balance and tangential residuals | p. 33 | `pressure_canonical` again (integrated form); stress support in `TerminalStress` / `LeadingStress` |
+| (iii) cone margin (4.26) | p. 33 | `NominalConeAssembly.Certificate` :1362, `initial_cones` :1431, `activation_cone` :1251, `exists_nominal_cone` :1517 |
+| (v) five vanishing moments (4.28), heat exterior (4.29), `U = V₀ = 0` past `Xb` | p. 33 | `five_moments` :2536, `moments_after` :2576, `heat_agreement` :2564, `U_outgoing` :2589, `mass_outgoing` :2594 |
+
+Part (iv) — the weight `ζ`, `\|T₀\| ≥ cζ`, `\|∂^αT₀\| ≤ C_α ζ δ^{−m_α}` — is not
+matched clause by clause: the stress modules are the right family but the `δ^{−m}`
+bookkeeping was not traced. Part (vi) — two reserved intervals `I_pos`, `I_mean` carrying
+(4.30) — was not located at all. So the object exists and four of six parts are placed;
+two are not.
+
+**Proposition 10.1**, pp. 117–118. `R3CompactCandidate.Properties`
+(`R3CompactCandidate.lean:24`): velocity and pressure smooth on `preSingularDomain`,
+compact spatial supports, zero initial velocity, divergence-free, `navierStokesResidual
+= f`, force with compact future time support. Built by `of_localized_fields` :248, with
+the compact force as a cutoff product (`compactForce_smooth` :90, `compactForce_supported`
+:94) — the paper's localization pattern, though the Lean assembly reaches it through the
+periodic local model (`of_periodic_local_model` :179) rather than the paper's curl form
+directly. Five of the proposition's six clauses are placed. The sixth, "`u(·,t) = p(·,t)
+= 0` for all sufficiently small `t ≥ 0`", is not a field of the structure, which carries
+only `zero_initial_velocity`; it follows from the time cutoff in the construction but no
+named declaration states it. "Agrees with `u_loc`, `p_loc` near the origin near `t = 1`"
+is `velocity_locally_eq` :231 / `pressure_locally_eq` :240 — stated for the periodic local
+model and consumed inside `of_periodic_local_model`, not as a whole-space field.
+
+### Cited but unchecked (two)
+
+`CurlClassBounds.lean:757` names "Lemma 9.2's curl remainder" (p. 102) and
+`LinearWaveBounds.lean:896` names "Proposition 9.3 at the coefficient level" (p. 104).
+That is the development asserting the correspondence, like the twenty labels in E90, but
+neither statement was compared clause by clause.
+
+### Unplaced (64)
+
+Including the ones a referee would ask about first. **Proposition 5.3** (p. 55), the
+coefficient induction and the `q^{2h(N+1)−K_m}` residual bound: no declaration with that
+exponent shape was found. **Propositions 9.1, 9.5, 9.6, 9.9** (pp. 101, 106, 107, 114), the
+residual estimates, the stage iteration and the summed local field. A grep for
+`2 * h * (N + 1)` and for the `K_m` loss returns nothing, which is not evidence of
+absence — the bound may be stated under other names, or carried inside the `LogBound` /
+`physicalLoss` machinery of `WholeDomainStageBounds`. It is recorded as unfound, not as
+missing.
+
+### The ledger
+
+| Status | Count | Which |
+|---|---|---|
+| placed, statement read | 6 | A.4, B.2, B.10, C.2, Lemma 4.7, Corollary 10.6 |
+| partial | 2 | Theorem 4.6 (4 of 6 parts), Proposition 10.1 (5 of 6 clauses) |
+| cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
+| unplaced | 64 | the rest |
+| **total** | **74** | |
+
+Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
+result; it leaves the numerator. That and the 74 are the corrections this slice makes to
+the previous two entries.
 
 ## Limits of this file
 

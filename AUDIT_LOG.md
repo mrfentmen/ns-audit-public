@@ -4563,3 +4563,55 @@ Fourteen paper sections carry no label citation. Those are not mapped by asserti
 Of 57 numbered results in the paper, six now have a mapping checked at statement level: Propositions A.4, B.2, B.10 and C.2 (E89), Lemma 4.7 and Section 8.6. Fifty-one do not. The largest gap is Theorem 4.6, the core existence claim the rest of the paper consumes; Proposition 5.3, the coefficient induction; Propositions 9.1 and 9.5, the residual estimates and the iteration; and Proposition 10.1 with Corollary 10.6, the forcing and the periodic corollary. These are results whose Lean counterpart has not been matched, not results that are missing — no claim is made here that any of them is absent from the formalization.
 
 *Evidence: label grep over 816 modules under `NavierStokes/` at `f9e8bc5`; `PowerMomentMatrix.lean:74,123,143`; `ExponentialMomentMatrix.lean:40`; `FiveProfileMoments.lean:8`; `MomentRepair.lean:36,46,53,59`; `CROSSWALK.md`.*
+
+---
+
+## E91 — Pass two, slice two: the denominator was wrong (2026-11-23)
+
+*Reading entry. The paper's text is now in the tree; the first thing it corrected was the audit's own count.*
+
+### 1. The paper was being read without being readable
+
+E89 and E90 worked from the PDF in a viewer. It is now extracted to text — `pypdf`, 166 pages, 485,170 characters, the PDF's own `PAGE n` markers preserved — into the gitignored `.setup/paper/ns.txt`, with a numbered-result index beside it. Three consequences: every claim can cite a page rather than a section, the statements can be diffed against declarations, and the count can be checked.
+
+### 2. The count did not survive the check
+
+E89 and E90 both say "57 numbered results". Counting distinct `(kind, number)` labels at line start gives **74**: 3 theorems, 26 propositions, 38 lemmas, 7 corollaries, of which 73 have at least one statement-length occurrence (the remainder are labels that appear only as cross-references with a short line). The 57 was a rough figure carried forward without ever being checked against the text.
+
+A second error of the same kind: E90 counted Section 8.6 among the placed results. §8.6 is a section, not a numbered result, so it leaves the numerator. Both corrections are in `CROSSWALK.md`; the ledger restated below uses 74 and six placed, not 57 and six.
+
+### 3. One result placed
+
+**Corollary 10.6** (p. 125) is `PeriodicPaper.breakdownStatement` and `periodic_corollary` (`PeriodicPaperTheorem.lean:148,155`). Read against the paper: for every `ν > 0` there are `u`, `p`, `f` with `CandidateProperties` — smooth velocity and pressure on `preSingularDomain`, periodic on the cube, compact spatial support inside `fundamentalInterior`, zero initial velocity, divergence-free, residual equal to the force, `SpeedUnboundedAtOne` — and `¬ Nonempty (GlobalSmoothSolution ν f)`. Clause for clause.
+
+It is also the only numbered result the repository aligns by name: `formalization.yaml:122–126` gives `Corollary 10.6 (Navier–Stokes on ℝ³/ℤ³)` → `NavierStokes.Comparator.navier_stokes_breakdown_periodic`, status `proved`. So this row is asserted by the development and checked by reading, the first row in the table with both.
+
+### 4. Two results partially placed
+
+**Theorem 4.6** (pp. 32–34) is `NominalProfile.Witness` (`:2481`), and the witness is constructed rather than assumed — `assembly_exists` (`NominalConeAssembly.lean:1482`), `exists_assembly_threshold` (`NominalProfile.lean:2637`). Parts (i), (ii), (iii), (v) map to named declarations (`fields_smooth` :2523, `E_eq_sqrt_f` :2527, `E_positive` :2530, `pressure_canonical` :2543, `Certificate` :1362, `initial_cones` :1431, `activation_cone` :1251, `five_moments` :2536, `moments_after` :2576, `heat_agreement` :2564, `U_outgoing` :2589, `mass_outgoing` :2594). Part (iv), the weight `ζ` with `|∂^αT₀| ≤ C_α ζ δ^{−m_α}`, is family-level only: the `δ^{−m}` bookkeeping was not traced. Part (vi), the two reserved intervals `I_pos` and `I_mean` carrying (4.30), was not located. Four of six parts placed.
+
+**Proposition 10.1** (pp. 117–118) is `R3CompactCandidate.Properties` (`:24`) built by `of_localized_fields` (`:248`). Five of six clauses placed: smoothness, compact supports, divergence-freedom, the residual, and agreement with the local fields (`velocity_locally_eq` :231, `pressure_locally_eq` :240). The sixth — `u(·,t) = p(·,t) = 0` for all sufficiently small `t ≥ 0` — is not a field of the structure; it follows from the construction's time cutoff, but no declaration states it, so it is recorded as unplaced rather than assumed to be discharged. The assembly also reaches the cutoff product through the periodic local model (`of_periodic_local_model` :179) rather than through the paper's `curl(cA) + cB e_θ` directly; that is a route difference, not a clause difference, but it is the reason this row is partial and not placed.
+
+### 5. Two results cited and unchecked
+
+`CurlClassBounds.lean:757` names "Lemma 9.2's curl remainder" (p. 102) and `LinearWaveBounds.lean:896` names "Proposition 9.3 at the coefficient level" (p. 104). These are the development asserting the correspondence in its own words, which is the strongest anchor short of reading both statements. Neither statement was read against its declaration, so they are counted separately from the placed rows.
+
+### 6. What did not move, and why it matters most
+
+**Proposition 5.3** (p. 55), the coefficient induction and the residual bound `|F_slow(U^[N])|_m ≤ C_{N,m} q^{2h(N+1)−K_m}`: no declaration with that exponent shape was found. A grep for `2 * h * (N + 1)` and for the `K_m` loss returns nothing across the tree. That is not evidence of absence — the bound may be stated under other names or carried inside `WholeDomainStageBounds`' `LogBound` / `physicalLoss` machinery — so it is recorded as unfound. **Propositions 9.1, 9.5, 9.6, 9.9** (pp. 101, 106, 107, 114) are likewise unplaced: the residual estimates, the stage iteration, and the summed local field that Theorem 3.1 consumes.
+
+These are the paper's own analytic core. Theorem 4.6 and Corollary 10.6 are placed because the development names their objects; Proposition 5.3 is the one whose content is a quantitative bound, and that is exactly the kind of statement a structure name does not carry.
+
+### 7. The ledger, restated
+
+| Status | Count | Which |
+|---|---|---|
+| placed, statement read | 6 | A.4, B.2, B.10, C.2, Lemma 4.7, Corollary 10.6 |
+| partial | 2 | Theorem 4.6 (4 of 6 parts), Proposition 10.1 (5 of 6 clauses) |
+| cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
+| unplaced | 64 | the rest |
+| **total** | **74** | |
+
+No verdict changes. This entry corrects an arithmetic error in the audit's own bookkeeping and moves three rows; it says nothing about whether the paper's argument is sound.
+
+*Evidence: paper text at `.setup/paper/ns.txt` (166 pages, 485,170 characters); statements at pp. 32–34, 55, 101, 106, 107, 114, 117–118, 125; `PeriodicPaperTheorem.lean:148,155`; `formalization.yaml:122–126`; `NominalProfile.lean:2481,2523–2594,2637`; `NominalConeAssembly.lean:1251,1362,1431,1482,1517`; `R3CompactCandidate.lean:24,90,94,179,231,240,248`; `CurlClassBounds.lean:757`; `LinearWaveBounds.lean:896`.*
