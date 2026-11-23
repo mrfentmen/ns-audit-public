@@ -241,12 +241,24 @@ named declaration states it. "Agrees with `u_loc`, `p_loc` near the origin near 
 is `velocity_locally_eq` :231 / `pressure_locally_eq` :240 — stated for the periodic local
 model and consumed inside `of_periodic_local_model`, not as a whole-space field.
 
-### Cited but unchecked (two)
+### Partial (two)
 
-`CurlClassBounds.lean:757` names "Lemma 9.2's curl remainder" (p. 102) and
-`LinearWaveBounds.lean:896` names "Proposition 9.3 at the coefficient level" (p. 104).
-That is the development asserting the correspondence, like the twenty labels in E90, but
-neither statement was compared clause by clause.
+Both rows this file formerly carried as "cited in a docstring, unchecked" are now read
+(E127), and neither citation is the paper's statement.
+
+`CurlClassBounds.lean:757` (`curlRemainder_waveClass`) proves `W_{α+1/2−κ}` for the curl
+remainder. That is Lemma 7.7's weight — the paper states it on p. 102 — not Lemma 9.2's
+transport product. Lemma 9.2's wave–wave clause is `transport_wave_class` /
+`transport_mean_class` (`HarmonicWaveInteraction.lean:389–431`) at `α+α'−κ`, exact but
+stated per harmonic and component; its label-separation clause is `labelCarrier_disjoint`
+(`ActualCarrierGeometry.lean:342`). Its mean–wave clause is not matched: the tree's
+`mean_wave_cmul` (`WaveInteractionBounds.lean:77–96`) gives `W_{α+µ}` with no `−1/2` loss and
+no tangential/radial split `(M_µ, M_{µ+1})` — stronger in exponent, but a different statement.
+
+`LinearWaveBounds.lean:896` (`constructed_linear_wave_with_flat_error`) is the proposition's
+coefficient shadow, by its own docstring: the good class `α+1/2−3κ`, an all-order flat error,
+and the pointwise `R = G + F` identity. Proposition 9.3's source supports `⊂ Ω_γ`, the `C^∞`
+extensions, and the exact mean equations (9.6) are not in it.
 
 **Proposition 9.1**, p. 102, the last row this file said it could not place. E94 places it.
 The paper's conclusion is class membership — the normalized linear residual, after the
@@ -280,7 +292,9 @@ coefficient series. 9.5's `6/5` is `CorrectionState.MeanResidualBounds`, stated 
 `1 + σ` for every admissible `σ` and evaluated at `sigma 0 = 1/5`; 9.6's cycle
 output is `CorrectionStep.gaugeTemporalStage_next_mean` at `σ + 1/10`, with the
 wave side at `gain h (j+1)`. The qualification carried: 9.6's four ordered
-corrections exist as four declarations, not one composed step theorem. What is left partial in the whole ledger is now nothing: E98 closed Proposition 10.1's
+corrections exist as four declarations, not one composed step theorem. Two rows are partial again as of E127, Lemma 9.2 and Proposition 9.3, because their cited
+declarations are components rather than the statements. Before that, E98 closed
+Proposition 10.1's
 short-time clause by finding `theorem_1_1_with_initial_rest` (`R3/Theorem.lean:31`), which
 proves `u = p = 0` for `|t| ≤ 3/8` — stronger than the paper's "sufficiently small `t ≥ 0`".
 The clause is load-bearing, not cosmetic: `R3/ParabolicScaling.compressedCandidate` consumes
@@ -291,8 +305,8 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 | Status | Count | Which |
 |---|---|---|
 | placed, statement read | 13 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1 |
-| partial | 0 | — |
-| cited in a docstring, unchecked | 2 | Lemma 9.2, Proposition 9.3 |
+| partial — components exist, statement not matched | 2 | Lemma 9.2, Proposition 9.3 (E127) |
+| cited in a docstring, unchecked | 0 | — |
 | unplaced | 59 | the rest |
 | **total** | **74** | |
 

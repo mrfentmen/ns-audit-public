@@ -6059,3 +6059,70 @@ modulated_base_eq : (modulatedScheme H v).base = (modifiedScheme W v.profiles v.
 E97's sentence "the two constructions are one" is right about the §5 sequence — it is *defined* as `asSlowProfiles (modulatedScheme ...)`, so there is no second object to identify — but it should not be read as an equality between the witness's extended profile and the recursive sequence. The honest statement is: the sequence is built *from* the profile at order zero and *from the local hierarchy* at positive orders, and the only equality theorems are the two above. For the residual estimates this is enough, because they consume the coefficients and the base; for a claim that "the extended profile is the GlobalSlowProfiles profile", it is not.
 
 *Evidence: `NominalProfile.lean:2487–2502`; `GlobalSlowProfiles.lean:1134–1140,1762–1766`, `profiles`, `profiles_zero`; `AssembledSlowBase.lean:373–380,638–655,739–755,1000–1015,1117–1124,1229–1255,1314–1329`; `ConstructedSlowBase.lean:218–222`; `EntranceAlignedBase.lean:802–815`; `FinalSlowBase.lean:99–112`; `LeadingStressWeights.lean:98–116`; E96; E97.*
+
+---
+
+## E127 — The two "cited" rows are components, not the paper's statements (2026-11-23)
+
+*Reading entry. `CROSSWALK.md` carried two rows as "cited in a docstring, unchecked": Lemma 9.2 (`CurlClassBounds.lean:757`) and Proposition 9.3 (`LinearWaveBounds.lean:896`). Both are now read clause by clause. Neither docstring names a declaration whose statement is the paper's. The bucket empties; both rows become partial.*
+
+### 1. What the paper asks
+
+**Lemma 9.2** (p. 102–103) has three clauses:
+
+1. *Mean transport.* `w ∈ W_α`, `v` a mean field with tangential components in `M_µ` and radial component in `M_{µ+1}`. Then the nonzero harmonics of `(w · ∇*)v + (v · ∇*)w` lie in `W_{α+µ−1/2}`.
+2. *Wave transport.* Two curl-generated waves `w, w'` with the same label and exponents `α, α'`. The nonzero harmonics of `(w · ∇*)w' + (w' · ∇*)w` lie in `W_{α+α'−κ_s}`; the zero harmonic lies in `M_{α+α'−κ_s}`.
+3. *Label separation.* Distinct labels have zero products on their closed supports.
+
+**Proposition 9.3** (p. 103–104) is a physical residual decomposition `R(u[j], p[j]) = G[j] + F[j]` in a common chart, with three parts: (i) supported sources — a locally finite harmonic sum (9.4) whose coefficients satisfy `supp(f|E_γ) ⊂ Ω_γ`, are `C^∞` on `E_γ⁺`, and lie in `W_α` with `⟨G*⟩_θ ∈ M_µ`; (ii) a flat remainder bound `|F[j]|_m ≤ C_{j,m,N} q^N` uniform over bands, labels and points; (iii) exact mean equations (9.6).
+
+### 2. Lemma 9.2's cited declaration is Lemma 7.7's exponent
+
+`CurlClassBounds.lean:757–769` is `curlRemainder_waveClass`:
+
+```
+WaveClass s P α a →
+WaveClass s P (α + 1 / 2 - κ) (fun n => curlRemainder (K n) R ... (coefficient ... (a n)))
+```
+
+`α + 1/2 − κ` is the curl-correction weight, and the paper says so itself on p. 102: "If `t_m ∈ W_α`, then Lemma 7.7 gives `r_m ∈ W_{α+1/2−κ_s}`" (`.setup/paper/ns.txt:5175`). The theorem has no mean field, no product, and no transport term; its hypotheses are phase-jet bounds, a two-sided bound `b ≤ ‖nΦ‖ ≤ M`, and the primitive classes of `Vr, Vθ, Vz, 1/R`. The docstring's "Lemma 9.2's curl remainder" is a mislabel: this is the curl correction used *inside* Lemma 9.2's hypotheses, not Lemma 9.2.
+
+### 3. What actually matches Lemma 9.2, clause by clause
+
+| Paper clause | Lean | Match |
+|---|---|---|
+| 1, mean transport at `W_{α+µ−1/2}` | `mean_wave_cmul` / `wave_mean_cmul` (`WaveInteractionBounds.lean:77–96`), `MeanClass.bilinear_wave` (`WeightedClasses.lean:449–454`) | exponent `α+µ`, **no** `−1/2` loss, **no** tangential/radial split |
+| 2, wave transport at `W_{α+α'−κ}` and `M_{α+α'−κ}` | `transport_wave_class` (`HarmonicWaveInteraction.lean:389–400`), `transport_mean_class` (`:405–431`) | exponent exact, but stated per fixed harmonic `m` and component `i`, not for "the nonzero harmonics" as a family |
+| 3, distinct labels vanish | `ActualCarrierGeometry.labelCarrier_disjoint` (`:342`), `HarmonicResidual.disjoint` (`:1472`), `LocalResidualGrouping.disjoint` (`:220`) | present, at the actual-carrier level rather than the abstract wave product |
+
+Clause 1 is the one that does not match. `mean_wave_cmul` gives `W_{α+µ}` where the paper gives `W_{α+µ−1/2}`. That is a *stronger* exponent, so it is not a defect — but it is not the same statement, and the reason the paper needs the loss is visible in its own proof: "Mean advection of a wave phase costs `k = O(ε^{−1/2})`", and its radial transport carries "a radial mean factor of order `µ + 1`". The tree has no declaration of that radial/tangential split at all: `MeanClass s α f` is a single weight, not a pair `(M_µ, M_{µ+1})`. So the paper's device for paying the half-power is not formalized as a device; the tree's product lemma simply does not pay it.
+
+### 4. Proposition 9.3's cited declaration is the coefficient shadow
+
+`LinearWaveBounds.lean:896–935` is `constructed_linear_wave_with_flat_error`, and its own docstring says "Proposition 9.3 at the coefficient level". Its conclusion is three conjuncts:
+
+```
+WaveClass s P (α + 1 / 2 - 3 * κ) (a.constructedGood s d g.cutoff) ∧
+(∀ N : ℝ, UnweightedClass s N (excludedSlotError d g.cutoff a.amplitude source)) ∧
+∀ n x, ... residual + source = (good + error) * carrier
+```
+
+Against the proposition's three parts: part (ii) is there, as an all-order unweighted class rather than the paper's pointwise `C_{j,m,N} q^N` uniform in bands and labels; the pointwise identity is the decomposition `R = G + F` at coefficient level. Part (i)'s support `⊂ Ω_γ` and `C^∞` extension are properties of the `GaussianTailFlat` slot family, not stated here; part (iii), the exact mean equations `(9.6)` with `W_ab`, `P`, `p_m`, is not in this declaration at all. `CorrectionState.MeanResidualBounds` (E97) carries the `1+σ` mean side of the cycle, but it is a different statement.
+
+The declaration is therefore a real and useful component — it is the piece the linear-residual estimate consumes — and it is not the proposition.
+
+### 5. The ledger move
+
+The "cited in a docstring, unchecked" bucket was two rows. Both are now read; neither is a placement. They move to partial:
+
+| Status | Before | After |
+|---|---|---|
+| placed, statement read | 13 | 13 |
+| partial — component declarations exist, statement not matched | 0 | 2 |
+| cited in a docstring, unchecked | 2 | 0 |
+| unplaced | 59 | 59 |
+| **total** | **74** | **74** |
+
+The count 13/74 is unchanged, which is the honest outcome: reading the two rows did not place them, it established that the correspondence the source asserts is looser than the label suggests. This is the third time a docstring has over-claimed relative to its declaration (E90's twenty labels, E94's `globalGood`, and now these two), and the pattern is worth naming: the tree's docstrings are reliable about *what a declaration is for*, and unreliable about *which numbered paper result it is*.
+
+*Evidence: `.setup/paper/ns.txt:5242–5270` (Lemma 9.2), `:5272–5345` (Proposition 9.3); `CurlClassBounds.lean:757–769`; `WaveInteractionBounds.lean:77–96`; `WeightedClasses.lean:415–454`; `HarmonicWaveInteraction.lean:389–431`; `LinearWaveBounds.lean:896–935`; `ActualCarrierGeometry.lean:342`; `HarmonicResidual.lean:1472`; `LocalResidualGrouping.lean:220`; E94; E97. Reading only — nothing compiled.*
