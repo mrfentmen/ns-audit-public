@@ -10,6 +10,14 @@
 \documentclass[11pt]{article}
 
 \usepackage[margin=1in]{geometry}
+% LuaLaTeX is required, not merely preferred: the Lean listings quote Unicode.
+% The default Latin Modern mono has no ∀/∃/ℝ/ν/∧, which the first typeset run
+% reported as 45 "Missing character" warnings and rendered as blanks. DejaVu Sans
+% Mono covers them; FreeMono is the fallback if the image lacks DejaVu.
+\usepackage{fontspec}
+\IfFontExistsTF{DejaVu Sans Mono}
+  {\setmonofont{DejaVu Sans Mono}[Scale=0.85]}
+  {\IfFontExistsTF{FreeMono}{\setmonofont{FreeMono}[Scale=0.85]}{}}
 \usepackage{amsmath,amssymb,amsthm,mathtools}
 \usepackage{booktabs}
 \usepackage{listings}
@@ -74,9 +82,11 @@
            {≥}{{$\geq$}}1 {≠}{{$\neq$}}1 {∀}{{$\forall$}}1 {∃}{{$\exists$}}1
            {∈}{{$\in$}}1 {∧}{{$\wedge$}}1 {∨}{{$\vee$}}1 {¬}{{$\neg$}}1
            {ℝ}{{$\mathbb{R}$}}2 {ℂ}{{$\mathbb{C}$}}2 {ℕ}{{$\mathbb{N}$}}2
-           {𝓢}{{$\mathcal{S}$}}2 {∞}{{$\infty$}}1 {ᵐ}{{$_{\mathrm{a.e.}}$}}2
+           {𝓢}{{$\mathcal{S}$}}2 {ν}{{$\nu$}}1 {∞}{{$\infty$}}1 {ᵐ}{{$_{\mathrm{a.e.}}$}}2
            {⁻¹}{{$^{-1}$}}2 {·}{{$\cdot$}}1 {ᶠ}{{$_{\mathrm{f}}$}}2
 }
+
+\setlength{\emergencystretch}{2em}
 
 \title{\bfseries Statement-Design Arbitrage and Verification Limits:\\
 A Forensic Code Audit of the \texttt{openai/NavierStokesAndEuler} Repository}
