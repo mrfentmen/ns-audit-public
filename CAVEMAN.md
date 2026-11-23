@@ -892,6 +892,16 @@ Why it took so long to hear that: caveman had wrapped the runner in a pipe nobod
 
 And the **second** rock got thrown too. Its own step, its own log, and a checker built by other people in another language: nanoda replayed the same exported proof and said `nanoda kernel accepts the solution`. Then Lean's own kernel said `Lean default kernel accepts the solution`, then `Your solution is okay!` (E75 §7). Two kernels, different code, same answer.
 
+### 16.5 The question itself got checked (E76, E77)
+
+Comparator proved the answer matches **the question the repo asks**. It cannot prove the repo asks **Clay's** question. So caveman took Clay's six-page paper, downloaded it, put it next to the file, and went clause by clause.
+
+Eleven numbered conditions. Every one has a home in the Lean file. Not one is missing, not one is softened: same equation, same no-bunching, same start-from-rest, same "decay faster than any polynomial" for the start and for the hand, same bounded energy on all of space, same smooth-forever, same repeating box, same hand that fades in time, same repeating pressure — and that pressure line is on the paper's own errata page, and the file has it.
+
+Two spots where the file says the same thing in a different accent: "smooth on the closed half-space" is written as smooth-on-the-set, and "every derivative decays" is written as the size of the whole derivative, which is at least as big as any single piece, with the free constant soaking up the difference. Both are the honest reading, and both are written down now instead of assumed (E76).
+
+Caveman also found a corridor nobody walks: `WaveInputs` and the two endpoint helpers that feed it have no caller anywhere. Not a hole — a spare corridor. Written down so the next reader does not think the proof leans on those eight fields (E77).
+
 ---
 
-*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E73. If this file and the paper disagree, the paper is right and caveman is wrong.*
+*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E77. If this file and the paper disagree, the paper is right and caveman is wrong.*

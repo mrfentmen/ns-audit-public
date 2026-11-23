@@ -1,0 +1,43 @@
+name: typeset
+
+# MANUSCRIPT.tex has never been compiled in this repository's history: there is
+# no TeX installation on the machine it was written on, and installing one is a
+# multi-gigabyte download. The paper asks for LuaLaTeX or XeLaTeX because the
+# Lean listings are quoted with their Unicode.
+#
+# Manual only, so a red build does not block anything. The PDF is the artifact.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  manuscript:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Typeset the manuscript
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: MANUSCRIPT.tex
+          latexmk_use_lualatex: true
+
+      - name: Report the log tail
+        if: always()
+        run: |
+          ls -l MANUSCRIPT.pdf MANUSCRIPT.log 2>/dev/null || true
+          [ -f MANUSCRIPT.log ] && tail -40 MANUSCRIPT.log || echo "no log written"
+
+      - name: Upload PDF
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuscript-pdf
+          path: |
+            MANUSCRIPT.pdf
+            MANUSCRIPT.log
+          if-no-files-found: warn

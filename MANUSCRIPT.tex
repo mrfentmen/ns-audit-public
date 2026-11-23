@@ -2,7 +2,7 @@
 %  Statement-Design Arbitrage and Verification Limits:
 %  A Forensic Code Audit of the openai/NavierStokesAndEuler Repository
 %
-%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E75.
+%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E77.
 %  All code citations are to commit f9e8bc5.
 % =====================================================================
 % Compile with LuaLaTeX or XeLaTeX: the Lean listings are quoted verbatim,
@@ -164,7 +164,7 @@ similarity ansatz, dependent type theory, proof auditing, statement design.
 
 \noindent\textbf{Data availability:} commit \texttt{f9e8bc5} of
 \texttt{openai/NavierStokesAndEuler}; audit log
-\file{ns-audit/AUDIT\_LOG.md}, entries E0--E75. Every code citation below is a
+\file{ns-audit/AUDIT\_LOG.md}, entries E0--E77. Every code citation below is a
 \file{path:line} pair in that commit. Kernel acceptance was reproduced on the
 \file{NavierStokes} library; see \S\ref{sec:limits}.
 
@@ -246,6 +246,22 @@ $\limsup_{t\uparrow1}\norm{u(t)}_\infty=+\infty$, and \emph{no} global smooth
 finite-energy solution of the same forced problem starting from the zero datum
 exists.
 \end{quote}
+
+\medskip
+\noindent
+That proposition is the repository's Theorem~1.1, not Clay's alternative~(C) as
+written. The bridge is the Comparator challenge, and E76 checks it clause by
+clause against Fefferman's text: each numbered condition of (C) and (D) --- the
+equation, incompressibility, the initial condition, the decay bounds (4), (5),
+(8), (9), the smoothness and energy clauses (6), (7), (10), (11), and the
+pressure-periodicity erratum --- maps onto a named field of
+\ct{InitialVelocityConditionDecay}, \ct{ForceConditionDecay},
+\ct{NavierStokesExistenceAndSmoothnessRn} and their periodic counterparts, with
+no clause missing, weakened, or strengthened. Two reading conventions are named
+rather than hidden: $C^\infty$ on the closed half-space is \ct{ContDiffOn} on
+$\R^3\times[0,\infty)$, and the multi-index bounds are carried as iterated
+Fr\'echet operator norms, which dominate every $|\partial^\alpha|$ up to a
+constant that the existential absorbs.
 
 \subsection{Two halves, of very different cost}
 \label{sec:twohalves}
@@ -1653,7 +1669,7 @@ OpenAI, \emph{NavierStokesAndEuler}, GitHub repository, commit
 \bibitem{audit}
 A.~El Sayad and John, \emph{Forensic audit log for
 \texttt{openai/NavierStokesAndEuler}}, \file{ns-audit/AUDIT\_LOG.md}, entries
-E0--E75 (companion document).
+E0--E77 (companion document).
 
 \bibitem{lean}
 L.~de~Moura and S.~Ullrich, \emph{The \Lean{}~4 theorem prover and programming

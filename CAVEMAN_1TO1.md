@@ -217,6 +217,8 @@ What caveman checked next: the **official** question-checker, Comparator. It exp
 
 And the second, independent rock got thrown: nanoda, written by different people in a different language, replayed the same exported proof and said `nanoda kernel accepts the solution`. Lean's own kernel then said `Lean default kernel accepts the solution`, and the run ended `Your solution is okay!` (E75 §7). Two kernels, one answer. That is a second opinion on the replay, not a second statement check: the comparison happened once, on the two exports.
 
+Then caveman checked the question itself, not just the answer. Clay's six-page statement, eleven numbered conditions, set beside the challenge file: every condition has a field, none is missing, none is softened — the equation, no bunching, the start from rest, the decay of the start and of the hand, smooth forever, bounded energy on the whole space, and for the box the repeating start, the hand that fades in time, and the repeating pressure that the paper's errata page adds. Two accents are named rather than assumed: smooth-on-the-closed-half-space is written as smooth-on-the-set, and "every derivative decays" is carried as the size of the whole derivative, which bounds each piece. That is E76. A spare corridor — `WaveInputs` and two endpoint helpers with no caller — is recorded in E77 so nobody mistakes it for the road.
+
 ---
 
 ## 3. THE NON-EVALUATED CONSTANT BARRIER

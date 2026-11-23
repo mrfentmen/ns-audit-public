@@ -3817,3 +3817,89 @@ What this adds: the exported proof was re-checked by a second implementation (`n
 The landrun caveat of §5 applies unchanged: `kernel supports Landlock ABI v8` on all six sandbox invocations of this run, so the ABI v9 and v10 restrictions (pathname UNIX sockets, UDP) were not enforced.
 
 *Evidence: run `45119134981`; artifacts `cmp-builtin-kernel` (824 B, 20 lines), `cmp-nanoda-kernel` (807 B, 22 lines), `cmp-verdict-summary` (1,040 B). Supersedes the status statements in E74 §5 and the README's pre-verdict wording; E74's withdrawal of the timing inference stands and is now explained rather than merely retracted.*
+
+---
+
+## E76 — The Comparator statement against Fefferman's text, clause by clause (2026-11-23)
+
+*Reading entry. This closes the question E75 §5 and manuscript §3 left to a human: whether the statement Comparator compared is the statement Clay poses. No build, no runner.*
+
+### 1. What was compared
+
+| item | value |
+|---|---|
+| Clay text | C. L. Fefferman, *Existence and Smoothness of the Navier–Stokes Equation*, 6 pp., with the appended **Errata** page; `claymath.org/wp-content/uploads/2022/06/navierstokes.pdf` |
+| fetched | 2026-11-23; SHA-256 `c1b5f27b1a64705cfaf1afceea513db5deedca8a18ca56ab32e7f86445a06d0c` |
+| encoded statement | `ComparatorChallenges/NavierStokes.lean:273` for (C), `:280` for (D) |
+| solution-side copy | `NavierStokes/ComparatorDefinitions.lean` |
+| why the two copies are one statement | Comparator's `verifyMatch` compared the two exports and passed (E75 §2–§3); the copies are identical by machine check, not by inspection |
+| alternatives in scope | (C) whole space, (D) torus. (A) and (B) are not encoded in this challenge, and this entry says nothing about them |
+
+Fefferman's (C), verbatim:
+
+> Take ν > 0 and n = 3. Then there exist a smooth, divergence-free vector field u°(x) on R³ and a smooth f(x,t) on R³ × [0,∞), satisfying (4), (5), for which there exist no solutions (p,u) of (1), (2), (3), (6), (7) on R³ × [0,∞).
+
+and (D):
+
+> Take ν > 0 and n = 3. Then there exist a smooth, divergence-free vector field u°(x) on R³ and a smooth f(x,t) on R³ × [0,∞), satisfying (8), (9), for which there exist no solutions (p,u) of (1), (2), (3), (10), (11) on R³ × [0,∞).
+
+### 2. Every clause, and its home in the file
+
+Line numbers are into `f9e8bc5`.
+
+| Clay | text | Lean field | verdict |
+|---|---|---|---|
+| (1) | `∂ₜuᵢ + Σⱼ uⱼ∂uᵢ/∂xⱼ = νΔuᵢ − ∂p/∂xᵢ + fᵢ` on `Rⁿ × [0,∞)` | `NavierStokesExistenceAndSmoothness.navier_stokes`, `:222` | same equation with the sides rearranged; `fderiv ℝ (v · t) x (v x t)` is `(v·∇)v`, `Δ` is the spatial Laplacian, `gradient` is the Fréchet gradient |
+| (2) | `div u = 0` on `Rⁿ × [0,∞)` | `.div_free`, `:227` | trace of the Fréchet derivative, the standard coordinate sum |
+| (3) | `u(x,0) = u°(x)` | `.initial_condition`, `:229` | literal |
+| (4) | `|∂ˣᵅ u°(x)| ≤ C_{αK}(1+|x|)^{−K}` for all `α`, `K` | `InitialVelocityConditionDecay.decay`, `:155` | all total orders `m`, all real `K`, witness `C` per pair; operator norm of the iterated derivative, see §3(b) |
+| (5) | `|∂ˣᵅ∂ₜᵐ f| ≤ C_{αmK}(1+|x|+t)^{−K}` on `Rⁿ × [0,∞)` | `ForceConditionDecay.decay`, `:190` | same denominator, same universal quantifiers, derivative within the half-space |
+| (6) | `p, u ∈ C^∞(Rⁿ × [0,∞))` | `.velocity_smooth`, `.pressure_smooth`, `:232`, `:235` | `ContDiffOn ℝ ∞` on `univ ×ˢ Ici 0` |
+| (7) | `∫|u(x,t)|² dx < C` for all `t ≥ 0` | `.integrable`, `:250` and `.globally_bounded_energy`, `:253` | `MemLp` plus one existential `E` beating every time; see §3(c) |
+| (8) | `u°(x+eⱼ) = u°(x)`, `f(x+eⱼ,t) = f(x,t)` | `InitialVelocityConditionPeriodic`, `:164`; `ForceConditionPeriodic.isOnePeriodic`, `:202` | periodicity of datum and force, for `t ≥ 0` |
+| (9) | `|∂ˣᵅ∂ₜᵐ f| ≤ C(1+|t|)^{−K}` | `ForceConditionPeriodic.decay`, `:204` | the denominator has no `‖x‖`, exactly as Clay's does not |
+| (10) | `u(x,t) = u(x+eⱼ,t)` on `R³ × [0,∞)` | `.isOnePeriodic_velocity`, `:267` | literal |
+| (11) | `p, u ∈ C^∞(Rⁿ × [0,∞))`, periodic case | inherited smoothness, plus `.isOnePeriodic_pressure`, `:269` | the pressure clause comes from the errata, §4 |
+
+The quantifier structure matches too: Clay's "Take ν > 0 … then there exist u°, f … for which there exist no solutions" is
+`(nu : ℝ) (hnu : nu > 0) : ∃ u₀ f, condition u₀ ∧ condition f ∧ ¬ ∃ v p, solution ν u₀ f v p`.
+
+### 3. Four representational choices, and why none changes the claim
+
+**(a) The time derivative at `t = 0`.** Clay writes the equation on `t ≥ 0`, so at the initial time the derivative can only be one-sided. The encoding uses `derivWithin (v x ·) (Set.Ici 0)`, which is that one-sided derivative at `0` and the ordinary one for `t > 0`. Matching, not strengthening: the PDF's domain is closed for the same reason.
+
+**(b) Multi-index bounds as operator norms.** Clay bounds each `|∂ˣᵅ u|` separately. The encoding bounds `‖iteratedFDeriv ℝ m u x‖` for every total order `m`. Every `|∂ˣᵅ u|` with `|α| = m` is dominated by that norm, and conversely a bound for every `|α| ≤ m` gives the operator-norm bound with a constant that is a finite sum of the components — absorbed by the existential `C`, which is chosen per `(m,K)`. The two conditions are equivalent, not merely similar.
+
+**(c) Energy.** Clay's (7) is one constant `C` beating every time. The encoding asks `∃ E, ∀ t ≥ 0, ∫‖v(x,t)‖² dx < E`, and separately `MemLp (‖v · t‖) 2` at each time. The `MemLp` field is not decoration: the Bochner integral is totalized, so without it a non-integrable function would have "integral 0" and could satisfy the bound by junk. With it, the pair says exactly what (7) says — the integral exists at every time and one number bounds it.
+
+**(d) (D) has no energy condition, and neither does the encoding.** Clay's (D) asks for no solution of (1), (2), (3), (10), (11); (7) is absent. The periodic structure adds only periodicity to the base solution structure, and the base structure carries no energy field. This is the asymmetry E70 relies on — the periodic competitors are a strictly larger class — and it is in the text, not an artefact of the encoding.
+
+### 4. The errata
+
+The PDF's appended errata page says, first:
+
+> The further condition p(x + eⱼ,t) = p(x,t) should be made explicit in Eqn (8).
+
+That is honoured: `isOnePeriodic_pressure` is a field of the periodic solution structure, and the challenge's header cites the errata by name. The second erratum replaces "Eqn (10)" with a weak-form identity (integrating against a test function θ). That numbering refers to the weak-solution discussion later in the paper, not to the pointwise periodicity clause in the four alternatives; (C) and (D) are stated pointwise and use the strong form. Nothing in the prize alternatives consumes it, so its absence is correct rather than an omission. Recorded here because the errata page and the numbered list disagree about what "(10)" means.
+
+### 5. Verdict
+
+No clause of (C) or (D) is missing, weakened, or strengthened in a way that changes what the alternative claims. The judgement calls that remain are reading conventions, and both are named in §3: `C^∞` on the closed half-space read as `ContDiffOn` on that set, and the multi-index bounds read as iterated-operator-norm bounds. On those readings — the standard ones — the statement Comparator passed is the statement Clay poses for (C) and (D).
+
+What this does not do: it does not audit (A), (B), the Euler challenge, or any estimate inside the proof. It converts "the encoding might not be the Clay statement" from an open objection into a checked clause list, which is the limit of what reading can settle.
+
+*Evidence: the PDF named in §1 at the stated digest, read in full including the errata page; line numbers into `f9e8bc5`; E75 §2–§3 for the machine-checked identity of the challenge copy and the solution copy. Supersedes the "remains outside this audit" phrasing in the README's Scope section and in E75 §5.*
+
+---
+
+## E77 — The `WaveInputs` branch is an unused alternate (2026-11-23)
+
+*Reading entry. Promotes `LEADS.md` §3 from working notes to the log, so a later reader does not mistake a spare corridor for the road.*
+
+`ActualStageEstimates.WaveInputs` (`ActualStageEstimates.lean:171`) is a structure of eight exponent and shift fields. It is consumed only by `stageEstimates_of_representations` (`:347`) and its two wrappers (`:197`, `:276`). The only producer of a `WaveInputs` value is `ActualEndpointInputs.endpointInputs_of_run` (`ActualEndpointInputs.lean:218`); `actual_stage_endpoints` (`:160`) is its sibling. Neither has a caller anywhere in the tree, and the field `particularPotential_exponent` occurs only at its declaration and at its use.
+
+The assembly does not go through that branch. `ActualCandidateAssembly.lean:1094` calls `GluedStageEstimates.actualStageEstimates` (`:684`), whose hypotheses are discharged by `current_potential_bound` and `current_pressure_bound` from actual cycle data. The eight `WaveInputs` fields are therefore not assumptions the proof leans on; they belong to an alternate route with no construction site.
+
+Same status for `actual_stage_endpoints` and `endpointInputs_of_run`: definitions without callers. A `grep` that finds hypotheses in them is not finding a gap. E67–E71 trace the route that is used, and E69 shows the invariant that route consumes is preserved by construction.
+
+*Evidence: `f9e8bc5`, `NavierStokes/ActualStageEstimates.lean`, `NavierStokes/ActualEndpointInputs.lean`, `NavierStokes/ActualCandidateAssembly.lean`, `NavierStokes/GluedStageEstimates.lean`; `LEADS.md` §3 (working notes, 2026-11-21).*

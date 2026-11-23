@@ -137,6 +137,14 @@ What was done later: the axiom check was run on the periodic side too, on a clea
 
 A second, independent checker also ran: nanoda, a Rust implementation that re-verifies the exported proof without Lean's kernel. It accepted the solution, Lean's kernel accepted it too, and the run ended with `Your solution is okay!` (E75 §7). Two implementations, one answer. That is a second opinion on the replay rather than a second statement comparison, which happened once, on the exports.
 
+### 2.4 Does the encoded statement match Clay's?
+
+This was the objection no checker could answer, so it was answered by reading. Clay's official problem description is six pages; its alternatives (C) and (D) are eleven numbered conditions. Each one was matched to a named field in the file the checker verified: the equation, incompressibility, the initial condition, the two decay conditions, smoothness of velocity and pressure, the bounded-energy condition on all of space, the periodic conditions, and the pressure-periodicity correction from Clay's own errata page. Nothing is missing and nothing is weakened (E76).
+
+Two places where the file says the same thing in different words are now named rather than assumed: "smooth on the closed half-space" is written as smooth on that set, and "every derivative decays faster than any polynomial" is carried as a bound on the whole derivative, which dominates a bound on any single component, with the statement's own free constant absorbing the difference. Neither changes what is claimed.
+
+One spare corridor is recorded too: a group of definitions called `WaveInputs`, and the two endpoint helpers that feed it, are never called by the proof. They are an alternate route, not an assumption the proof leans on (E77).
+
 ---
 
 ## 3. FINDING ONE: NUMBERS THE COMPUTER NEVER WEIGHS

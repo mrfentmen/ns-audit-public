@@ -1,0 +1,291 @@
+name: comparator-check-euler
+
+# The same statement check as comparator-check, pointed at the other half of the
+# upstream repository. E75 §5 records the gap this closes: only
+# `ComparatorChallenges/NavierStokes.json` was run; `Euler.json` was not.
+#
+# The two developments do not import each other (E66), so this run shares no
+# compiled state with the Navier-Stokes one and pays for a full Euler build.
+# The cache key is separate for that reason, not by oversight.
+#
+# Manual only. Public repository: no runner minutes are charged.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  comparator-euler:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          df -h /
+
+      - name: Clone upstream at the audited commit
+        run: |
+          git clone --filter=blob:none https://github.com/openai/NavierStokesAndEuler.git upstream
+          cd upstream
+          git checkout f9e8bc5
+          git log -1 --format='%H %ci'
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: false
+
+      # Separate key: the Euler build shares nothing with NavierStokes.
+      - name: Restore compiled build
+        uses: actions/cache@v4
+        with:
+          path: upstream/.lake/build
+          key: lake-build-ubuntu-f9e8bc5-euler-v1
+
+      - name: Fetch mathlib cache
+        working-directory: upstream
+        run: lake exe cache get
+
+      # The unknown cost of this workflow. Euler has never been built on a
+      # runner for this audit; a step timeout fails the step and lets the
+      # uploads run, where a job timeout would cancel and lose the log.
+      - name: Build Euler
+        working-directory: upstream
+        timeout-minutes: 210
+        run: |
+          set -euo pipefail
+          echo "phase-start build-euler $(date -u +%H:%M:%SZ)"
+          START=$SECONDS
+          stdbuf -oL -eL lake build Euler 2>&1 | tee "$GITHUB_WORKSPACE/euler-build.log"
+          echo "phase-end build-euler $(( SECONDS - START ))s"
+          du -sh .lake/build 2>/dev/null || true
+
+      - name: Build comparator and lean4export
+        working-directory: upstream
+        timeout-minutes: 20
+        run: |
+          set -euo pipefail
+          lake build lean4export 2>&1 | tee "$GITHUB_WORKSPACE/lean4export-build.log"
+          (lake build comparator || lake build Comparator:exe:comparator) 2>&1 \
+            | tee "$GITHUB_WORKSPACE/comparator-build.log"
+          ls -l .lake/packages/lean4export/.lake/build/bin/ 2>/dev/null || true
+          ls -l .lake/build/bin/ 2>/dev/null || true
+
+      - name: Build landrun (sandbox)
+        working-directory: upstream
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          {
+            echo "== go ==; go version"
+            L=573aa723afb16bb1da2dbe24fc00df46cd0ad13b
+            echo "landrun commit: $L"
+            mkdir -p /tmp/landrun
+            for i in 1 2 3; do
+              if curl -fsSL "https://codeload.github.com/Zouuup/landrun/tar.gz/$L" \
+                   | tar -xz -C /tmp/landrun --strip-components=1; then break; fi
+              echo "tarball attempt $i failed, retrying"; sleep 10
+            done
+            test -f /tmp/landrun/go.mod || { echo "no go.mod after fetch"; exit 1; }
+            cd /tmp/landrun
+            go build -o /tmp/landrun-bin ./cmd/landrun
+            ls -l /tmp/landrun-bin
+          } 2>&1 | tee "$GITHUB_WORKSPACE/landrun-build.log"
+
+      - name: Build nanoda (second kernel)
+        continue-on-error: true
+        timeout-minutes: 25
+        run: |
+          set -uo pipefail
+          if ! command -v cargo >/dev/null 2>&1; then
+            curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+            echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          fi
+          export PATH="$HOME/.cargo/bin:$PATH"
+          {
+            echo "== rust =="; cargo --version
+            N=0da9f98feadd3a0a2ef4b3dbcf52a298a6fef929
+            echo "nanoda commit: $N"
+            mkdir -p /tmp/nanoda
+            for i in 1 2 3; do
+              if curl -fsSL "https://codeload.github.com/ammkrn/nanoda_lib/tar.gz/$N" \
+                   | tar -xz -C /tmp/nanoda --strip-components=1; then break; fi
+              echo "tarball attempt $i failed, retrying"; sleep 10
+            done
+            test -f /tmp/nanoda/Cargo.toml || { echo "no Cargo.toml after fetch"; exit 1; }
+            cargo build --release --manifest-path /tmp/nanoda/Cargo.toml
+            ls -l /tmp/nanoda/target/release/nanoda_bin
+          } 2>&1 | tee "$GITHUB_WORKSPACE/nanoda-build.log"
+
+      - name: Upload toolchain logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: euler-toolchain-logs
+          path: |
+            euler-build.log
+            lean4export-build.log
+            comparator-build.log
+            landrun-build.log
+            nanoda-build.log
+            upstream/lake-manifest.json
+          if-no-files-found: warn
+
+      - name: Pre-build the challenge module
+        working-directory: upstream
+        timeout-minutes: 30
+        run: |
+          set -euo pipefail
+          echo "phase-start prebuild-challenge $(date -u +%H:%M:%SZ)"
+          START=$SECONDS
+          (lake build ComparatorChallenges.Euler || lake build ComparatorChallenges) 2>&1 \
+            | tee "$GITHUB_WORKSPACE/euler-challenge-build.log"
+          echo "phase-end prebuild-challenge $(( SECONDS - START ))s"
+
+      - name: Upload challenge build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: euler-challenge-build
+          path: euler-challenge-build.log
+          if-no-files-found: warn
+
+      # `enable_nanoda` stripped, as in the Navier-Stokes workflow: the statement
+      # check must not depend on a second kernel having compiled.
+      - name: Comparator (builtin kernel)
+        working-directory: upstream
+        timeout-minutes: 120
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          src = pathlib.Path("ComparatorChallenges/Euler.json")
+          cfg = json.loads(src.read_text())
+          cfg.pop("enable_nanoda", None)
+          out = pathlib.Path("ComparatorChallenges/EulerBuiltin.json")
+          out.write_text(json.dumps(cfg, indent=2) + "\n")
+          print(out.read_text())
+          PY
+          export COMPARATOR_LEAN4EXPORT="$PWD/.lake/packages/lean4export/.lake/build/bin/lean4export"
+          export COMPARATOR_LANDRUN=/tmp/landrun-bin
+          ls -l "$COMPARATOR_LEAN4EXPORT" "$COMPARATOR_LANDRUN"
+          WRAP=()
+          if systemd-run --user --pipe -- true >/dev/null 2>&1; then
+            CAND=(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pipe
+                  -E "PATH=$PATH" --working-directory "$PWD" --)
+            if [ "$("${CAND[@]}" bash -c 'echo WRAPPER-RELAY-OK' 2>&1)" = "WRAPPER-RELAY-OK" ]; then
+              echo "sandbox wrapper: systemd-run --user --pipe AVAILABLE, stdout relay verified"
+              WRAP=("${CAND[@]}")
+            else
+              echo "sandbox wrapper: systemd-run present but NOT relaying stdout; running comparator directly"
+              echo "consequence: no guard against the known landrun escape in this run"
+            fi
+          else
+            echo "sandbox wrapper: systemd-run --user --pipe UNAVAILABLE; running comparator directly"
+            echo "consequence: no guard against the known landrun escape in this run"
+            WRAP=()
+          fi
+          echo "phase-start comparator-euler $(date -u +%H:%M:%SZ)"
+          START=$SECONDS
+          LOG="$GITHUB_WORKSPACE/comparator-euler-builtin.log"
+          : > "$LOG"
+          (
+            while :; do
+              sleep 300
+              printf 'heartbeat %s log_bytes=%s lean_procs=%s\n' \
+                "$(date -u +%H:%M:%SZ)" \
+                "$(wc -c < "$LOG" 2>/dev/null || echo 0)" \
+                "$(pgrep -fc 'lean|lake' 2>/dev/null || echo 0)" >> "$LOG"
+            done
+          ) &
+          HB=$!
+          "${WRAP[@]}" stdbuf -oL -eL bash -c \
+            "lake exe comparator ComparatorChallenges/EulerBuiltin.json" 2>&1 \
+            | tee -a "$LOG"
+          kill "$HB" 2>/dev/null || true
+          echo "phase-end comparator-euler $(( SECONDS - START ))s"
+
+      - name: Upload builtin-kernel log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: euler-builtin-kernel
+          path: comparator-euler-builtin.log
+          if-no-files-found: warn
+
+      - name: Comparator (nanoda as second kernel)
+        working-directory: upstream
+        continue-on-error: true
+        timeout-minutes: 60
+        run: |
+          set -uo pipefail
+          export COMPARATOR_LEAN4EXPORT="$PWD/.lake/packages/lean4export/.lake/build/bin/lean4export"
+          export COMPARATOR_LANDRUN=/tmp/landrun-bin
+          export COMPARATOR_NANODA=/tmp/nanoda/target/release/nanoda_bin
+          WRAP=()
+          if systemd-run --user --pipe -- true >/dev/null 2>&1 \
+             && [ "$(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pipe \
+                     -E "PATH=$PATH" --working-directory "$PWD" -- bash -c 'echo WRAPPER-RELAY-OK' 2>&1)" = "WRAPPER-RELAY-OK" ]; then
+            WRAP=(systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pipe
+                  -E "PATH=$PATH" --working-directory "$PWD" --)
+          fi
+          if [ ! -x "$COMPARATOR_NANODA" ]; then
+            echo "nanoda binary absent; second-kernel check skipped, recorded as SKIPPED"
+            exit 0
+          fi
+          echo "phase-start comparator-euler-nanoda $(date -u +%H:%M:%SZ)"
+          START=$SECONDS
+          "${WRAP[@]}" stdbuf -oL -eL bash -c \
+            "lake exe comparator ComparatorChallenges/Euler.json" 2>&1 \
+            | tee "$GITHUB_WORKSPACE/comparator-euler-nanoda.log"
+          echo "phase-end comparator-euler-nanoda $(( SECONDS - START ))s"
+
+      - name: Upload nanoda log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: euler-nanoda-kernel
+          path: comparator-euler-nanoda.log
+          if-no-files-found: warn
+
+      - name: Verdict summary
+        if: always()
+        run: |
+          {
+            echo "# comparator-check-euler summary"
+            echo
+            echo "run: ${GITHUB_RUN_ID}  attempt ${GITHUB_RUN_ATTEMPT}  $(date -u +%FT%TZ)"
+            echo "head: ${GITHUB_SHA}"
+            echo
+            for f in comparator-euler-builtin.log comparator-euler-nanoda.log euler-challenge-build.log euler-build.log; do
+              echo "## $f"
+              if [ -f "$f" ]; then
+                echo "lines: $(wc -l < "$f")  bytes: $(wc -c < "$f")"
+                echo "last 15:"
+                tail -15 "$f"
+              else
+                echo "ABSENT — the phase that writes it never started"
+              fi
+              echo
+            done
+          } > euler-verdict-summary.md
+          cat euler-verdict-summary.md
+
+      - name: Upload verdict summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: euler-verdict-summary
+          path: euler-verdict-summary.md
+          if-no-files-found: warn
