@@ -79,7 +79,7 @@ Big cave. Lean 4. **641,332 lines**, **2,659 files**. People say "28.6 million l
 
 The cave is clean at the bottom: no `axiom`, no `native_decide`, no `unsafe`, no `partial def`, no `@[implemented_by]`, and no `sorry` you can reach from the proof roots. One module does carry a `sorry`, `ComparatorChallenges/NavierStokes.lean`, and it is unreachable: nothing under `NavierStokes/`, `Euler/`, the root `NavierStokes.lean` or `Euler.lean` imports it, and the module says so in its own header.
 
-The repo says nine outside checkers accepted it. We ran one of them: Comparator, which checks that the answer proves the **same question** the challenge asks, and it says `Your solution is okay!` (E75). The other eight we did not run. Say that out loud.
+The repo says nine outside checkers accepted it. We ran one of them: Comparator, which checks that the answer proves the **same question** the challenge asks, and it says `Your solution is okay!` on both questions the repo asks — the flood one (E75) and the Euler one (E79). The other eight we did not run. Say that out loud.
 
 So the question is not "does it compile". The question is: **what does the compiled thing actually certify?**
 
@@ -737,7 +737,7 @@ So nobody misquotes the cave. This paper does **not** claim, and its evidence do
 ## WHERE TO LOOK (the paper bibliography, in caveman)
 
 - **The repo itself**: OpenAI, `NavierStokesAndEuler`, commit `f9e8bc5`.
-- **This audit**: A. El Sayad and John, the audit log, entries E0–E73.
+- **This audit**: A. El Sayad and John, the audit log, entries E0–E79.
 - **Lean 4**: de Moura and Ullrich, CADE-28, 2021.
 - **Mathlib**: the Mathlib community, CPP 2020.
 - **Leray 1934**: the original weak-solution construction for viscous flow in all of space.

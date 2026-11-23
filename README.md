@@ -19,7 +19,7 @@ The audit's two findings:
 |---|---|
 | `MANUSCRIPT.tex` | The audit paper. LuaLaTeX or XeLaTeX. |
 | `MANUSCRIPT.pdf` | The typeset paper: 25 pages, LuaLaTeX, built by `typeset.yml` (E78). |
-| `AUDIT_LOG.md` | The working log: entries E0–E77, every `path:line` citation behind the paper. |
+| `AUDIT_LOG.md` | The working log: entries E0–E79, every `path:line` citation behind the paper. |
 | `PHASE2-FINDINGS.md` | Second-pass findings: the anisotropic weights, the three "free doors", the packets. |
 | `CAVEMAN.md` | The whole thing rewritten in caveman. Every finding, plus §13–15: the equation symbol by symbol, why 3D is the hard case, and the four Clay doors A–D. |
 | `CAVEMAN_1TO1.md` | The paper section for section in caveman: 8 sections, every subsection, appendix and bibliography. Nothing skipped. |
@@ -41,7 +41,8 @@ The artifact is logically clean — no reachable `sorry`, no `axiom`, no `native
 - **The estimate chain is closed by reading** (E68, E69, E71): the source wave class that the stage estimates consume is proved for the initial state, rebuilt by every step, and the assembly that rebuilds it is a structure literal with no assumed field.
 - **The encoded statement is checked against Fefferman's text clause by clause** (E76): every numbered condition of alternatives (C) and (D) — (1)–(11), including the errata's pressure-periodicity clause — maps to a named Lean field, and none is missing, weakened or strengthened. The two remaining conventions are named rather than hidden: `C^∞` on the closed half-space read as `ContDiffOn`, and multi-index bounds carried as iterated operator norms.
 - **One alternate branch is unused** (E77): `WaveInputs` and the two endpoint definitions that supply it have no callers; the assembly goes through `actualStageEstimates` instead.
-- **Did not re-run the nine external checkers** the repository reports.
+- **The Euler challenge was executed, and passes** (E79): the `Euler` library builds from a clean clone (10,603 jobs, 50 min 11 s), and Comparator accepts both `euler_breakdown_R3` and `exists_compact_smooth_euler_singularity` on two kernels — `Lean default kernel accepts the solution`, `nanoda kernel accepts the solution`, `Your solution is okay!` — with an axiom footprint of only `propext`, `Classical.choice`, `Quot.sound`, and no `sorryAx`. That checks the proofs against the statements. Not one estimate inside the Euler development was read.
+- **Did not re-run eight of the nine external checkers** the repository reports. The ninth, Comparator, now passes on both of the repository's challenges (E75, E79).
 - The monotonicity argument behind finding 1 is a human argument about the scripts, not machine-checked.
 - Two identities in §5 of the paper (the measure scaling and the critical weight `b* = −(3−2h)/4`) are the auditors' own derivation, labelled as such.
 
@@ -63,6 +64,8 @@ All citations are `path:line` pairs into that commit.
 
 The audit examines one result in depth: the whole-space forced Navier–Stokes theorem behind `breakdownStatement`.
 
-Alternative (D), the periodic corollary, is in scope for the statement and the architecture of its proof: E70 reads the compression, the periodization and the comparator bridge in both directions, and finds the excluded class *weaker* than (C)'s (it imposes no energy bound at all). The axiom print E70 and E72 left open has since been run, green, from a clean clone (E73); the external Comparator statement check has since been executed and **passed** on the builtin kernel (E75), and E76 now carries the statement-level comparison itself: every numbered condition of Fefferman's (C) and (D), plus the errata, matched to a named Lean field, none missing or weakened. What remains outside is not a judgement about the encoding but the two reading conventions E76 §3 names, and the periodic development's own machinery. The periodic development's own machinery — the periodization lemmas and periodic uniqueness — was sampled rather than audited line by line, and the Euler development is outside this audit entirely. Neither carries a claim here.
+Alternative (D), the periodic corollary, is in scope for the statement and the architecture of its proof: E70 reads the compression, the periodization and the comparator bridge in both directions, and finds the excluded class *weaker* than (C)'s (it imposes no energy bound at all). The axiom print E70 and E72 left open has since been run, green, from a clean clone (E73); the external Comparator statement check has since been executed and **passed** on the builtin kernel (E75), and E76 now carries the statement-level comparison itself: every numbered condition of Fefferman's (C) and (D), plus the errata, matched to a named Lean field, none missing or weakened. What remains outside is not a judgement about the encoding but the two reading conventions E76 §3 names, and the periodic development's own machinery. The periodic development's own machinery — the periodization lemmas and periodic uniqueness — was sampled rather than audited line by line, and nothing there carries a claim here.
+
+The Euler development was outside this audit until E79. That entry now runs its Comparator challenge end to end: the library builds from a clean clone, both of its headline theorems pass on two kernels, and their axiom footprint is the three permitted axioms with no `sorryAx`. That is a statement-level and kernel-level result. No line of the Euler proof was read for it, and no mathematical claim is made about it.
 
 Independent commentary, not affiliated with OpenAI. The upstream repository's own licence governs its code; the audit documents are the authors' own work.

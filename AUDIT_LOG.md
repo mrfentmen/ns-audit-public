@@ -3932,3 +3932,100 @@ The first run is green by exit status and wrong by content. `lmmono9-regular` ha
 `MANUSCRIPT.pdf` is committed beside the source, and `typeset.yml` reproduces it. The workflow is manual only: a red build of the paper must not block anything else.
 
 *Evidence: runs `45127159922` and `45127609292`, artifact `manuscript-pdf`; commit `40fdaf9`.*
+
+---
+
+## E79 — The Euler challenge, executed: both kernels accept both singularity theorems (2026-11-23)
+
+*Execution evidence. E76 audited the encoded statement for Navier–Stokes alternatives (C) and (D) and said in terms that it did not touch the Euler challenge. This entry runs that challenge — the same procedure as E74–E75 with the `Euler` library in place of `NavierStokes`.*
+
+### 1. The run
+
+| item | value |
+|---|---|
+| run | `45127157219`, attempt 1, workflow `comparator-check-euler.yml` |
+| dispatched from | `e515e89` (the commit that added E76, E77 and both workflows) |
+| upstream | `openai/NavierStokesAndEuler` at `f9e8bc5`, cloned in step 3 |
+| toolchain | `leanprover/lean4:v4.34.0-rc2`; mathlib, Comparator, lean4export, landrun and nanoda each at their pinned revisions |
+| wall clock | 06:53:07Z → 08:13:56Z, **1 h 20 min 49 s** |
+| conclusion | **success** |
+
+| step | start → end | duration |
+|---|---|---|
+| clone upstream | 06:55:04 → 06:55:06 | 2 s |
+| mathlib cache | 06:55:15 → 06:56:35 | 1 min 20 s |
+| **Build Euler** | 06:56:35 → 07:46:46 | **50 min 11 s**, 10,603 jobs |
+| comparator, lean4export, landrun, nanoda builds | 07:46:46 → 07:47:29 | 43 s |
+| challenge module pre-build | 07:47:30 → 07:47:38 | 8 s, 8,763 jobs replayed |
+| Comparator, builtin kernel | 07:47:39 → 07:57:49 | 10 min 10 s |
+| Comparator, nanoda as second kernel | 07:57:50 → 08:13:39 | 15 min 49 s |
+
+The `Euler` library had never been built on a runner before this run — the cache key is separate from `NavierStokes`, so nothing was restored. Fifty minutes is the honest cost of the library, not of the check.
+
+### 2. What the challenge poses
+
+`ComparatorChallenges/Euler.lean` proves nothing. It states two theorems and closes each with `sorry`:
+
+| line | theorem | content |
+|---|---|---|
+| `:85` | `euler_breakdown_R3` | some rapidly decaying smooth divergence-free datum has **no** global smooth unforced Euler solution in the finite-energy class on `ℝ³` |
+| `:170` | `exists_compact_smooth_euler_singularity` | a nonzero compactly supported rapidly decaying datum with maximal lifespan `0 < T* ≤ 1`: Sobolev-class solutions on `[0,T)` exactly when `T < T*`, C¹ norm and vorticity integral finite on every `[0,T] ⊂ [0,T*)`, `limsup` of the C¹ norm `= ⊤` at `T*`, vorticity integral over `[0,T*)` infinite, and no global energy-class solution |
+
+The challenge build therefore *succeeds with two `sorry` warnings and exit 0*. A `grep` that turns those up is finding the challenge, not a gap in the solution. Both are statements the solution must supply, and neither is an assumption the Euler proof consumes.
+
+### 3. What the solution supplies
+
+Comparator exported both modules against one target list of 32 names — the three permitted axioms plus Lean's own machinery (`Nat`, `String`, `Char`, `Quot`, `List`, `eagerReduce`) and exactly two theorem names:
+
+```
+Euler.euler_breakdown_R3, Euler.exists_compact_smooth_euler_singularity,
+propext, Quot.sound, Classical.choice, …
+```
+
+Replaying the solution takes 10,591 jobs, and the probe the run prints is the substantive part:
+
+```
+info: Euler/Solution.lean:73:0: 'Euler.euler_breakdown_R3' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Euler/Solution.lean:75:0: 'Euler.exists_compact_smooth_euler_singularity' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+No `sorryAx`. That is the point of the whole exercise: the challenge's placeholders are replaced by proofs that close under the three axioms `ComparatorChallenges/Euler.json` permits, and the reducer that would expose a used `sorry` does not fire.
+
+### 4. Two kernels
+
+| phase | log | verdict line |
+|---|---|---|
+| builtin | `comparator-euler-builtin.log` | `Lean default kernel accepts the solution` → **`Your solution is okay!`** |
+| nanoda | `comparator-euler-nanoda.log` | `nanoda kernel accepts the solution`, then `Lean default kernel accepts the solution` → **`Your solution is okay!`** |
+
+Second kernel: nanoda at `0da9f98feadd3a0a2ef4b3dbcf52a298a6fef929`, a Rust type checker that shares no code with Lean's kernel; the sandbox is landrun at `573aa723afb16bb1da2dbe24fc00df46cd0ad13b`, built with `cargo 1.100.0`. The nanoda phase takes 35 s longer than the builtin one, and most of the phase is the export and the Lean re-check that run inside it — the nanoda check itself is under a second.
+
+### 5. The one caveat in the logs, recorded rather than smoothed over
+
+Every phase of both runs prints:
+
+```
+[landrun:warn] kernel supports Landlock ABI v8, so these default restrictions are not enforced:
+pathname UNIX socket connections (ABI v9), UDP bind/connect/send (ABI v10)
+```
+
+On this runner the sandbox is one notch weaker than landrun's default: pathname UNIX-socket connections and UDP traffic are not blocked. The file-system and process restrictions that matter for replaying a kernel are enforced. This changes no verdict here, and it is written down because a sandbox claim that outlives its evidence is how audits rot. The same warning appears in the Navier–Stokes run (E75); it was not noticed there and is not retroactively a problem with it.
+
+### 6. What this establishes, and what it does not
+
+- Establishes: at `f9e8bc5`, on a clean clone, the `Euler` library builds (10,603 jobs, exit 0); challenge and solution export against **the same** 32-name target list; the solution's two headline theorems depend only on `propext`, `Classical.choice`, `Quot.sound`; and two independent kernels accept the result.
+- Does **not** establish: that a single estimate inside the Euler proof is correct. Not one line of the Euler development was read for this entry. The audit's mathematical reading remains the Navier–Stokes estimate chain (E67–E71); Euler is now checked at the statement level and the kernel level and at no other level.
+- Does not touch any other Euler statement, and does not revisit alternative (D)'s Navier–Stokes footprint, which E73 printed.
+
+### 7. Coverage of the four headline theorems
+
+| theorem | challenge | run | verdict |
+|---|---|---|---|
+| `navier_stokes_breakdown_R3` | `NavierStokes.json` | `45119134981` | accepted, both kernels (E75) |
+| `navier_stokes_breakdown_periodic` | `NavierStokes.json` | `45119134981` | accepted, both kernels (E75) |
+| `euler_breakdown_R3` | `Euler.json` | `45127157219` | accepted, both kernels (E79) |
+| `exists_compact_smooth_euler_singularity` | `Euler.json` | `45127157219` | accepted, both kernels (E79) |
+
+All four now have an executed external check. What that buys is narrower than it sounds: it certifies that each theorem's proof term inhabits the statement the challenge poses, under the permitted axioms, in two kernels. It says nothing about whether the statements are the ones a mathematician would write — E76 does that for (C) and (D) by reading, and nothing does it for the Euler pair — and nothing about whether the proofs are right beyond the kernel's opinion.
+
+*Evidence: run `45127157219`, artifacts `euler-verdict-summary`, `euler-builtin-kernel`, `euler-nanoda-kernel`, `euler-challenge-build`, `euler-toolchain-logs` (1,843-line build log, all five toolchain builds, `lake-manifest.json`); commit `e515e89`; upstream `f9e8bc5`.*

@@ -479,7 +479,7 @@ Caveman respects a paper that lists its own weak spots.
 
 - **Findings not recompiled.** Every finding is from reading proof terms, binder order, and definitions.
 - **But the proof was.** On Linux: `lake build NavierStokes` finished 9,580 jobs, exit 0, 817 modules. The four whole-space theorems lean only on `propext`, `Classical.choice`, `Quot.sound`. On this Mac the build tool dies inside Apple's memory allocator, so the build ran in a Linux box. That checks **terms**, not **statements** — the findings above are still read, not machine-checked.
-- **Nine external checkers were reported by the repo. One of them was run.** Comparator takes the question the repo poses (the `sorry`-holed challenge file) and the answer, exports both, checks they are the same question, and replays the answer in a fresh kernel. It said `Your solution is okay!` (E75). The other eight were still not re-run. And even a passing check verifies **terms against that question**, not that the question is Clay's own: the statement-level objections (zero datum, force-as-leftover, similarity in ν) are exactly what no checker can test.
+- **Nine external checkers were reported by the repo. One of them was run, on both questions the repo asks — the flood one (E75) and the Euler one (E79).** Comparator takes the question the repo poses (the `sorry`-holed challenge file) and the answer, exports both, checks they are the same question, and replays the answer in a fresh kernel. It said `Your solution is okay!` (E75). The other eight were still not re-run. And even a passing check verifies **terms against that question**, not that the question is Clay's own: the statement-level objections (zero datum, force-as-leftover, similarity in ν) are exactly what no checker can test.
 - **Two identities in §5 are the auditors' own** — the measure scaling and the critical weight `b*`. Not in the repo. Labelled as derived.
 - **One early log entry (E36) is provisional.** Call site and estimates checked; exact binder not opened. Later entries walked the same estimate chain from the other end (E67–E71) and found no assumed field, but they did not reopen that binder.
 - **Since this file was first written, the audit got further.** The smooth-force question is answered (E65–E66), the estimate chain is walked to its floor (E67–E71), the ring-world is audited (E70), and the print that confirms its harmless stones was found in the source (E72) and then actually run on a rented machine (E73). Nothing is left unread, and nothing is left unrun except the second rock (nanoda), which is a different tool.
@@ -904,4 +904,12 @@ Caveman also found a corridor nobody walks: `WaveInputs` and the two endpoint he
 
 ---
 
-*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E77. If this file and the paper disagree, the paper is right and caveman is wrong.*
+### 16.6 The Euler question got the same treatment (E79)
+
+Everything above checked the flood question. The repo asks a second one, on the **Euler** side: no stickiness, no hand, and the claim is that a smooth start can come apart in finite time. That question has its own challenge file, its own two `sorry` holes, and its own answer — and nobody had run it. So it ran.
+
+Cost first, because caveman had no idea: the Euler tower had to be built from nothing on the machine, **10,603 jobs, 50 minutes**. Then the same tent, the same carve-out, the same two stones: Comparator said `Lean default kernel accepts the solution`, nanoda said `nanoda kernel accepts the solution`, and the run ended `Your solution is okay!` on both. The two Euler stamps — the plain break, and the sharp one that names the exact moment the thing tears — depend on **only** the three allowed stones and no `sorryAx`.
+
+What that means in caveman: the two Euler answers do prove the two Euler questions, and two different brains agree. What it does **not** mean: caveman read **zero** lines of the Euler proof's inside. Not one estimate, not one constant. The Euler side is now checked at the door and at the judge, and nowhere else. Said plain so it cannot be read as more.
+
+*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E79. If this file and the paper disagree, the paper is right and caveman is wrong.*
