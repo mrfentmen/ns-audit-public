@@ -57,17 +57,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The image's default fonts have no room for ∂ ∇ ν ℝ ∃ ∫ or the subscripts,
+      # and the first build dropped 275 characters silently. DejaVu is installed on
+      # the runner (no TeX, a few megabytes) and mounted into the container, whose
+      # fontconfig then sees it. The two emoji are outside DejaVu as well, so the
+      # build copies the source with ✗ and ✓ substituted; the Markdown in the
+      # repository keeps its own markers.
+      - name: Install fonts on the runner
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get update -qq
+          sudo -E apt-get install -y -qq --no-install-recommends fonts-dejavu-core
+          fc-list | grep -ci dejavu
+
       - name: Build both reader editions in the pandoc image
         run: |
           set -euo pipefail
-          docker run --rm -v "$PWD:/data" -w /data pandoc/extra:latest --version | head -2
           for doc in CAVEMAN LAYMAN; do
-            docker run --rm -v "$PWD:/data" -w /data pandoc/extra:latest \
-              "$doc.md" -o "$doc.pdf" \
-              --pdf-engine=xelatex --toc --toc-depth=2 \
-              -V geometry:a4paper -V geometry:margin=2cm -V fontsize=10pt \
-              -V colorlinks=true -V linkcolor=blue \
+            sed -e 's/❌/✗/g' -e 's/✅/✓/g' "$doc.md" > "$doc.build.md"
+            docker run --rm \
+              -v "$PWD:/data" -v /usr/share/fonts:/usr/share/fonts:ro \
+              -w /data pandoc/extra:latest \
+              sh -c "fc-cache -f >/dev/null 2>&1 || true; pandoc '$doc.build.md' -o '$doc.pdf' \
+                --pdf-engine=xelatex --toc --toc-depth=2 \
+                -V geometry:a4paper -V geometry:margin=2cm -V fontsize=10pt \
+                -V mainfont='DejaVu Sans' -V monofont='DejaVu Sans Mono' \
+                -V colorlinks=true -V linkcolor=blue" \
               2>&1 | tee "$doc-typeset.log"
+            rm -f "$doc.build.md"
             ls -l "$doc.pdf"
           done
 
