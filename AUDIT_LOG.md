@@ -6233,3 +6233,65 @@ The quantitative part of clause 1 is stronger than the paper's phrasing in one r
 Proposition 6.6 is the first of the fifty-nine to be read, and it splits rather than placing. The section-level mapping in `CROSSWALK` called §6 an `object` match to `LabelSumBounds` and `PhysicalGraphBounds`; that judgement survives, at clause granularity, and it does not extend to the operator table.
 
 *Evidence: `.setup/paper/ns.txt:3206–3245` (§6 outline), `:3640–3710` (Proposition 6.6 and its proof); `LabelSumBounds.lean:313–430`; `WeightedClasses.lean:415–456`; `WaveInteractionBounds.lean:77–114`; `MeanLocalCoefficient.lean:41–70`; `CurlClassBounds.lean:230–297,707–769`; `PrimaryMaterialDefect.lean:182–210`; `LinearWaveResidual.lean:247–253`; `ActualCarrierGeometry.lean:342`; E127. Reading only — nothing compiled.*
+
+---
+
+## E130 — Lemma 7.7 is placed, and it is what E127 said it was (2026-11-23)
+
+*Reading entry. E127 removed `curlRemainder_waveClass` from Lemma 9.2 and identified its exponent `α+1/2−κ` as Lemma 7.7's. This entry closes that loop: the paper's Lemma 7.7, read clause by clause, is exactly the curl-correction construction those declarations implement. The ledger moves to 14 placed, 3 partial, 57 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 7.7.` For every `α ∈ R` and nonzero integer `m`, let `t_m ∈ W_α` satisfy `n_Φ · t_m = 0`, supported in the prescribed slow and transverse supports and compactly inside the pulse interval, with smooth zero extension across the boundaries. Then:
+
+| Clause | Paper's claim |
+|---|---|
+| a | (7.38) gives `C_m ∈ W_{α+1/2}` and `r_m ∈ W_{α+1/2−κs}` |
+| b | `(t_m + r_m)e^{ikmΦ} = curl_* A_m` is exactly divergence-free for the normalised operators, after evaluation at the phase map |
+| c | potential and velocity have smooth zero extensions across their support boundaries |
+| d | for `a_m = t_m + r_m`, `ikm n_Φ·a_m = −((D_r + R⁻¹)(a_m)_r + D_z(a_m)_z)`, and `n_Φ·a_m ∈ W_{α+1/2−κs}` (7.39) |
+| e | physical potentials and pressures are chart ones times `Q^{1/2−A}`, `Q^{−2A}` |
+
+The proof is explicit about where the `1/2` comes from: "The factor `(km)^{-1}` increases the `ε` exponent by `1/2`, and applying `D_r` decreases it by at most `κs`."
+
+### 2. Where the `1/2` sits in the tree
+
+This is the part worth stating carefully, because it looks like a mismatch and is not.
+
+`CurlClassBounds.normalCoefficient_class` (`:198–211`) proves
+
+```
+MemClass s w α a → MemClass s w α (normalCoefficient N a)
+```
+
+at **`α`, not `α+1/2`** — and that is correct, because the tree's `coefficient` is the normalised amplitude *without* the `(km)^{-1}` prefactor. The prefactor is a separate object, `inverseCarrier K = i/K` (`:592`), and it enters through `band_smul` with the hypothesis
+
+```
+hK : BandBound s (1/2) (fun n => 1 / K n)
+```
+
+which is exactly "multiplying by `1/K` raises the exponent by `1/2`". That hypothesis is on every consumer of the curl class. So:
+
+* potential coefficient with the prefactor: `α + 1/2` — `physical_strippedRemainder_class` (`:858–862`) states `MemClass s w (α + 1/2)` for the stripped remainder in the Cartesian geometry;
+* cylindrical curl with the prefactor and the `D_r` cost: `α + 1/2 − κ` — `curlRemainder_waveClass` (`:757–769`).
+
+The paper's two exponents are reproduced exactly, and the tree splits them across two objects where the paper writes one.
+
+### 3. Clause by clause
+
+| Clause | Lean | Status |
+|---|---|---|
+| a, `C_m ∈ W_{α+1/2}` | `normalCoefficient_class` (`:198`) at `α` composed with `band_smul` at `1/2` (`:458–462`, `:858–862`) | matched, split across two objects |
+| a, `r_m ∈ W_{α+1/2−κ}` | `curlRemainder_waveClass` (`:757–769`) | matched, exponent exact |
+| b, exact curl and divergence-freeness | `cylindricalCurl_vectorPotential` (`:633–654`): given `n_Φ·a = 0`, `curl A = vectorMode (realizedCoefficient)`, with `realizedCoefficient := a + curlRemainder (coefficient a)`; `divergence_curl_zero` discharges the divergence inside `longitudinal_from_curl_class` (`:725–739`) | matched |
+| c, smooth zero extensions | the `tsupport` and `ContDiffOn` hypotheses every declaration in the chain carries; no clause-specific theorem | ambient convention |
+| d, `n_Φ·a_m ∈ W_{α+1/2−κ}` and (7.39) | `longitudinal_class` (`:700–721`) concludes `MemClass s w (α + 1/2 − κ)` for `normalDot (phaseNormal) a`, and `longitudinal_eq_inverseCarrier` gives the identity `n_Φ·a = (i/K) · strippedDivergence` | matched, both the class and the formula |
+| e, chart-to-physical factors | the `physical_*` twins (`:850–884`) plus `ChartScales`; the numeric factors are not a statement of this lemma | definitional rescaling |
+
+That is a placement under the rule this audit uses elsewhere: a clause counts as carried when it is an ambient convention of every declaration in the chain (support and `ContDiffOn`, clause c) or a definitional rescaling (clause e); it counts as a component when the statement itself differs, which is what E129 found for Proposition 6.6's rectangle qualifier and its `N_abs` row.
+
+### 4. §7 is not cited by number
+
+A grep of the whole tree for `Lemma 7.7`, `Proposition 7.2` and "pulse inverse" returns **no docstring match at all**. Every other section the crosswalk maps has at least one file naming a paper result (`§4.4`, `§4.6`, `§8.1`, `§8.2`, `§8.3`, `§10.2`, and `CurlClassBounds`'s own "Lemma 9.2" — which E127 showed was wrong). §7's correspondence is therefore entirely `object`-basis, which is why the section-level row was labelled that way and why this placement had to be made by reading statements rather than by following a citation.
+
+*Evidence: `.setup/paper/ns.txt:4396–4442` (Lemma 7.7 and proof), `:4002–4016` (7.13); `CurlClassBounds.lean:198–211,458–462,592–654,700–739,757–769,850–884`; `WeightedClasses.lean` (`MemClass`, `band_smul`, `mono_exponent`); E127. Reading only — nothing compiled.*
