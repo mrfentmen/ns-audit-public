@@ -171,7 +171,7 @@ two Euler theorems against their statements and reads no estimate inside their
 proofs (E79). Those statements are the two declarations the repository's own
 metadata designates as its Euler formalizations, and the challenge's solution
 class is proved equivalent to the development's rather than assumed to match
-(E80). E81 then compares them with the Euler paper's Theorem~1.1: the encoding is stronger than the paper in five respects and weaker in two---the challenge's $C^1$ limsup is the sum of the velocity and gradient suprema, while the paper asserts the gradient alone diverges, and the lifespan is taken over a Sobolev class not proved to contain the paper's smoothly evolving solution (E82); the development proves the gradient-only statement (\ct{maximalGradientNorm\_limsup}), its axiom footprint on a runner is the three permitted axioms with no \ct{sorryAx} (E84), and the Comparator target list does not contain it.
+(E80). E81 then compares them with the Euler paper's Theorem~1.1: the encoding is stronger than the paper in five respects and weaker in two---the challenge's $C^1$ limsup is the sum of the velocity and gradient suprema, while the paper asserts the gradient alone diverges, and the lifespan is taken over a Sobolev class not proved to contain the paper's smoothly evolving solution (E82); the development proves the gradient-only statement (\ct{maximalGradientNorm\_limsup}), its axiom footprint on a runner is the three permitted axioms with no \ct{sorryAx} (E84), and the Comparator target list does not contain it. Finally, the repository publishes the prose account it formalizes, and this audit now holds that account against the tree: the 166-page paper is mapped section by section onto the modules that realise it, ten sections and three appendices, each row labelled by what backs it---a citation in the source, an object match, or a family resemblance (E89). Five paper sections are named in the source at all, and eight of the thirteen rows rest on something weaker than a citation, so the map is section-level and not a clause-by-clause reconciliation.
 \end{abstract}
 
 \medskip
@@ -1607,6 +1607,24 @@ recorded as provisional: the call site and the approximation estimates were
 verified, the exact binder was not opened. Finally, the claim in
 \S\ref{sec:index-vs-term} that every use of a constant is monotone in that
 constant is a meta-argument about the scripts and is not machine-checked.
+
+\paragraph{The paper against the tree.} The repository links the prose account
+it formalizes, and \file{formalization.yaml} names that account as its source,
+aligning Theorem~1.1 and Corollary~10.6 with named declarations. Until E89 this
+audit read the paper only where the statement comparison forced it, so the
+question whether the argument formalized is the argument published had no
+answer. E89 begins it: every numbered section of the 166-page Navier--Stokes
+paper is mapped to the modules that realise it, and each correspondence is
+labelled by its basis---\emph{cited}, when a Lean docstring names the section;
+\emph{object}, when the module defines the object the section is about;
+\emph{family}, when the modules cover the same subject and the correspondence is
+unchecked. Five paper sections are cited in the source at all (\S4.4, \S4.6,
+\S8.1, \S8.2, \S8.3, \S10.2), and eight of the thirteen rows rest on
+\emph{object} or \emph{family}. The map therefore settles no lemma. It does not
+show that each numbered result of the paper has a declaration, nor that no paper
+lemma is missing from the formalization. That is the remaining work, recorded in
+\file{ns-audit/CROSSWALK.md}, and it is where a defect would sit if one exists:
+a kernel check cannot compare an argument against the argument it formalizes.
 
 \subsection{Implications beyond this repository}
 
