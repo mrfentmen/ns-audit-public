@@ -3903,3 +3903,32 @@ The assembly does not go through that branch. `ActualCandidateAssembly.lean:1094
 Same status for `actual_stage_endpoints` and `endpointInputs_of_run`: definitions without callers. A `grep` that finds hypotheses in them is not finding a gap. E67–E71 trace the route that is used, and E69 shows the invariant that route consumes is preserved by construction.
 
 *Evidence: `f9e8bc5`, `NavierStokes/ActualStageEstimates.lean`, `NavierStokes/ActualEndpointInputs.lean`, `NavierStokes/ActualCandidateAssembly.lean`, `NavierStokes/GluedStageEstimates.lean`; `LEADS.md` §3 (working notes, 2026-11-21).*
+
+---
+
+## E78 — The manuscript typesets, and the first attempt exposed a font gap (2026-11-23)
+
+*Execution evidence. `MANUSCRIPT.tex` had never been compiled in this repository's history: there is no TeX installation on the machine it was written on, and installing one is a multi-gigabyte download. The paper asks for LuaLaTeX because its Lean listings are quoted with their Unicode.*
+
+### 1. Two runs
+
+| run | source | result | pages | bytes | missing glyphs |
+|---|---|---|---|---|---|
+| `45127159922` | `e515e89` | success | 25 | 358,372 | **45** |
+| `45127609292` | `40fdaf9` | success | 25 | 376,181 | **0** |
+
+The first run is green by exit status and wrong by content. `lmmono9-regular` has no ∀ (U+2200), ∃, ℝ, ν or ∧, so every Lean listing quoting one rendered a blank: forty-five `Missing character` warnings, no LaTeX error, exit 0. That is why the log was read rather than the tick. The `literate` table already mapped ∀/∃/ℝ/∧ to math for `listings`, but `\ct{...}` is `\texttt`, which goes through the text font and never consults those mappings; ν was absent from the table as well.
+
+### 2. The fix
+
+`40fdaf9` loads `fontspec`, sets the monospace font to DejaVu Sans Mono with FreeMono as a fallback selected by `\IfFontExistsTF`, adds ν to the literate table, and sets `\emergencystretch` for the widest lines. The re-run reports **zero** missing characters.
+
+### 3. What this does and does not establish
+
+- Establishes: the paper compiles under the engine it names, on a clean checkout, and every Unicode symbol in its Lean quotations reaches the page.
+- Does not establish: that any line of the mathematics is correct. Typesetting is not checking.
+- Remaining typographic noise: 33 overfull hboxes in the first run. They are cosmetic and were not chased further; the fixed run still reports some.
+
+`MANUSCRIPT.pdf` is committed beside the source, and `typeset.yml` reproduces it. The workflow is manual only: a red build of the paper must not block anything else.
+
+*Evidence: runs `45127159922` and `45127609292`, artifact `manuscript-pdf`; commit `40fdaf9`.*
