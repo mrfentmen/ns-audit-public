@@ -3927,7 +3927,7 @@ The first run is green by exit status and wrong by content. `lmmono9-regular` ha
 
 - Establishes: the paper compiles under the engine it names, on a clean checkout, and every Unicode symbol in its Lean quotations reaches the page.
 - Does not establish: that any line of the mathematics is correct. Typesetting is not checking.
-- Remaining typographic noise: 33 overfull hboxes in the first run. They are cosmetic and were not chased further; the fixed run still reports some.
+- Remaining typographic noise: 33 overfull hboxes in the first run, 23 in the fixed one, plus 8 underfull. Zero `LaTeX Warning` lines in both. Cosmetic; not chased further.
 
 `MANUSCRIPT.pdf` is committed beside the source, and `typeset.yml` reproduces it. The workflow is manual only: a red build of the paper must not block anything else.
 
