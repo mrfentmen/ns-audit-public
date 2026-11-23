@@ -4382,3 +4382,64 @@ This layer was the last place in the periodic chain where an assumed energy iden
 Two honest limits. First, `UnitPeriods` is invariance under the elementary translations `x + e_i` only; full lattice periodicity is not assumed at this layer and is not needed, because face matching is a one-step condition. Second, the read stops at Mathlib — `integral_divergence_of_hasFDerivAt_off_countable'` and `hasDerivAt_integral_of_dominated_loc_of_deriv_le` are trusted as kernel-checked library theorems, not re-read.
 
 *Evidence: `PeriodicIntegration.lean:19, 27, 34, 123, 181, 274, 305, 206`; `PeriodicUniqueness.lean:341, 367, 414` and `cubeIntegral_pressure_energy_zero`; `f9e8bc5`.*
+
+---
+
+## E87 — The Comparator's own verdict on the Euler clause set (2026-11-23)
+
+*Evidence entry. E84 dispatched `comparator-check-euler` (run `45158640147`) to print the paper-clause axiom footprints. That workflow also runs the Comparator end to end. Its builtin-kernel phase has returned; the nanoda phase has not.*
+
+### 1. What the Comparator said
+
+`comparator-euler-builtin.log`:
+
+```
+Running Lean default kernel on solution.
+heartbeat 10:53:14Z log_bytes=2250 lean_procs=2
+Lean default kernel accepts the solution
+heartbeat 10:58:14Z log_bytes=2339 lean_procs=2
+Your solution is okay!
+```
+
+`Your solution is okay!` is the Comparator's success verdict: the exported proof was re-checked by a kernel that saw only the export, and it used no axiom outside `propext`, `Classical.choice`, `Quot.sound`.
+
+### 2. What was actually checked
+
+The export line names the two Euler statements and nothing else:
+
+```
+Exporting #[..., Euler.euler_breakdown_R3, Euler.exists_compact_smooth_euler_singularity,
+  propext, Quot.sound, Classical.choice, ...] from Euler.Solution
+```
+
+and the solution-side axiom print is
+
+```
+info: Euler/Solution.lean:73:0: 'Euler.euler_breakdown_R3' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Euler/Solution.lean:75:0: 'Euler.exists_compact_smooth_euler_singularity' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+So the two statements E81 and E82 examined — the paper's Euler clauses, including the `¬∃` conjuncts — are accepted by a second implementation of the checking loop, at `f9e8bc5`, with a clean footprint.
+
+### 3. The two `sorry` warnings are on the challenge side
+
+The log also carries:
+
+```
+warning: ComparatorChallenges/Euler.lean:85:8: declaration uses `sorry`
+warning: ComparatorChallenges/Euler.lean:170:8: declaration uses `sorry`
+```
+
+Both are in `ComparatorChallenges/Euler.lean`, the specification module, not in `Euler/Solution.lean`. That is the Comparator's design: the challenge file states what must be proved — a `sorry` is how a statement is declared without a proof — and acceptance refers to the solution module proving it. The warnings are expected in this arrangement and are not evidence of a hole; the check on the solution side is the axiom print above, which reports no `sorryAx`.
+
+What this does *not* do: it does not check that the challenge statements match the paper's prose. That was E81 and E82, and it remains a reading finding rather than a machine result.
+
+### 4. The second kernel has not returned
+
+Step 18, `Comparator (nanoda as second kernel)`, has been in progress since 10:48Z on the same run. Two kernels would be stronger than one; at present the evidence is one kernel, one export, one commit.
+
+### 5. What this changes
+
+E79 recorded builtin-kernel acceptance for the same target set. This run repeats it and adds the paper-clause prints (E84). Together they mean the Euler clause set is accepted twice by the same tool at the same commit, and the clauses the paper asserts carry a clean footprint. It does not independently confirm the mathematics — a kernel check never does — and it does not close the nanoda gap.
+
+*Evidence: run `45158640147`; artifacts `euler-builtin-kernel` (`comparator-euler-builtin.log`, 2,410 bytes), `euler-challenge-build` (239 bytes), `euler-toolchain-logs`; steps 9 and 14--17 succeeded, step 18 in progress.*
