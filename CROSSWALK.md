@@ -301,8 +301,8 @@ clauses as conjuncts (`F(1)` finite, the `F(t)²` inequality at `ν = 1`, and
 by `CompactEnergy.uniform_finite_energy` and carried as a field. `Lemma 10.5` is
 `WholeSpaceUniqueness.candidate_unique_on_Icc`, whose competitor hypothesis
 `UniformFiniteEnergy` is exactly `L∞_t L²_x` and whose pressure flux is derived rather than
-assumed. Neither row was partial; both were unplaced. The ledger reads 21 placed, 4 partial,
-48 unplaced.
+assumed. Neither row was partial; both were unplaced. The ledger reads 22 placed, 4 partial,
+47 unplaced.
 
 E144 re-read **Proposition 9.3** against the periodized assembly and narrowed its reason without moving
 it. The decomposition is `PeriodizedWaveBounds.common_cancellation` (residual plus source equals
@@ -343,6 +343,20 @@ hypothesis: `FiniteHeadClass.waveClass_all_exponents` (`:119`) puts a finitely b
 class in *every* exponent with the identical weight. Statement-level only; the per-label,
 per-harmonic form is not exposed as its own declaration.
 
+E145 takes the §8.4 covariance-target row. Both of Corollary 8.5's displayed identities are
+declarations, not components: `angular_divergence` (`SignedStressPrimitive.lean:342`) proves
+`radialDivergence 2 (sigma 2 F) = −adjusted 2 F`, and `axial_divergence` (`:357`) the same at
+`e = 1`. `radialDivergence 2` is `2σ/R + σ'`, so the weights are the paper's `D_r + 2/R` and
+`D_r + 1/R` exactly, and the right-hand sides are `−F + (∂_r χ)·mass`, which is the paper's
+`−⟨E⟩_Y + σ ε∂_Z J` with the cutoff bump carrying the second term. Support without `Z`
+enlargement is `sigma_supported` (`:245`), `M_α` preservation is `meanClass_sigma` (`:424`),
+and `⟨A_e⟩_Y = 0` is `bumpCorrection_moment` plus `adjusted_moment_zero` rather than an
+estimate. Two shape differences are recorded: the tree's target is pointwise in `Y` and
+inherits independence from a `Y`-independent source, and the paper's `T_e` prefactor is the
+class index rather than a definition. This also corrects E141's prediction that the row would
+be "carried by `MeanIncrementBounds` / `StateMomentBalances` for the increment class" — it is
+stated one layer lower, in the primitive module.
+
 ### Unplaced (the rest)
 
 Fifty-nine, and slice three moved five of them (below). They are sections 4–10 and the
@@ -374,10 +388,10 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 21 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143) |
+| placed, statement read | 22 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145) |
 | partial — components exist, statement not matched | 4 | Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 9.7 (E133), Lemma 10.2 (E136) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 48 | the rest |
+| unplaced | 47 | the rest |
 | **total** | **73** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered

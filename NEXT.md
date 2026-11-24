@@ -2,7 +2,7 @@
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which twenty-one are placed, four are partial, and **forty-eight are unplaced**.
+extracted text, of which twenty-two are placed, four are partial, and **forty-seven are unplaced**.
 The ledger in `CROSSWALK.md` carries the same **73** as its denominator and the same three
 counts, so there is no discrepancy to record here.
 
@@ -11,10 +11,10 @@ carries any audit conclusion.
 
 ## The denominator, settled
 
-The ledger and this file now agree on **73** numbered results: 21 placed, 4 partial, 48
+The ledger and this file now agree on **73** numbered results: 22 placed, 4 partial, 47
 unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
 lemmas, 7 corollaries); the text has 37 lemmas. The indices 6.3–6.5, 9.4 and B.9 are section
-numbering, not results — 9.4 is the §9.4 heading. See E135.The forty-eight rows below are the whole remaining queue, and none of them was ever a phantom.
+numbering, not results — 9.4 is the §9.4 heading. See E135.The forty-seven rows below are the whole remaining queue, and none of them was ever a phantom.
 
 ## How to use it
 
@@ -38,7 +38,6 @@ supporting machinery.
 
 | Result | Page | Statement | Candidate modules |
 |---|---|---|---|
-| Corollary 8.5 | 95 | `ns.txt:4842` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Lemma 8.2 | 90 | `ns.txt:4620` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Lemma 8.8 | 98 | `ns.txt:5041` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Proposition 8.1 | 89 | `ns.txt:4536` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
@@ -92,7 +91,9 @@ supporting machinery.
 *Worked from this queue: Lemma 9.7 partial (E133), Lemma 9.8 placed (E134), Lemma 10.2 partial
 (E136), Lemma 10.3 placed (E137), Lemma 10.4 and Lemma 10.5 placed (E142, E143). Both §10
 placements came from modules already in the assembly; the two partials are partial on statement
-shape, not on content, and §10 now has no unplaced row left.*
+shape, not on content, and §10 now has no unplaced row left. Corollary 8.5 was placed by E145:
+both radial divergence identities are `SignedStressPrimitive.angular_divergence` and
+`axial_divergence`, at the paper's own `2/R` and `1/R` weights.*
 
 1. **Proposition 9.3** (p. 103) — the only partial whose unmatched clauses are named rather than
    structural. E144 re-read it against the periodized assembly: the decomposition, the supports, the

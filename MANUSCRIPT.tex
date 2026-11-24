@@ -2,7 +2,7 @@
 %  Statement-Design Arbitrage and Verification Limits:
 %  A Forensic Code Audit of the openai/NavierStokesAndEuler Repository
 %
-%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E144.
+%  Companion to ns-audit/AUDIT_LOG.md, entries E0--E145.
 %  All code citations are to commit f9e8bc5.
 % =====================================================================
 % Compile with LuaLaTeX or XeLaTeX: the Lean listings are quoted verbatim,
@@ -180,7 +180,7 @@ similarity ansatz, dependent type theory, proof auditing, statement design.
 
 \noindent\textbf{Data availability:} commit \texttt{f9e8bc5} of
 \texttt{openai/NavierStokesAndEuler}; audit log
-\file{ns-audit/AUDIT\_LOG.md}, entries E0--E144. Every code citation below is a
+\file{ns-audit/AUDIT\_LOG.md}, entries E0--E145. Every code citation below is a
 \file{path:line} pair in that commit. Kernel acceptance was reproduced on the
 \file{NavierStokes} library; see \S\ref{sec:limits}.
 
@@ -1647,7 +1647,7 @@ unchecked. Five paper sections are cited in the source at all (\S4.4, \S4.6,
 show that each numbered result of the paper has a declaration, nor that no paper
 lemma is missing from the formalization. That is the remaining work, recorded in
 ile{ns-audit/CROSSWALK.md}. E91 put the paper into the tree as text and corrected
-its count: 73 numbered results, not 57 (E135 corrected the kind breakdown that produced 74). Twenty-one are now placed at statement level; four are partial, and forty-eight are unplaced. The partials are Proposition~9.3, whose cited declaration is the coefficient shadow of the statement (E127, narrowed in E144), Proposition~6.6, four of whose six clauses are matched (E129), and Lemmas~9.7 and~10.2, partial on statement shape rather than on content (E133, E136). Lemma~9.2 left this column in E139, and §8 has none left at all: E140 and E141 closed Lemmas~8.7 and~8.6. E94 places Proposition~9.1, the row two earlier passes recorded as absent: the residual's class $W_{\alpha+1/2-3\kappa}$ and the pressure's $W_{\alpha+1/2}$ are one conjunction in \texttt{LocalizedWaveBounds}, stated for the object the tree calls \texttt{globalGood} and the paper calls the normalised linear residual. E92 places Proposition~9.9 whole --- the summed local field, with
+its count: 73 numbered results, not 57 (E135 corrected the kind breakdown that produced 74). Twenty-two are now placed at statement level; four are partial, and forty-seven are unplaced. The partials are Proposition~9.3, whose cited declaration is the coefficient shadow of the statement (E127, narrowed in E144), Proposition~6.6, four of whose six clauses are matched (E129), and Lemmas~9.7 and~10.2, partial on statement shape rather than on content (E133, E136). Lemma~9.2 left this column in E139, and §8 has none left at all: E140 and E141 closed Lemmas~8.7 and~8.6, and E145 closed Corollary~8.5, whose two radial divergence identities are declared at the paper's own $2/R$ and $1/R$ connection weights. E94 places Proposition~9.1, the row two earlier passes recorded as absent: the residual's class $W_{\alpha+1/2-3\kappa}$ and the pressure's $W_{\alpha+1/2}$ are one conjunction in \texttt{LocalizedWaveBounds}, stated for the object the tree calls \texttt{globalGood} and the paper calls the normalised linear residual. E92 places Proposition~9.9 whole --- the summed local field, with
 divergence-freeness as a field of its own statement --- and finishes Theorem~4.6's
 part~(vi), the two reserved intervals, in \texttt{ReservedPatches}: disjoint log
 windows, $U=0$, and $E = c(1+\eta^2)^{-1}X^{-1/2-\lambda}$ on each. Part~(iv) was recorded by E92 as half placed; E93 closed it and corrected that
@@ -1677,7 +1677,7 @@ $\sigma+1/10$, with the wave side at \texttt{gain} $h(j+1)$. One qualification i
 carried rather than dropped: Proposition~9.6's four ordered corrections are proved
 as four declarations, not as one composed step theorem, so placing it assumes the
 composition.
-The remaining gap is therefore breadth, not a single clause: forty-eight numbered results are still unread at statement level, and the four partials are the rows where the algebra is stated and the bounds are assembled --- the place a defect would sit, because the kernel never weighs the bounds. A kernel check cannot compare an argument against the argument it formalizes.
+The remaining gap is therefore breadth, not a single clause: forty-seven numbered results are still unread at statement level, and the four partials are the rows where the algebra is stated and the bounds are assembled --- the place a defect would sit, because the kernel never weighs the bounds. A kernel check cannot compare an argument against the argument it formalizes.
 
 \paragraph{The §8 rows, and what a name costs.} E131 and E132 recorded Lemma~8.7 and
 Lemma~8.6 as partial on specific negatives: no block inverse, no uniqueness declaration, no

@@ -7092,3 +7092,63 @@ two clauses.
 | **total** | **73** | **73** |
 
 *Evidence: `.setup/paper/ns.txt:5272–5330` (Proposition 9.3, (9.3)–(9.6)); `PeriodizedWaveBounds.lean:188–192,620–679,737–745,809,1044–1067,1141–1157`; `CorrectionState.lean:110–141`; `MeanIncrementBounds.lean:50–60,328–342,968`; `MeanResidual.lean:1021–1027`; `HarmonicFields.lean:332`; `LocalResidualFlatness.lean:19–132`; `LabelSumBounds.lean`; `MeanRankUpdate.lean:899`; `ActualGaussianCoverage.lean:311–331`; E127; E136. Reading only — nothing compiled.*
+
+---
+
+## E145 — Corollary 8.5: both radial divergence identities are declared, exact, with the paper's `2/R` and `1/R` (2026-11-24)
+
+*Reading entry. The covariance-target corollary was the row E141 predicted would be "carried by `MeanIncrementBounds` / `StateMomentBalances` for the increment class" rather than stated. That prediction was wrong in the same direction as E140 and E141: both displayed identities are declarations in `SignedStressPrimitive`, at exactly the paper's connection weights, and the moment condition that makes the cutoff remainder vanish is itself a theorem. The row is placed; the ledger moves to 22 placed, 4 partial, 47 unplaced.*
+
+### 1. What the paper asks
+
+`Corollary 8.5` (p. 95, `.setup/paper/ns.txt:4842-4861`). With `T_e f = R^{-e} I_c(R^e f)` and `D_e = D_r + e/R`,
+
+```
+H_θ = −T_2(⟨E_θ⟩_Y − σ_θ ε∂_Z J_θ),      H_z = −T_1(⟨E_z⟩_Y − σ_z ε∂_Z(J_z + cρ_P))     (8.18)
+(D_r + 2/R)H_θ = −⟨E_θ⟩_Y + σ_θ ε∂_Z J_θ,
+(D_r + 1/R)H_z = −⟨E_z⟩_Y + σ_z ε∂_Z(J_z + cρ_P).
+```
+
+Clauses: (a) the two targets are independent of the auxiliary variable; (b) compactly supported in the active shell; (c) the two identities, with the primitives taken at fixed `(Z,T)`; (d) `H_θ`/`H_z` vanish wherever their integrands vanish for every `R`, and the construction does not enlarge support in `Z`.
+
+### 2. The declaration pair
+
+`SignedStressPrimitive` builds the primitive and divides by `r^e`, which is `T_e` with the cutoff already inside the integral:
+
+| Object | Declaration | Statement |
+|---|---|---|
+| primitive | `primitive P e F` (`:150`) | `∫₀^r s^e * adjusted P e F (s, p)` — the paper's `I_c` at `M = 0`, `v = 0` (`primitive_eq_integral` `:262`) |
+| target | `sigma P e F` (`:168`) | `−primitive / r^e` (`sigma_eq_negative_primitive` `:294`), i.e. `−T_e` |
+| **angular identity** | `angular_divergence` (`:342`) | `radialDivergence 2 (fun t => sigma P 2 F (t,p)) r = −adjusted P 2 F (r,p)` |
+| **axial identity** | `axial_divergence` (`:357`) | `radialDivergence 1 (fun t => sigma P 1 F (t,p)) r = −adjusted P 1 F (r,p)` |
+
+`IntegratedMeanBalances.radialDivergence 2` is `2σ/r + σ'` and `radialDivergence 1` is `σ/r + σ'` — the proof of each theorem divides the displayed `2rσ + r²σ'` and `σ + rσ'` by `r²` and `r` respectively. That is `D_r + 2/R` and `D_r + 1/R` with the paper's own `e`-weights, not a rescaled or `e`-free form. Both proofs derive the derivative from `weighted_sigma_hasDerivAt` (`:381`), which comes from `primitive_hasDerivAt` (`:318`) and hence from the transport identity `transport_compactIntegral` — the derivative is *derived*, not assumed.
+
+The right-hand sides match the paper's factor structure rather than merely its sign. `adjusted P e F = F − bumpCorrection` (`:207`), `bumpCorrection = momentDensity · mass e F` (`:196`), and `momentDensity = ∂_r χ` through `cutoff_eq_integral` (`:254`). So `−adjusted = −F + (∂_r χ)·(moment of F)`, which is `−⟨E⟩_Y + σ ε∂_Z J` with the bump playing `σ` and the moment playing the `ε∂_Z J` term. The factors `ε∂_Z` the paper insists on keeping are not dropped in the Lean statement because they are never introduced: the tree carries them in the source `F`, and the corollary's job — that they survive the primitive — is the identity itself.
+
+### 3. Support, class, and the vanishing clause
+
+- same shell, no `Z` enlargement: `sigma_supported` (`:245`) concludes `RadiallySupported P.a P.b (sigma P e F)`, which is support inside the active radial shell **and** inside the input's `(Z,T)` projection. That is clauses (b) and the second half of (d) together, and it is proved from `compactIntegral_supported` plus the two cutoff endpoint conditions.
+- `M_α` membership: `meanClass_sigma` (`:424`) takes `MeanClass α F` and returns `MeanClass α (fun n => sigma P e (F n))`, with constant `K * C` for `K` supplied by `sigma_finiteJets_uniform` (`:377`) — the paper's "belongs to `M_α`" under the primitive normalization.
+- the moment half: `bumpCorrection_moment` (`:200`) proves `mass e (bumpCorrection) = mass e F`, so `adjusted_moment_zero` (`:296`) gives `∫ r^e (adjusted) = 0` at every `p`. Under the paper's hypothesis `∫ R^e ⟨f⟩_Y dR = 0` this is `⟨A_e f⟩_Y = 0` — clause (c) of (8.8), and it is an identity rather than an estimate.
+- identically zero: if `mass e F = 0` then `bumpCorrection` is `momentDensity * 0`, so `adjusted = F` and the remainder is zero pointwise. The paper's last sentence holds definitionally here, and `primitive_eq_zero_of_le` (`RadialPrimitive.lean:80`) supplies the support side.
+
+### 4. Two shape differences, recorded rather than smoothed
+
+1. **Y-pointwise, not Y-averaged.** `sigma P e F` is a function of `p : E`, the auxiliary variable, and `angular_divergence` is stated at fixed `p`. The paper's targets are `⟨·⟩_Y`-averages and are therefore independent of `Y` by construction. In the tree that independence is inherited from a `Y`-independent source, not asserted: clause (a) is conditional on the source being `Y`-independent, which the paper's own definition `⟨E_θ⟩_Y` supplies. Recorded as a shape difference; it is not a missing estimate, and the identity does not use the averaging.
+2. **The paper's `T_1`, `T_2` prefactors are the class index.** The paper writes `H_θ = −T_2(…)` with `T_e f = R^{-e} I_c (R^e f)`. The tree writes `sigma` as `−primitive / r^e` and pushes the normalization into `meanClass_sigma`'s single `α`. Same object, one exponent slot instead of an explicit `R^{-e}` factor, so the displayed `T_e` is not a separate definition in the tree.
+
+Neither difference changes a bound. Nothing downstream consumes a `T_e` symbol.
+
+### 5. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 21 | 22 |
+| partial | 4 | 4 |
+| unplaced | 48 | 47 |
+| **total** | **73** | **73** |
+
+The four partials stay Proposition 9.3, Proposition 6.6, Lemma 9.7 and Lemma 10.2. §8 now has seven placed rows and no partial: 8.1, 8.3 and 8.4 remain unplaced in the queue, and Corollary 8.5 leaves it.
+
+*Evidence: `.setup/paper/ns.txt:4608-4630` (Lemma 8.2), `:4842-4861` (Corollary 8.5, (8.18)); `SignedStressPrimitive.lean:150,168,196,200,207,245,254,262,294,296,318,342,357,377,381,424`; `RadialPrimitive.lean:39,80`; `IntegratedMeanBalances.lean:556`; `WeightedClasses.lean:299`; E141. Reading only — nothing compiled; "placed" is statement-level.*
