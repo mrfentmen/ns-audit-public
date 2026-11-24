@@ -1,21 +1,39 @@
 #!/usr/bin/env python3
 """Print byte size and page count for each PDF given on the command line.
 
-No third-party imports: the page tree is read straight out of the file's
-object stream, which is enough for the PDFs the typeset workflow produces.
+No third-party imports. The page tree is usually inside a compressed object
+stream, so a plain regex over the file finds no `/Count` at all and the earlier
+version reported `0 pages` on every PDF the typeset workflow produces. This
+version inflates each FlateDecode stream and takes the largest `/Count` it
+finds, falling back to counting `/Type /Page` objects in the inflated text.
 """
 
 import re
 import sys
+import zlib
+
+
+def inflated(blob: bytes) -> list[bytes]:
+    """Every stream body that inflates, plus the raw file."""
+    chunks = [blob]
+    for match in re.finditer(rb"stream\r?\n(.*?)\r?\nendstream", blob, re.S):
+        try:
+            chunks.append(zlib.decompress(match.group(1)))
+        except zlib.error:
+            continue
+    return chunks
 
 
 def pages(path: str) -> str:
     with open(path, "rb") as handle:
         blob = handle.read()
-    count = re.search(rb"/Count\s+(\d+)", blob)
-    if count:
-        return count.group(1).decode()
-    return str(len(re.findall(rb"/Type\s*/Page[^s]", blob)))
+    chunks = inflated(blob)
+    counts = [int(m.group(1)) for chunk in chunks
+              for m in re.finditer(rb"/Count\s+(\d+)", chunk)]
+    if counts:
+        return str(max(counts))
+    found = sum(len(re.findall(rb"/Type\s*/Page[^s]", chunk)) for chunk in chunks)
+    return str(found) if found else "unknown"
 
 
 def main(argv: list[str]) -> int:
