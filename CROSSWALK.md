@@ -293,6 +293,26 @@ prints `m+4`, because the seminorm index is `m+1` and the conversion spends four
 is the tree's `weight^{-4}` summability where `weight^{-3}` would close the same two-dimensional
 sum. The ledger reads 19 placed, 4 partial, 50 unplaced, and §8 has no partial left.
 
+E142 and E143 place the two §10 rows whole. `Lemma 10.4`'s `F` is
+`ForceL2Norm.cumulativeForceNorm`, the time integral of the `L²` norm rather than of its
+square, and `IntegratedDissipation.candidate_energy_estimates` carries three of its four
+clauses as conjuncts (`F(1)` finite, the `F(t)²` inequality at `ν = 1`, and
+`IntegrableOn dissipation (Ico 0 1)`), with the uniform energy bound proved one module over
+by `CompactEnergy.uniform_finite_energy` and carried as a field. `Lemma 10.5` is
+`WholeSpaceUniqueness.candidate_unique_on_Icc`, whose competitor hypothesis
+`UniformFiniteEnergy` is exactly `L∞_t L²_x` and whose pressure flux is derived rather than
+assumed. Neither row was partial; both were unplaced. The ledger reads 21 placed, 4 partial,
+48 unplaced.
+
+E144 re-read **Proposition 9.3** against the periodized assembly and narrowed its reason without moving
+it. The decomposition is `PeriodizedWaveBounds.common_cancellation` (residual plus source equals
+`globalGood` plus `globalGaussian`), the supports are `globalGood_support` / `globalGaussian_support`
+with `HarmonicSourceSupport.NonzeroSupportedOn`, the smooth zero extension is the `ComplementJets`
+layer fed by `residualSource_zero_germ_on`, and (9.6) is the `CorrectionState` mean residual with
+`MeanResidual.meanPressure_reconstruction` for the pressure split. Two clauses are still unmatched:
+the paper's one finite harmonic set carried across bands (the tree bounds `|j|` per stage), and the
+sign of the base-flat error, which the tree adds where the paper's display subtracts it.
+
 `LinearWaveBounds.lean:896` (`constructed_linear_wave_with_flat_error`) is the proposition's
 coefficient shadow, by its own docstring: the good class `α+1/2−3κ`, an all-order flat error,
 and the pointwise `R = G + F` identity. Proposition 9.3's source supports `⊂ Ω_γ`, the `C^∞`
@@ -354,10 +374,10 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 19 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141) |
+| placed, statement read | 21 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143) |
 | partial — components exist, statement not matched | 4 | Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 9.7 (E133), Lemma 10.2 (E136) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 50 | the rest |
+| unplaced | 48 | the rest |
 | **total** | **73** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered

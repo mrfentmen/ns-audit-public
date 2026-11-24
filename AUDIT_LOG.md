@@ -6927,3 +6927,168 @@ One clause is not a declaration and is recorded rather than claimed: divergence-
 The remaining partials are Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 9.7 (E133) and Lemma 10.2 (E136). §8 now has no partial: the "algebra exact, bounds assembled" pattern that E131 described still holds for the four rows above, but it no longer covers 8.6, whose bounds are stated with explicit constants and a declared conversion.
 
 *Evidence: `.setup/paper/ns.txt:3251-3264` (6.2, (6.4)), `:4885-4935` (Lemma 8.6, (8.19)-(8.22)); `TorusInverse.lean:190-197,224,405-441,498-525,591-604`; `SmoothFourierData.lean:345,362-395,565-572`; `TemporalMeanUpdate.lean:112-145,215-245,544-600,654-670`; `MeanChartCompatibility.lean:465-505,624-660,869,1116-1145`; `ParametricTorusInverse.lean:645-682`; `SmoothFamilyTorusInverse.lean:1058-1100`; E132. Reading only — nothing compiled; "placed" is statement-level.*
+
+---
+
+## E142 — Lemma 10.4 is placed: `F` is the integral of the norm, and every conjunct is one theorem (2026-11-23)
+
+*Reading entry. The paper's `F(t)` is `∫₀ᵗ ‖f(s)‖₂ ds`, the integral of the `L²` norm rather than of its square, and the tree's `cumulativeForceNorm` is the same object. With that read, the lemma's four clauses are one declaration's three quantitative conjuncts plus one theorem one module over. The row is placed; the ledger moves to 20 placed, 4 partial, 49 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 10.4` (p. 121, `.setup/paper/ns.txt:6115`). With `F(t) = ∫₀ᵗ ‖f(s)‖₂ ds`:
+
+| Clause | Claim |
+|---|---|
+| a | `F(1) < ∞` |
+| b | `‖u(t)‖₂² + 2∫₀ᵗ ‖∇u(s)‖₂² ds ≤ F(t)²` for `0 ≤ t < 1` |
+| c | the kinetic energy is uniformly bounded |
+| d | the total dissipation on `[0,1)` is finite |
+
+### 2. Every clause
+
+`R3/ForceL2Norm.lean:20–24` defines `l2Norm f t = sqrt (l2Sq f t)` and `cumulativeForceNorm f T = ∫ t in (0)..T, l2Norm f t`. That is `F` exactly: the integrand is the norm, not the square, so the `F(t)²` on the paper's right-hand side is the square of the same accumulated quantity and no exponent is silently traded. `R3/IntegratedDissipation.candidate_energy_estimates` (`:279–288`) then states all four conclusions for one candidate:
+
+| Clause | Conjunct |
+|---|---|
+| a | `IntervalIntegrable (l2Norm f) volume 0 1`, from `force_smooth` (`ContDiff ℝ ∞ f`) and `force_support` (`CompactPositiveTimeSupport f`) |
+| b | `l2Sq u T + 2 * ν * (∫ t in (0)..T, dissipation u t) ≤ (cumulativeForceNorm f T) ^ 2`, for every `T ∈ Ico 0 1`; at `ν = 1` this is the display |
+| c | `CompactEnergy.uniform_finite_energy` proves it; `CandidateProperties.energy_bounded` carries it as a field |
+| d | `IntegrableOn (dissipation u) (Ico (0 : ℝ) 1)` |
+
+`dissipation u t = ∑ᵢ ∫ ‖∂ᵢu(t,x)‖²` (`R3/CompactEnergy.lean:195`), which is `‖∇u(t)‖₂²` for a vector field, so the viscous term is the paper's `2∫‖∇u‖²` at `ν = 1`. The underlying identity is `integrated_energy_balance` (`:26–45`), an equality before the force term is bounded; the inequality is `candidate_energy_dissipation_le`.
+
+### 3. Differences, all in the tree's direction
+
+* **General viscosity.** The tree states the bound with the coefficient `2ν`; the paper's lemma is the `ν = 1` instance, which is what `theorem_1_1_with_dissipation` consumes.
+* **The endpoint is a conjunct, not a limit.** The paper reaches `t = 1` by monotone convergence after proving the bound for `t < 1`. The tree states `2 * ν * ∫_{Ico 0 1} dissipation ≤ (cumulativeForceNorm f 1)^2` separately (`candidate_total_dissipation_le`), so the half-open endpoint is carried rather than approached. That is the same conclusion with the limit already taken.
+* **Energy is proved, then carried.** `R3/CompactEnergy.uniform_finite_energy` (`:343–381`) derives the uniform bound from smoothness, compact support, zero datum and the equation by the paper's own Gronwall argument; `CandidateProperties.energy_bounded` then carries it as a field so later lemmas can consume it without re-proving it. The clause is therefore a theorem about the constructed candidate, not an assumption — but it is not a conjunct of `candidate_energy_estimates`, and the entry says so rather than letting the table imply it.
+
+No clause is unproved in the tree. The row places.
+
+### 4. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 19 | 20 |
+| partial | 4 | 4 |
+| unplaced | 50 | 49 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:6115–6141` (Lemma 10.4, (10.13)–(10.14)); `R3/ForceL2Norm.lean:20–24`; `R3/IntegratedDissipation.lean:26–45,279–288`; `R3/CompactEnergy.lean:195,209`; `R3/Theorem.lean:66–79`; `R3/ProblemStatement.lean:92–109`. Reading only — nothing compiled.*
+
+---
+
+## E143 — Lemma 10.5 is placed: the competitor is a `UniformFiniteEnergy` field and the conclusion is `candidate_unique_on_Icc` (2026-11-23)
+
+*Reading entry. The paper's comparison lemma assumes smoothness, the force of Lemma 10.3, zero datum and a uniform `L²` bound on the competitor, and imposes no growth condition on its pressure. `WholeSpaceUniqueness.candidate_unique_on_Icc` has exactly those binders and that conclusion. The row is placed; the ledger moves to 21 placed, 4 partial, 48 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 10.5` (p. 121, `.setup/paper/ns.txt:6143`). Fix `T < 1`. If `v, P` is a smooth solution of (1.1) at viscosity one on `ℝ³ × [0,T]`, with the force `f` of Lemma 10.3, zero initial velocity, and `v ∈ L∞([0,T]; L²(ℝ³))`, then `v = u` on that interval, where `u` is the localized velocity of Proposition 10.1.
+
+### 2. Clause by clause
+
+`NavierStokesR3.WholeSpaceUniqueness.candidate_unique_on_Icc`:
+
+| Paper | Binder |
+|---|---|
+| `v, P` smooth on `ℝ³ × [0,T]` | `ContDiffOn ℝ ∞ v (Comparison.slab 0 T)`, `ContDiffOn ℝ ∞ q (Comparison.slab 0 T)` |
+| `v ∈ L∞([0,T]; L²)` | `UniformFiniteEnergy (Icc 0 T) v`, i.e. `∃ E ≥ 0, ∀ t ∈ Icc 0 T, SquareIntegrableAtTime v t ∧ ½‖v‖₂² ≤ E` |
+| smooth solution of (1.1) | `∀ t ∈ Ioo 0 T, ∀ x, spatialDivergence v t x = 0` and `navierStokesResidual 1 v q t x = f (t,x)` |
+| zero initial velocity | `∀ x, v (0,x) = 0` |
+| `T < 1` | `hT : T < 1` |
+| conclusion `v = u` on `[0,T]` | `∀ t ∈ Icc 0 T, ∀ x, u (t,x) = v (t,x)` |
+
+The force's three properties are not hypotheses of this lemma; they enter through `h : CandidateProperties 1 u p f K`, which supplies `force_smooth`, `force_support` and the equation. That is the paper's structure: the lemma is about the *candidate* `u`, and the force is whatever that candidate satisfies.
+
+### 3. The proof layer under it
+
+The paper's argument is a Riesz-transform pressure recovery, a commutator estimate, and Gronwall on expanding balls, with the pressure allowed arbitrary spatial growth. The tree has that chain, and it has been read: `PressureFlux.exists_uniform_actual_pressure_flux_bound` produces the boundary pressure bound from the equations, and `WholeSpaceComparisonClosure.eq_of_pressure_flux_bound` closes the energy estimate with that bound, with all constants preceding the radius quantifier (`LEADS.md` §4). `classical_uniqueness_on_Icc` is the general form; `candidate_unique_on_Icc` instantiates it at the candidate and discharges the pressure flux internally, so no estimate is a hypothesis of the final statement.
+
+### 4. The one shape note
+
+The paper states the lemma for the constructed `u` and proves it by comparing against that field. The tree states it for *any* `CandidateProperties` witness, with the equation as a hypothesis `hNSv`. That is generality, not a weakening: the constructed candidate is an instance, and `candidate_global_agrees_before_one` is the paper's use of the lemma against a `GlobalFiniteEnergySolution`. Recorded so the row is not read as an identification of the paper's `u` with a particular declaration.
+
+### 5. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 20 | 21 |
+| partial | 4 | 4 |
+| unplaced | 49 | 48 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:6143–6170` (Lemma 10.5 and the pressure-flux proof); `R3/WholeSpaceUniqueness.lean:30–86,88–130,132–150`; `R3/WholeSpaceComparisonClosure.lean:26–60`; `R3/PressureFlux.lean`; `R3/ProblemStatement.lean:81–83,92–109`; `LEADS.md` §4. Reading only — nothing compiled.*
+
+---
+
+## E144 — Proposition 9.3 stays partial on two clauses, not three: the decomposition, the supports and the mean fields are all stated (2026-11-23)
+
+*Reading entry. E127 left this row partial because the cited declaration is the coefficient shadow of the statement. Re-reading it against the periodized assembly finds the decomposition, the support carrier, the smooth zero-extension layer and the mean equations as separate declarations. Two clauses remain unmatched, both statement-shape: the paper's single finite harmonic set carried across bands, and the sign of the base-flat error in (9.6). The row does not move, and neither does the ledger: 21 placed, 4 partial, 48 unplaced.*
+
+### 1. What the paper asks
+
+`Proposition 9.3` (p. 103, `.setup/paper/ns.txt:5272`), three groups:
+
+| Group | Claim |
+|---|---|
+| (i) supported sources | `R(u,p) = G + F`; nonzero angular harmonics expand over a finite `H_j ⊂ ℤ \ {0}` independent of the band; coefficients supported in `Ω_γ` with smooth zero extension, `f ∈ W_α`, `⟨G⟩_θ ∈ M_μ` |
+| (ii) flat remainder | `|F|_m ≤ C_{j,m,N} q^N`, uniform over bands, labels and points |
+| (iii) exact mean equations | `W_ab = ⟨w_a w_b⟩_θ`, `P = ∫⟨g_r⟩ dR`, `p_m = T₀(g_r − ρP)`, and (9.6) with `E_θ`, `E_z` |
+
+### 2. Where each group lands
+
+* **The decomposition.** `PeriodizedWaveBounds.common_cancellation` (`:1044–1067`) states
+  `residual + source·carrier = (globalGood + globalGaussian)·carrier` at every point of the domain,
+  with `globalGaussian` the retained tail plus the uncovered source (`:809`) — the paper's `F`.
+  The mean layer has its own exact split, `CorrectionState.meanResidual_eq_good_add_excluded` (`:140`).
+* **The supports.** `globalGood_support` (`:1141`) and `globalGaussian_support` (`:1147`) put both
+  supports inside the union of native cells. `HarmonicSourceSupport.NonzeroSupportedOn` (`:620`) is
+  the per-harmonic statement that nonzero modes vanish outside a set, and `InputSupportOn` (`:679`)
+  bundles velocity, pressure, Gaussian and alias carriers.
+* **The smooth zero extension.** `ComplementJets` (`:188–192`) carries `ContDiffAt` and all-order
+  bounds off the cells; `zero_complementJets_of_germs` (`:745`) turns a zero germ into that record;
+  `residualSource_zero_germ_on` (`:737`) supplies the germ; `ActualSource.sourceSupport_mono`
+  (`ActualGaussianCoverage.lean:319`) moves supports between carriers.
+* **The classes.** Wave side `LabelSumBounds.UniformWaveClass`; mean side
+  `MeanRankUpdate.rank_update_meanClass` and `MeanIncrementBounds.meanClass_meanPressure` (`:968`).
+* **(ii).** `LocalResidualFlatness.AllResidualJetRates` with `selected_schedule` gives *every* rate
+  for the whole mixed residual, which is stronger than the flat part alone.
+* **(iii).** `radialResidual = dr pressure − gr` (`CorrectionState.lean:120–121`), with `gr` the
+  literal `MeanIncrementBounds.gr` (`:338`); `thetaResidual` and `axialResidual` are `:328` and
+  `:333`; `reducedMeanResidual` bundles the three (`:123`); and `MeanResidual.meanPressure_reconstruction`
+  (`:1026`) is (8.12), `average p = pb + meanPressure p pb`.
+
+### 3. The two clauses that are not stated
+
+* **One finite harmonic set, band-independent.** `HarmonicFields.BandLimited` (`:332`) bounds
+  `|j| ≤ N` for a single coefficient, and `CorrectionStep`'s `sourceBand` instantiates `N` as the
+  residual band per stage. No declaration states the paper's `H_j` — one finite set depending on the
+  finite construction and not on the band — carried through the sequence.
+* **The sign of `E_B` in (9.6).** The paper displays
+  `⟨G* + F* − E_B*⟩_θ = (D_r p_m − g_r, E_θ, E_z)`. The tree defines
+  `meanResidual = reducedMeanResidual + meanBaseError` (`:130`), and its own docstring says the
+  paper's (32) omits the fixed base-flat error and the tree restores it. The three components are the
+  same expression, but the base error enters with a **plus** where the paper's display has a minus.
+  Whether the two agree depends on how `errors.base` is folded into the residual, which this entry
+  does not assert.
+
+### 4. Why the row still does not move
+
+Under the rule E136 fixed, an implied identity is not a stated one. Both remaining items are
+statement-shape rather than missing mathematics, and both are now narrow: the row is no longer
+"the coefficient shadow only". But this is precisely the row where a defect would hide — the algebra
+is stated and the bounds are assembled — so it stays partial, with E127's reason replaced by these
+two clauses.
+
+### 5. The ledger
+
+| Status | Before | After |
+|---|---|---|
+| placed | 21 | 21 |
+| partial | 4 | 4 |
+| unplaced | 48 | 48 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:5272–5330` (Proposition 9.3, (9.3)–(9.6)); `PeriodizedWaveBounds.lean:188–192,620–679,737–745,809,1044–1067,1141–1157`; `CorrectionState.lean:110–141`; `MeanIncrementBounds.lean:50–60,328–342,968`; `MeanResidual.lean:1021–1027`; `HarmonicFields.lean:332`; `LocalResidualFlatness.lean:19–132`; `LabelSumBounds.lean`; `MeanRankUpdate.lean:899`; `ActualGaussianCoverage.lean:311–331`; E127; E136. Reading only — nothing compiled.*

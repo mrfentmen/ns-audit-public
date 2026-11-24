@@ -2,7 +2,7 @@
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which nineteen are placed, four are partial, and **fifty are unplaced**.
+extracted text, of which twenty-one are placed, four are partial, and **forty-eight are unplaced**.
 The ledger in `CROSSWALK.md` carries the same **73** as its denominator and the same three
 counts, so there is no discrepancy to record here.
 
@@ -11,11 +11,10 @@ carries any audit conclusion.
 
 ## The denominator, settled
 
-The ledger and this file now agree on **73** numbered results: 19 placed, 4 partial, 50
+The ledger and this file now agree on **73** numbered results: 21 placed, 4 partial, 48
 unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
 lemmas, 7 corollaries); the text has 37 lemmas. The indices 6.3–6.5, 9.4 and B.9 are section
-numbering, not results — 9.4 is the §9.4 heading. See E135. The fifty-two rows below are the
-whole remaining queue, and none of them was ever a phantom.
+numbering, not results — 9.4 is the §9.4 heading. See E135.The forty-eight rows below are the whole remaining queue, and none of them was ever a phantom.
 
 ## How to use it
 
@@ -39,8 +38,6 @@ supporting machinery.
 
 | Result | Page | Statement | Candidate modules |
 |---|---|---|---|
-| Lemma 10.4 | 121 | `ns.txt:6115` | `R3CompactCandidate`, `R3/PositiveTimeForce`, `R3/CandidateBreakdown`, `R3/WholeSpaceComparisonClosure`, `Periodic*` |
-| Lemma 10.5 | 121 | `ns.txt:6143` | `R3CompactCandidate`, `R3/PositiveTimeForce`, `R3/CandidateBreakdown`, `R3/WholeSpaceComparisonClosure`, `Periodic*` |
 | Corollary 8.5 | 95 | `ns.txt:4842` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Lemma 8.2 | 90 | `ns.txt:4620` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Lemma 8.8 | 98 | `ns.txt:5041` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
@@ -93,16 +90,17 @@ supporting machinery.
 ## The next three, concretely
 
 *Worked from this queue: Lemma 9.7 partial (E133), Lemma 9.8 placed (E134), Lemma 10.2 partial
-(E136), Lemma 10.3 placed (E137). Both §10 placements came from modules already in the assembly;
-the two partials are partial on statement shape, not on content.*
+(E136), Lemma 10.3 placed (E137), Lemma 10.4 and Lemma 10.5 placed (E142, E143). Both §10
+placements came from modules already in the assembly; the two partials are partial on statement
+shape, not on content, and §10 now has no unplaced row left.*
 
-1. **Lemma 10.4** (p. 121) — the next §10 row, and §10 is now the least read of the load-bearing
-   sections.
-2. **Lemma 10.5** (p. 121) — completes the pair behind the compact assembly.
-3. **The §8 mean-correction rows** (Proposition 8.1, Lemma 8.2, Corollary 8.5, pp. 90–95) — the
-   compatibility defects feeding the mean correction. Lemma 8.7 left the partial column in
-   E140 and Lemma 8.6 in E141, so §8 has no partial left; the four that remain are
-   Proposition 9.3, Proposition 6.6, Lemma 9.7 and Lemma 10.2.
+1. **Proposition 9.3** (p. 103) — the only partial whose unmatched clauses are named rather than
+   structural. E144 re-read it against the periodized assembly: the decomposition, the supports, the
+   smooth zero-extension layer and (9.6) are all declarations, and the row stays partial on exactly
+   two clauses — one finite harmonic set carried across bands, and the sign of the base-flat error.
+2. **Proposition 6.6** (p. 73) — two of six clauses matched only by components.
+3. **Lemma 9.7 / Lemma 10.2** — the two partials unmatched for statement shape rather than for
+   missing mathematics.
 
 ## Standing limits
 
