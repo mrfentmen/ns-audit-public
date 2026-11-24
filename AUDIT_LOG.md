@@ -6657,3 +6657,40 @@ The tree proves containment for whatever compact `K` the caller supplies as the 
 | **total** | **73** | **73** |
 
 *Evidence: `.setup/paper/ns.txt:6071–6060` (Lemma 10.3 and the cutoff); `R3/PositiveTimeForce.lean:21–72`; `R3CompactCandidate.lean` (`compactForce_time_support`); E65; E136. Reading only — nothing compiled.*
+
+---
+
+## E138 — E127's "no half-loss" is wrong: the mean cross is at α + H − 1/2 (2026-11-23)
+
+*Reading entry. One clause of E127 is corrected. The mean–wave interaction that E127 recorded as carrying no `−1/2` loss does carry one; it is proved under `meanCross` rather than under `mean_wave_cmul`, which is the same "search the shape, not the paper's word" failure as E94. Lemma 9.2 stays partial, but for a smaller reason than the one on record. The ledger does not move: 16 placed, 7 partial, 50 unplaced.*
+
+### 1. What E127 said
+
+`CROSSWALK.md` records Lemma 9.2's mean–wave clause as unmatched: the tree's `mean_wave_cmul` (`WaveInteractionBounds.lean:71`) gives `W_{α+µ}` "with no `−1/2` loss and no tangential/radial split `(M_µ, M_{µ+1})`". The first half of that sentence is false.
+
+### 2. What is actually there
+
+`HarmonicMeanInteraction.meanCross_class` (`:310`) proves
+
+```
+WaveClass s P (α + H - 1/2) (fun n x => meanCross c h b n i j x)
+```
+
+for every `i : Fin 3` and every `j ≠ 0`, from `IncrementBounds s H h`, the wave bounds of the block, the band bounds at `−1/2`, and `κ ≤ 1/2`. That is the paper's exponent with `µ = H`: the mean–wave term lands at `α + µ − 1/2`, and `j ≠ 0` is the paper's "nonzero harmonics". `angularCarrierTerm_class` (`:293`) supplies the same `α + H − 1/2` for the angular carrier that the `meanCross_eq` identity (`:275`) separates out, and `realMeanCross_class` (`:329`) carries it to the real coefficients.
+
+So the half-loss is not missing. It is in the term the paper calls `(v·∇*)w`, under the name `meanCross`, and it is invisible to a grep for `mean_wave`.
+
+### 3. Why the row still does not move
+
+Two reasons, and only the second is now open:
+
+* **The split.** The paper's hypothesis is that the mean field has tangential components in `M_µ` and radial in `M_{µ+1}`. The tree carries the mean data as `MeanIncrementBounds.Triple` with `IncrementBounds s H h`; whether the two exponent slots in that record are exactly the paper's `(µ, µ+1)` pair has not been read clause by clause. `tripleField_bound` and the `hm.2.1`-style projections suggest a component split, but suggestion is not a match.
+* **Componentwise form.** The conclusion is stated per component `i` rather than as one bundled vector membership. For a vector-valued class this is a decomposition of the conclusion, not a weakening, and it would not by itself keep the row partial — E127's per-harmonic objection was of the same shape.
+
+Until the split is read, Lemma 9.2 stays partial. What changes is the reason: the exponent matches, and the only open question is the hypothesis, not the conclusion.
+
+### 4. The pattern, third instance
+
+This is the third time a row was held open by the name rather than by the mathematics: E94 could not find the normalized linear residual until it stopped searching for that phrase and searched for `globalGood`; E133's row was pointed at `LocalScheduleWitness` when the threshold is defined in `ActualCandidateConstruction`; this one searched `mean_wave` and missed `meanCross`. The habit worth keeping is now explicit in `NEXT.md`: search the conclusion's shape, then the paper's words.
+
+*Evidence: `HarmonicMeanInteraction.lean:293,310,275,329`; `WaveInteractionBounds.lean:71`; `.setup/paper/ns.txt:5242–5245` (Lemma 9.2 and the mean–wave clause); E127; E94; E133. Reading only — nothing compiled.*

@@ -255,6 +255,12 @@ stated per harmonic and component; its label-separation clause is `labelCarrier_
 `mean_wave_cmul` (`WaveInteractionBounds.lean:77–96`) gives `W_{α+µ}` with no `−1/2` loss and
 no tangential/radial split `(M_µ, M_{µ+1})` — stronger in exponent, but a different statement.
 
+E138 corrects the first half of that sentence. The `−1/2` loss is proved, in
+`HarmonicMeanInteraction.meanCross_class`, for the term the paper calls `(v·∇*)w`
+— under the name `meanCross`, not `mean_wave`. What remains open is only the
+hypothesis: whether `MeanIncrementBounds.Triple`'s two exponent slots are the
+paper's `(M_µ, M_{µ+1})` pair. The row stays partial for that reason alone.
+
 `LinearWaveBounds.lean:896` (`constructed_linear_wave_with_flat_error`) is the proposition's
 coefficient shadow, by its own docstring: the good class `α+1/2−3κ`, an all-order flat error,
 and the pointwise `R = G + F` identity. Proposition 9.3's source supports `⊂ Ω_γ`, the `C^∞`
