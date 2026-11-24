@@ -2,7 +2,7 @@
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which twenty-two are placed, four are partial, and **forty-seven are unplaced**.
+extracted text, of which twenty-five are placed, three are partial, and **forty-five are unplaced**.
 The ledger in `CROSSWALK.md` carries the same **73** as its denominator and the same three
 counts, so there is no discrepancy to record here.
 
@@ -11,10 +11,10 @@ carries any audit conclusion.
 
 ## The denominator, settled
 
-The ledger and this file now agree on **73** numbered results: 22 placed, 4 partial, 47
+The ledger and this file now agree on **73** numbered results: 25 placed, 3 partial, 45
 unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
 lemmas, 7 corollaries); the text has 37 lemmas. The indices 6.3–6.5, 9.4 and B.9 are section
-numbering, not results — 9.4 is the §9.4 heading. See E135.The forty-seven rows below are the whole remaining queue, and none of them was ever a phantom.
+numbering, not results — 9.4 is the §9.4 heading. See E135.The forty-five rows below are the whole remaining queue, and none of them was ever a phantom.
 
 ## How to use it
 
@@ -38,9 +38,7 @@ supporting machinery.
 
 | Result | Page | Statement | Candidate modules |
 |---|---|---|---|
-| Lemma 8.2 | 90 | `ns.txt:4620` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Lemma 8.8 | 98 | `ns.txt:5041` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
-| Proposition 8.1 | 89 | `ns.txt:4536` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Proposition 8.3 | 92 | `ns.txt:4735` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Proposition 8.4 | 94 | `ns.txt:4795` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Corollary 7.3 | 80 | `ns.txt:4114` | `TorusInverse`, `CurlClassBounds`, `PrimaryPulseBounds`, `PhysicalParticularWave`, `WeightedClasses` |
@@ -99,7 +97,7 @@ both radial divergence identities are `SignedStressPrimitive.angular_divergence`
    structural. E144 re-read it against the periodized assembly: the decomposition, the supports, the
    smooth zero-extension layer and (9.6) are all declarations, and the row stays partial on exactly
    two clauses — one finite harmonic set carried across bands, and the sign of the base-flat error.
-2. **Proposition 6.6** (p. 73) — two of six clauses matched only by components.
+2. **Lemma 8.8** (p. 98) — the next §8 row, now that E146–E148 placed 8.1, 8.2 and 6.6.
 3. **Lemma 9.7 / Lemma 10.2** — the two partials unmatched for statement shape rather than for
    missing mathematics.
 

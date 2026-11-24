@@ -301,8 +301,8 @@ clauses as conjuncts (`F(1)` finite, the `F(t)²` inequality at `ν = 1`, and
 by `CompactEnergy.uniform_finite_energy` and carried as a field. `Lemma 10.5` is
 `WholeSpaceUniqueness.candidate_unique_on_Icc`, whose competitor hypothesis
 `UniformFiniteEnergy` is exactly `L∞_t L²_x` and whose pressure flux is derived rather than
-assumed. Neither row was partial; both were unplaced. The ledger reads 22 placed, 4 partial,
-47 unplaced.
+assumed. Neither row was partial; both were unplaced. The ledger reads 25 placed, 3 partial,
+45 unplaced.
 
 E144 re-read **Proposition 9.3** against the periodized assembly and narrowed its reason without moving
 it. The decomposition is `PeriodizedWaveBounds.common_cancellation` (residual plus source equals
@@ -357,6 +357,22 @@ class index rather than a definition. This also corrects E141's prediction that 
 be "carried by `MeanIncrementBounds` / `StateMomentBalances` for the increment class" — it is
 stated one layer lower, in the primitive module.
 
+E146–E148 close the whole §8 column's partials and add two unplaced rows. **Proposition 8.1**
+is not a definitional restatement: `MeanResidual.reynoldsAngular_total_sub` (`:821`) and
+`reynoldsRadial_total_sub` (`:837`) derive the decomposition from the averaged equations, and
+`MeanIncrementBounds` supplies the paper's operators (`time`, `radialDiv e`, `dz`,
+`viscosity c`) so that `thetaResidual`/`axialResidual`/`gr` (`:328-342`) are (8.3) term for term.
+**Lemma 8.2**'s primitive is `SignedStressPrimitive`: `weighted_sigma_hasDerivAt` is (8.7) at
+general `e`, and because `bumpCorrection_moment` gives the remainder the source's own moment,
+the paper's flatness clause (8.8) is not needed — under its hypothesis the remainder is
+identically zero. **Proposition 6.6** is reclassified rather than newly found: the pre-cutoff
+rectangle is the hypothesis form of `LocalCoefficientBounds` (`MeanLocalCoefficient.lean:11-20`),
+whose bounds are required only on `A n`, and the `Q^(1+h)N_abs` row is
+`meanClass_chartPrefactor_all` (`TemporalMeanUpdate.lean:335`) for the prefactor the
+development applies, `(Tg^i Q^(1+h))^{-1} = c_i0^{-1}`. E129's "components only" was right about
+the absence of a single five-row table and wrong about the row's content; the reclassification
+is recorded so a later reader can disagree on the record.
+
 ### Unplaced (the rest)
 
 Fifty-nine, and slice three moved five of them (below). They are sections 4–10 and the
@@ -388,10 +404,10 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 22 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145) |
-| partial — components exist, statement not matched | 4 | Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 9.7 (E133), Lemma 10.2 (E136) |
+| placed, statement read | 25 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148) |
+| partial — components exist, statement not matched | 3 | Proposition 9.3 (E127), Lemma 9.7 (E133), Lemma 10.2 (E136) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 47 | the rest |
+| unplaced | 45 | the rest |
 | **total** | **73** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered

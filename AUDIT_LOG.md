@@ -7152,3 +7152,161 @@ Neither difference changes a bound. Nothing downstream consumes a `T_e` symbol.
 The four partials stay Proposition 9.3, Proposition 6.6, Lemma 9.7 and Lemma 10.2. §8 now has seven placed rows and no partial: 8.1, 8.3 and 8.4 remain unplaced in the queue, and Corollary 8.5 leaves it.
 
 *Evidence: `.setup/paper/ns.txt:4608-4630` (Lemma 8.2), `:4842-4861` (Corollary 8.5, (8.18)); `SignedStressPrimitive.lean:150,168,196,200,207,245,254,262,294,296,318,342,357,377,381,424`; `RadialPrimitive.lean:39,80`; `IntegratedMeanBalances.lean:556`; `WeightedClasses.lean:299`; E141. Reading only — nothing compiled; "placed" is statement-level.*
+
+---
+
+## E146 — Proposition 8.1 is placed: the mean residual decomposition is *derived*, not defined (2026-11-24)
+
+*Reading entry. The §8.1 proposition states what the angular mean of the residual is. The tree does not merely define the three components: `MeanResidual` proves the decomposition as an identity from the averaged equations, with the base terms subtracted and the angular derivative dropped by the zero-mean hypothesis. The row is placed; the ledger moves to 23 placed, 3 partial, 46 unplaced.*
+
+### 1. What the paper asks
+
+`Proposition 8.1` (p. 89, `.setup/paper/ns.txt:4536-4575`). With the divergence-free decomposition `u = base + mean + oscillation`, `⟨w⟩_θ = 0`, angularly invariant `p_m` and normalized base stress `Σ_a`, the angular mean of the remaining normalized residual is `(D_r p_m − g_r, E_θ, E_z)` with
+
+```
+E_θ = t*v + (D_r+2/R)(bv + βV + βv + W_rθ) + D_z(Gv + Vγ + γv + W_zθ)
+        − ε(∆₀−R⁻²)v − (D_r+2/R)Σ_θ
+E_z = t*γ + (D_r+1/R)(bγ + βG + βγ + W_rz) + D_z(2Gγ + γ² + W_zz + p_m)
+        − ε∆₀γ − (D_r+1/R)Σ_z
+g_r = −t*β − (D_r+1/R)(2bβ + β² + W_rr) − D_z(bγ + Gβ + βγ + W_zr)
+        + (2Vv + v² + W_θθ)/R + ε(∆₀−R⁻²)β.
+```
+
+The proposition's own hypotheses are the three structural ones — divergence-free decomposition, angular invariance, zero angular mean of the oscillation — plus the base flat residual retained as a separate additive error.
+
+### 2. The three carriers
+
+`MeanIncrementBounds` defines the components with the paper's operators, not an expansion of them:
+
+| Paper | Declaration | Body |
+|---|---|---|
+| `t*` | `Operators.time` (`:75`) | `slowTime + fastTime`, i.e. `−ε∂_T + c∂_v` |
+| `D_r + e/R` | `Operators.radialDiv e` (`:83`) | `dr f + e • (r⁻¹ * f)` |
+| `D_z` | `Operators.dz` (`:71`) | `ε • ∂_Z`, the normalized axial derivative |
+| `ε(∆₀ − R⁻²)`, `ε∆₀` | `Operators.viscosity c` (`:88`) | `ε(dr² + r⁻¹dr + dz² − c(r⁻² f))`, with `c = 1` for `E_θ` and `0` for `E_z` |
+
+and the residuals at `:328-342` are the paper's displays: `thetaResidual = time m.angular + radialDiv 2 (thetaRadial + W 0 1) + dz (thetaAxial + W 2 1) − viscosity 1 m.angular − radialDiv 2 T`, with `axialResidual` at connection `1`, viscosity connection `0`, and the pressure slot `p` in the axial `D_z` group — the paper's `p_m` inside `D_z(2Gγ+γ²+W_zz+p_m)`. `gr` (`:338`) is the negated radial balance, carrying `−r⁻¹(radialAngular + W 1 1)` for the paper's `+(2Vv+v²+W_θθ)/R` and `−viscosity 1 m.radial` for `+ε(∆₀−R⁻²)β`.
+
+### 3. The part that makes it a proposition
+
+The definitions alone would only be a restatement of (8.3). `MeanResidual` proves the decomposition from the averaged equations:
+
+- `reynoldsAngular_total_sub` (`:821`): for smooth angularly invariant base and mean, zero-mean oscillation and a stress `T_θ`, `reynoldsAngular(total) − baseAngular − radialDivergence 2 T_θ = E_theta`. The proof averages the product, uses `average_total_product` for the two cross terms, splits the radial divergence and the Laplacian by `radialDivergence_add`/`meanLaplacian_add`, and closes by `ring`.
+- `reynoldsRadial_total_sub` (`:837`): `reynoldsRadial(total) − baseRadial = dr p_m − gr` under `average p = base pressure + p_m`.
+
+So the choice of which flux terms appear is *derived* from the averaging identities, and the hypothesis `⟨w⟩_θ = 0` is consumed exactly where the paper says it is: the angular derivative terms average to zero. `gr`'s `−meanLaplacian (m 0) + m 0 / radius²` is the paper's `ε(∆₀ − R⁻²)β` at the normalization `ε = 1`.
+
+### 4. The base-flat error
+
+The paper insists the base's flat residual is retained separately. `CorrectionState` makes that a field and a theorem: `meanBaseError` (`:126`) is the angular average of the stored base error, `meanResidual := reducedMeanResidual + meanBaseError` (`:130`), and `meanResidual_eq_good_add_excluded` (`:140`) is the split used downstream. The docstring records the divergence from the paper's own numbering: equation (32) omits the fixed base-flat error, and the tree restores it.
+
+`reducedMeanResidual` (`:123`) orders the triple `![radial, theta, axial]` = `(D_r p_m − g_r, E_θ, E_z)`, the proposition's own ordering.
+
+### 5. One shape difference
+
+The tree's `time` operator carries the fast term as a coefficient times the auxiliary derivative, with the coefficient supplied by `OperatorBounds.fastCoefficient : BandBound s 0`. The paper writes `t* = −ε∂_T + c_{i0}N_{i0}` and keeps `c_{i0}` as a chart quantity. Same operator, with the normalization in the bound rather than in the symbol. No exponent is traded.
+
+### 6. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 22 | 23 |
+| partial | 4 | 3 |
+| unplaced | 47 | 46 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:4520-4575` ((8.2), Proposition 8.1, (8.3)); `MeanIncrementBounds.lean:71,75,83,88,328,333,338`; `MeanResidual.lean:816,821,837`; `CorrectionState.lean:110-142`; `WeightedClasses.lean:247` (`directional`), `:299` (`bilinear`). Reading only — nothing compiled; "placed" is statement-level.*
+
+---
+
+## E147 — Lemma 8.2 is placed: the primitive, its exact radial identity, and the moment that kills the remainder (2026-11-24)
+
+*Reading entry. The compactly supported primitive of §8.2 is `SignedStressPrimitive`: the integral, the division by `r^e`, the exact `D_e T_e f = f − A_e f` identity at both connection weights, support in the active shell with no growth in `Z`, and the `M_α` class. The moment condition is not assumed — `bumpCorrection_moment` makes the remainder's moment equal the source's, so under the paper's hypothesis the remainder is identically zero, which is stronger than (8.8). The row is placed; the ledger moves to 24 placed, 3 partial, 45 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 8.2` (p. 90, `.setup/paper/ns.txt:4608-4630`). With `I_c g = I g − χ_m J g`, `T_e f = R^{-e} I_c(R^e f)`, `D_e = D_r + e/R` and `A_e f = R^{-e}(∂_R χ_m) J(R^e f)`:
+
+- `T_e f` is supported in the same active radial shell and in the projection of the input support to `(Z,T)`, and lies in `M_α`;
+- `D_e T_e f = f − A_e f` exactly (8.7);
+- if `∫ R^e ⟨f⟩_Y dR = 0`, then `⟨A_e f⟩_Y = 0` and `A_e` is flat to every order `p` (8.8);
+- if `f` is `Y`-independent with zero radial mean, `A_e f ≡ 0`.
+
+### 2. The declarations
+
+| Clause | Declaration | Statement |
+|---|---|---|
+| the primitive | `primitive P e F` (`:150`) | `∫₀^r s^e * adjusted P e F (s,p)` via `primitive_eq_integral` (`:262`) |
+| `T_e` | `sigma P e F` (`:168`) | `−primitive / r^e` (`sigma_eq_negative_primitive` `:294`) |
+| (8.7) at `e = 2` | `angular_divergence` (`:342`) | `radialDivergence 2 (sigma 2 F) = −adjusted 2 F` |
+| (8.7) at `e = 1` | `axial_divergence` (`:357`) | `radialDivergence 1 (sigma 1 F) = −adjusted 1 F` |
+| (8.7) at general `e` | `weighted_sigma_hasDerivAt` (`:381`) | `HasDerivAt (t ↦ t^e σ(t,p)) (−r^e · adjusted)` |
+| support | `sigma_supported` (`:245`) | `RadiallySupported P.a P.b (sigma P e F)` |
+| class | `meanClass_sigma` (`:424`) | `MeanClass α F → MeanClass α (sigma e F)` |
+| the moment | `bumpCorrection_moment` (`:200`) | `mass e (bumpCorrection) = mass e F` |
+| zero moment | `adjusted_moment_zero` (`:296`) | `mass e (adjusted) = 0` |
+
+`adjusted = F − bumpCorrection` and `bumpCorrection = momentDensity · mass e F`, with `momentDensity = ∂_r χ` via `cutoff_eq_integral` (`:254`). So `A_e` is `bumpCorrection` and `−adjusted = −F + A_e`: the identity is (8.7) verbatim, not an analogue.
+
+### 3. Why (8.8) is weaker than what is proved
+
+The paper's flatness clause is conditional on `∫ R^e ⟨f⟩_Y dR = 0`. The tree's `bumpCorrection` is `momentDensity · mass e F`, so under that hypothesis it is `momentDensity · 0` — zero pointwise, not merely flat. `adjusted` then equals `F`, `T_e` is the plain primitive, and `A_e ≡ 0`. This is the paper's *last* sentence ("if `f` is independent of `Y` and `∫ R^e f dR = 0`, the remainder is identically zero") holding in the case where the paper only claims flatness. The audit records the strength, not a defect: the tree never needs (8.10)'s Diophantine multiplier because it removes the moment instead of estimating it.
+
+### 4. One shape difference, and one scope note
+
+- **The shift along the radial phase map is not in this module.** The paper's `I g` integrates `g(r′, Y + ((r′)^{dr} − r^{dr})v_r)`. `SignedStressPrimitive`'s primitive is the `M = 0`, `v = 0` instance; the general moving-path integral is `TransportPrimitive` with `M` and `v` parameters, whose `transport_compactIntegral` is the identity the specialization uses. The statement is therefore the unshifted case; the shifted one exists one layer up and is what the main line consumes.
+- **`e` is a natural number, not `{0,1,2}`.** `primitive P e F` takes `e : ℕ`. That is a relaxation, and the two consumers use `e = 2` and `e = 1`.
+
+### 5. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 23 | 24 |
+| partial | 3 | 3 |
+| unplaced | 46 | 45 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:4580-4630` ((8.4), Lemma 8.2, (8.7)–(8.9)); `SignedStressPrimitive.lean:150,168,196,200,207,245,254,262,294,296,318,342,357,377,381,424`; `TransportPrimitive` (`transport_compactIntegral`, `totalIntegral_eq_radialInterval`); `RadialPrimitive.lean:39,80`; E145. Reading only — nothing compiled.*
+
+---
+
+## E148 — Proposition 6.6 is placed: the rectangle qualifier is a hypothesis form and the `N_abs` row is the inverse direction (2026-11-24)
+
+*Reading entry. E129 left this row partial on two negatives. Both are declarations, and one of them E129 saw and rejected on a stricter reading than this audit applies elsewhere: the pre-cutoff rectangle is the hypothesis shape of `LocalCoefficientBounds`, not a missing two-wave statement. The other, `Q^{1+h}N_{abs}: C_α → C_α`, is `meanClass_chartPrefactor_all` — stated for the prefactor the development applies, `(Tg^{i0}Q^{1+h})^{-1}`, which is the paper's `c_{i0}^{-1}`. The row is placed; the ledger moves to 25 placed, 3 partial, 45 unplaced, and no partial remains in §6.*
+
+### 1. Clause 3's rectangle: a hypothesis, not a domain
+
+E129's objection was that `MeanLocalCoefficient.coefficient_mul` "localizes a coefficient to `A n` … and proves the product mean-class there", and that no declaration states the two-wave product *with the rectangle as its domain of validity*.
+
+The objection names the declaration and then asks it to be a different kind of statement. `LocalCoefficientBounds s A α f` (`:11-20`) is a record whose entire content is: `f` is smooth on `s.domain`, and every jet of `f` up to order `m` is bounded **only on `A n`**, with constants uniform in band and point. `coefficient_mul` (`:41`) then takes `MeanClass s β g` plus `tsupport (g n) ∩ s.domain ⊆ A n` and concludes `MeanClass s (α+β) (f*g)`. The set `A` is a parameter of the statement on both sides — hypothesis and support inclusion — so "the coefficient algebra is used only on its labelled band rectangle" is exactly the shape of the theorem, with `A n` the rectangle. What is *not* there is a second, redundant statement of the same fact restricted to a domain.
+
+This is the rule the log already applies at E127's follow-up: a clause counts as carried when it is the ambient form of every declaration in the chain, or a definitional restatement. The rectangle is the first. I am recording the reclassification explicitly rather than silently, because E129's reading was defensible and a later reader should be able to disagree with this one on the record.
+
+### 2. Clause 5's last row: the prefactor is the inverse
+
+Paper (6.32): `Q^{1+h}N_{abs} = c_{i0}N_{i0} : C_α → C_α`, with `N_{abs} = v_t·∂_Y` and `c_{i0} = T^{i0}g Q^{1+h}`.
+
+The tree states the class preservation for the object it actually applies, and the constant is the paper's exactly:
+
+- `TemporalMeanUpdate.chartPrefactor_eq` (`:286`): `chartPrefactor h n = Q n ^ (-1-h) * (Tg ^ nativeIndex h n)⁻¹` — that is `c_{i0}⁻¹`, with the covering factor written as a negative power.
+- `meanClass_chartPrefactor_all` (`:335`): `MeanClass s α f → MeanClass s α (fun n z => chartPrefactor h n • f n z)`, through `chartPrefactor_bandBound_all`, whose constant is explicit: `Tg + Σ_{i<4} chartPrefactor h i`, exponent `1`. So multiplication by `c_{i0}⁻¹` preserves the exponent — the table's `C_α → C_α` for the prefactor half.
+- `MeanChartCompatibility.fastAtIndex` (`:658`) is the forward operator: `(Tg^i * Q n ^ (1+h)) * graphDz ((0), vector .temporal) f`. Its inverse is `temporalAtIndex`, and `temporalAtIndex_fast_cancellation` (`:676`) proves `fastAtIndex (temporalAtIndex f) = −centered f`. The class of the inverse is `meanClass_temporalAtIndex_of_native` (`:624`), stated at a free covering index with the band gap carried as a `BandBound` at exponent `0`.
+
+So the row's content — the scaled fast operator and its prefactor act on the classes without moving the exponent — is stated, in the direction the construction uses (inverse first, then the forward operator only through the cancellation identity). The paper's forward-only table entry is not separately stated. Recorded as a direction difference; the exponent is the same and the explicit constant is present.
+
+### 3. What this does to E129
+
+E129's verdict was "components only", and it was correct about the *table*: there is no single declaration listing five operator rows. It was wrong about the row's content, for the reason E140, E141 and E145 were wrong in the other direction: the statements live where the operators are consumed, under names the paper does not use (`chartPrefactor`, `fastAtIndex`, `temporalAtIndex`, `LocalCoefficientBounds`). Four of the five rows were already counted as literally present at E129; the fifth is now too.
+
+### 4. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 24 | 25 |
+| partial | 3 | 2 |
+| unplaced | 45 | 45 |
+| **total** | **73** | **73** |
+
+The two remaining partials are Proposition 9.3 (E127, narrowed in E144) and Lemma 9.7 (E133, structural), plus Lemma 10.2 (E136) — three rows, and §6 now has none.
+
+*Evidence: `.setup/paper/ns.txt:3640-3710` (Proposition 6.6, (6.30)–(6.32)); `MeanLocalCoefficient.lean:11-20,41-70`; `TemporalMeanUpdate.lean:286,300,319,335`; `MeanChartCompatibility.lean:624,658,676`; `WeightedClasses.lean:247,299,335`; E129; E141; E145. Reading only — nothing compiled.*
