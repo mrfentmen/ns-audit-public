@@ -20,8 +20,8 @@ The audit's two findings:
 | `MANUSCRIPT.tex` | The audit paper. LuaLaTeX or XeLaTeX. |
 | `MANUSCRIPT.pdf` | The typeset paper: 27 pages, LuaLaTeX, built by `typeset.yml` (E78). |
 | `CAVEMAN.pdf`, `LAYMAN.pdf` | The two standalone reader editions: 23 and 17 pages, pandoc and XeLaTeX in the same workflow, 0 missing glyphs in either edition. |
-| `AUDIT_LOG.md` | The working log: entries E0–E148, every `path:line` citation behind the paper. |
-| `CROSSWALK.md` | The published paper against the Lean tree: sections labelled `cited`, `object` or `family` (E89), the twenty paper labels the source cites verbatim (E90), and the per-result ledger — 73 numbered results, 25 placed, 3 partial, 0 cited-unchecked (E91–E148). |
+| `AUDIT_LOG.md` | The working log: entries E0–E150, every `path:line` citation behind the paper. |
+| `CROSSWALK.md` | The published paper against the Lean tree: sections labelled `cited`, `object` or `family` (E89), the twenty paper labels the source cites verbatim (E90), and the per-result ledger — 73 numbered results, 26 placed, 2 partial, 0 cited-unchecked (E91–E150). |
 | `NEXT.md` | The work order for the remaining 45 unplaced results: page, statement line, candidate modules, and the order the chain consumes them, at the settled denominator of 73 (E135). |
 | `PHASE2-FINDINGS.md` | Second-pass findings: the anisotropic weights, the three "free doors", the packets. |
 | `LEADS.md` | Working reading notes, not promoted to log entries: statement fidelity end to end, the estimate chain down to its floor, the pressure-flux bodies, and the unused alternate branch (E77). |
@@ -75,3 +75,5 @@ Alternative (D), the periodic corollary, is in scope for the statement and the a
 The Euler development was outside this audit until E79. That entry now runs its Comparator challenge end to end: the library builds from a clean clone, both of its headline theorems pass on two kernels, and their axiom footprint is the three permitted axioms with no `sorryAx`. That is a statement-level and kernel-level result, and E80 ties the statement to the repository: the two declarations are the ones its own metadata designates, and the challenge's class is proved equivalent to the development's rather than assumed to match. E81 does the E76-shaped job for Euler against the paper's Theorem 1.1 and finds two soft clauses: the paper's gradient blowup is encoded as C¹-norm blowup (the same claim plus a velocity term, and therefore weaker), and the lifespan is taken over a Sobolev class that is not proved to contain the paper's smoothly evolving solution (E82 §4). Everything else in the encoding is exact or stronger. No line of the Euler proof was read, and no mathematical claim is made about it beyond that clause comparison.
 
 Independent commentary, not affiliated with OpenAI. The upstream repository's own licence governs its code; the audit documents are the authors' own work.
+
+<!-- ledger: placed=26 partial=2 unplaced=45 total=73 -->

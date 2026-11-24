@@ -517,7 +517,7 @@ Later entries moved both the denominator and the numerator, so this is the parag
 
 - **The paper has 73 numbered results, not 74.** A full-text scan finds 3 theorems, 26 propositions, 37 lemmas and 7 corollaries; three of the numbers the earlier count expected are section headings (`9.4` is the §9.4 title). This is E135.
 - **That partial row closed.** E98 found `theorem_1_1_with_initial_rest`, which proves the fields vanish for `|t| ≤ 3/8`. The paper only asks for "sufficiently small `t ≥ 0`", so the tree proves a stronger statement, and the compressibility argument downstream uses it.
-- **The current ledger, as of E145, is 22 placed, 4 partial, 0 cited-but-unchecked, 47 unplaced.** The four partials are Propositions 9.3 and 6.6 and Lemmas 9.7 and 10.2, all partial on the *shape* of the statement rather than on missing mathematics. §8 has none: E140, E141 and E145 closed Lemmas 8.7 and 8.6 and Corollary 8.5, whose two radial divergence identities are declared at the paper's own weights.
+- **The current ledger, as of E150, is 26 placed, 2 partial, 0 cited-but-unchecked, 45 unplaced.** The two partials are Lemmas 9.7 and 10.2, both partial on the *shape* of the statement rather than on missing mathematics. Proposition 6.6 closed at E148 and Proposition 9.3 at E149, the latter because the finite set of harmonics is one list shared by every band and because a minus sign had merely crossed the equals sign. §8 has none: E140, E141 and E145 closed Lemmas 8.7 and 8.6 and Corollary 8.5, whose two radial divergence identities are declared at the paper's own weights.
 
 What has not changed is what "placed" means. It says a declaration exists whose statement is the paper's. It does not say anyone read its proof, and none of this was compiled by the audit.
 
@@ -528,3 +528,5 @@ What has not changed is what "placed" means. It says a declaration exists whose 
 There are three versions of this work. The formal paper is the record. The caveman files are for holding the shape in your head. This file is for the reader who wants the argument, in order, without the apparatus.
 
 Nothing here replaces the paper. Every claim in this file is a restatement of one in `MANUSCRIPT.tex`, and the citations that let you check it are there, not here.
+
+<!-- ledger: placed=26 partial=2 unplaced=45 total=73 -->

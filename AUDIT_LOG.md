@@ -7310,3 +7310,108 @@ E129's verdict was "components only", and it was correct about the *table*: ther
 The three remaining partials are Proposition 9.3 (E127, narrowed in E144), Lemma 9.7 (E133, structural) and Lemma 10.2 (E136). §6 now has none.
 
 *Evidence: `.setup/paper/ns.txt:3640-3710` (Proposition 6.6, (6.30)–(6.32)); `MeanLocalCoefficient.lean:11-20,41-70`; `TemporalMeanUpdate.lean:286,300,319,335`; `MeanChartCompatibility.lean:624,658,676`; `WeightedClasses.lean:247,299,335`; E129; E141; E145. Reading only — nothing compiled.*
+
+---
+
+## E149 — Proposition 9.3 is placed: `H_j` is one `Finset` quantified outside the band, and the base error's minus is on the other side (2026-11-24)
+
+*Reading entry. E144 left this row partial on two statement-shape clauses. Both are declarations. The band-independent harmonic set is `modes residualBand`, a `Finset ℤ` fixed by the construction and quantified outside the band index, with the residual band updated once per stage; and (9.6)'s `−E_B*` is not dropped — the tree writes `⟨G*+F*⟩ = reduced + ⟨E_B*⟩`, which is the paper's display with the base error moved across the equals sign, and says so in words. The row is placed; the ledger moves to 26 placed, 2 partial, 45 unplaced.*
+
+### 1. Clause (i)'s `H_j`: a fixed finite set, with the band quantified inside
+
+E144: "No declaration states the paper's `H_j` — one finite set depending on the finite construction and not on the band." It is `modes`:
+
+| Object | Declaration | Statement |
+|---|---|---|
+| the finite set | `ActualCycleResidualBounds.modes (M : ℕ) : Finset ℤ` (`:44`) | `Finset.Icc (-(M : ℤ)) M` |
+| membership from the band bound | `mem_modes` (`:46`) | `j.natAbs ≤ M → j ∈ modes M` |
+| every band's support inside it | `source_support (l) (n) (i)` (`:59`) | `((source x l).velocity n i).support ⊆ modes x.coefficients.residualBand` |
+
+The quantifier order is the paper's, not a rearrangement of it. `residualBand` is a field of the cycle's coefficient data (`CorrectionStep.lean:4998`), read off the finite construction, and `n` is universally quantified *inside* the statement — one set, every band, every component, every label. It is also not a constant across the induction: the cycle sets `residualBand := 2 * max v.residualBand 1` (`:6830`), which is exactly the paper's "`H_j` depends on the finite construction but not on the band".
+
+Three further declarations carry the rest of (9.4):
+
+* the finite display itself: `HarmonicFields.evaluate_over` sums a coefficient over any `Finset` containing its support, which is the paper's `∑_{γ∈Γ} ∑_{m∈H_j}` with `Γ` the label set of `Represents` (`CorrectionState.lean:210`);
+* one `N` across all bands and components: `CorrectionState.HarmonicBlock.BandLimited` (`:187-190`) is `(∀ n i, BandLimited (velocity n i) N) ∧ ∀ n, BandLimited (pressure n) N`, and `HarmonicFields.BandLimited` is `∀ j ∈ support, j.natAbs ≤ N`, so `modes N` contains every band's support by `mem_modes`;
+* derivatives never enlarge the set: `support_differentiate`, `band_iteratedCoefficients` and `iteratedAlong_wave` — the last states that all repeated actual directional derivatives retain the original finite set of harmonic values. The paper's (9.4) is a statement about the current coefficients; this says the set is stable under the operations that produce them.
+
+The set the tree exhibits is the interval `Icc (-N) N`, a finite superset of the nonzero support rather than the support itself. The paper asks only `H_j ⊂ ℤ \ {0}`, `|H_j| < ∞`, band-independent; a finite superset satisfying the same three is the same statement about finiteness, and `ParticularWaveAssembly.modes` (`:24`) is the same construction with the zero erased where the zero-free form is wanted.
+
+### 2. Clause (iii)'s sign: the base error is added, which is the paper's subtracted
+
+E144: the paper displays `⟨G* + F* − E_B*⟩_θ = (D_r p_m − g_r, E_θ, E_z)`, while the tree defines `meanResidual := reducedMeanResidual + meanBaseError`. Read as an equation rather than as a definition, the tree's is
+
+```
+⟨G* + F*⟩ = reduced + ⟨E_B*⟩        ⟺        ⟨G* + F* − E_B*⟩ = reduced,
+```
+
+which is the paper's display. Two declarations state it, and one states it in the paper's direction with the other two errors as well:
+
+* `LiftedMeanResidual.angularMean_fullResidual` (`:1176`) — the actual angular mean of the *full* residual equals `u.meanResidual c`. Its docstring is the whole point: *"The actual full residual averages to equation (32) plus exactly the stored base error."*
+* `CorrectionState.meanResidual` (`:130`) — `reducedMeanResidual c + meanBaseError`, with the docstring on the line above recording that the paper's (32) omits the fixed base-flat error and the tree restores it.
+* `LiftedMeanResidual.meanGoodResidual_errors` (`:1206`) and `angularMean_fullGoodResidual_errors` (`:1221`) — the same identity with the Gaussian and alias errors subtracted explicitly, `meanGoodResidual = reduced − ⟨gaussian⟩ − ⟨alias⟩`.
+
+So the minus sign is not lost; it is on the right-hand side. E144 recorded "whether the two agree depends on how `errors.base` is folded into the residual, which this entry does not assert". It is now asserted: `errors.total = base + gaussian + alias` (`CorrectionInitializationNoOptions.lean:1177-1181`) with `base` the stored base error, and `meanBaseError` is its angular average (`CorrectionState.lean:126`). The fold is by addition, once, and the identity above is what it produces.
+
+### 3. The rest of the proposition, restated as closing
+
+The decomposition (`PeriodizedWaveBounds.common_cancellation`), the supports (`globalGood_support`, `globalGaussian_support`, `HarmonicSourceSupport.NonzeroSupportedOn`), the smooth zero-extension layer (`ComplementJets`, `zero_complementJets_of_germs`, `residualSource_zero_germ_on`), the classes, (ii) (`LocalResidualFlatness.AllResidualJetRates` with `selected_schedule`), and the mean fields of (9.6) (`CorrectionState.radialResidual`/`thetaResidual`/`axialResidual`/`gr`) were already read at E144. With §1 and §2 above, no clause of the proposition is unmatched.
+
+One shape note is carried rather than smoothed: the paper's `f^{[j]}_{γ,m} ∈ W_α` is the wave-class membership on the *coefficients*, which is `HarmonicBlock.WaveBounds` (`:193-197`) — per harmonic, nonzero only — while the label-summed class is `LabelSumBounds.UniformWaveClass`. The two are the two halves of `f^{[j]}_{γ,m} ∈ W_α` and its sum being locally finite; neither is a substitute for the other and both are present.
+
+### 4. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 25 | 26 |
+| partial | 3 | 2 |
+| unplaced | 45 | 45 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:5272–5330` (Proposition 9.3, (9.3)–(9.6)); `ActualCycleResidualBounds.lean:44,46,59,65`; `ParticularWaveAssembly.lean:24,26`; `CorrectionState.lean:123,126,130,140,187–197,210`; `CorrectionStep.lean:4998,5097–5100,6830`; `HarmonicFields.lean` (`evaluate_over`, `BandLimited`, `support_differentiate`, `band_iteratedCoefficients`, `iteratedAlong_wave`); `LiftedMeanResidual.lean:1176,1206,1221`; `CorrectionInitializationNoOptions.lean:1177–1181`; `PeriodizedWaveBounds.lean`; `LocalResidualFlatness.lean`; E127; E136; E144. Reading only — nothing compiled; "placed" is statement-level.*
+
+---
+
+## E150 — Lemma 10.2 stays partial: the `F_j` family is now the force's own endpoint jets, but global uniformity is still inferred (2026-11-24)
+
+*Reading entry. Placing this row was the point of the re-read, and it does not place. One of E136's two gaps is halved: the paper's `F_j` are the terminal jets of one smooth compactly supported force, not a separate family, so clause (b) is a bundling difference over declarations that exist. The other gap is unchanged and is the reason the row stays: no declaration concludes uniform convergence on `ℝ³`, and the missing step is the support of the limit tensors, which is nowhere stated. The ledger is unchanged at 26 placed, 2 partial, 45 unplaced.*
+
+### 1. What improved
+
+`CandidateFromLimits` builds the force as the traced residual glued to its endpoint series, and identifies its jets:
+
+* `force_boundary_jets (n) (x)` (`:158`) — `iteratedFDeriv ℝ n (force …) (1, x) = L x n`. Every full spacetime jet of the constructed force at the terminal time is the supplied limit tensor. That is the paper's `lim ∂^α_x ∂^j_t f = ∂^α_x F_j` with `F_j` realised as the force's own time-derivative trace rather than as a separately indexed family.
+* `force_smooth` (`:94`), `force_time_support` (`:150`) — smooth on all of spacetime, compact future time support.
+* `R3CompactCandidate.compactForce_supported` (`:90`) — `SupportedIn outerSupport (compactForce f)` with `outerSupport` compact (`outerSupport_compact`, `:42`). So the object whose jets are the `F_j` does have compact spatial support, and the support is a named set.
+* `JointResidualLimits.extendedJets_compatible` (`:238`) and `boundaryLimits_hasFDerivAt` (`:240`) — clause (d)'s time and space halves, both derived from the actual derivative recurrence rather than assumed.
+* `boundaryLimits_zero` (`:126`) — clause (c): every order vanishes at the origin, for all `j` at once.
+
+That is more than E136 recorded. E136 said the tree "never states that the limit function is compactly supported in `K`"; the limit *tensors* are the jets of a compactly supported force, which is the same content one layer up, and the force's support is declared.
+
+### 2. What did not improve, and why it is the blocker
+
+Clause (a) is `∂^α_x ∂^j_t f` converges **uniformly on `ℝ³`**. The tree has:
+
+* `boundaryLimits_locallyUniform` (`:148`) — locally uniform convergence;
+* `boundaryLimits_uniformOn_compact` (`:156`) — `TendstoUniformlyOn … K` for every compact `K`, obtained from the local statement by `tendstoLocallyUniformly_iff_forall_isCompact`.
+
+The upgrade to `ℝ³` is exactly the paper's own last step — *"All these derivatives vanish off `K`. They are therefore uniformly Cauchy on `ℝ³`"* — and it needs two premises: the approximants vanish off a fixed compact, and so does the limit. The first is `compactForce_supported`. The second is not stated anywhere: `boundaryLimits` is defined from `Classical.choice (hext x hx)`, an arbitrary one-sided extension with no support condition, and `AwayExtensions` (`:81`) says nothing about where the extension lives. `boundaryLimits_smooth` gives smoothness, `boundaryLimits_continuous` continuity, and no support theorem exists in the module. Without it the supremum over `ℝ³` is not the supremum over `K` for the limit side, and no declaration concludes the global statement.
+
+Clause (b)'s remaining half is the same shape and one line wide: no declaration names the `F_j` slice functions with `support ⊆ K`. The force and its jets are named; the slices are not.
+
+### 3. Why this does not place, stated as the rule rather than as taste
+
+This is the row where it would be easiest to round up: every clause has a declaration *except one that follows in two lines from a declaration that exists*. That is precisely the standard E136 set and E144 applied, and E149 is the case that shows why the standard is worth keeping: Proposition 9.3 looked the same at E144, and the re-read found `source_support` — a declaration, not an argument. Here the re-read found the opposite: a support hypothesis that is not in the tree, because the extension is chosen rather than constructed.
+
+So the row stays partial, with E136's first reason narrowed to one missing support statement and E136's second reason reduced to a naming difference. It is not a claim about the mathematics: for the constructed force the global statement is true, and nothing downstream consumes it. E137 already recorded that Lemma 10.3's extension does not go through the `F_j` at all — it is a cutoff product — so the missing bundle is unused by the proof that the paper uses it for.
+
+### 4. The ledger
+
+| Status | Before | After |
+|---|---|---|
+| placed | 26 | 26 |
+| partial | 2 | 2 |
+| unplaced | 45 | 45 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:5997–6030` (Lemma 10.2, (10.6)–(10.10)); `JointResidualLimits.lean:81,84,120,126,141,148,156,220,238,240,264,308`; `CandidateFromLimits.lean:75,94,150,158,175`; `R3CompactCandidate.lean:24,42,90,99`; `PeriodicResidualLimits.lean:220–260`; E136; E137; E144; E149. Reading only — nothing compiled.*

@@ -2,7 +2,7 @@
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which twenty-five are placed, three are partial, and **forty-five are unplaced**.
+extracted text, of which twenty-six are placed, two are partial, and **forty-five are unplaced**.
 The ledger in `CROSSWALK.md` carries the same **73** as its denominator and the same three
 counts, so there is no discrepancy to record here.
 
@@ -11,7 +11,7 @@ carries any audit conclusion.
 
 ## The denominator, settled
 
-The ledger and this file now agree on **73** numbered results: 25 placed, 3 partial, 45
+The ledger and this file now agree on **73** numbered results: 26 placed, 2 partial, 45
 unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
 lemmas, 7 corollaries); the text has 37 lemmas. The indices 6.3–6.5, 9.4 and B.9 are section
 numbering, not results — 9.4 is the §9.4 heading. See E135.The forty-five rows below are the whole remaining queue, and none of them was ever a phantom.
@@ -91,15 +91,17 @@ supporting machinery.
 placements came from modules already in the assembly; the two partials are partial on statement
 shape, not on content, and §10 now has no unplaced row left. Corollary 8.5 was placed by E145:
 both radial divergence identities are `SignedStressPrimitive.angular_divergence` and
-`axial_divergence`, at the paper's own `2/R` and `1/R` weights.*
+`axial_divergence`, at the paper's own `2/R` and `1/R` weights. Proposition 9.3 was placed by
+E149, and Lemma 10.2 was re-read and narrowed but not moved by E150.*
 
-1. **Proposition 9.3** (p. 103) — the only partial whose unmatched clauses are named rather than
-   structural. E144 re-read it against the periodized assembly: the decomposition, the supports, the
-   smooth zero-extension layer and (9.6) are all declarations, and the row stays partial on exactly
-   two clauses — one finite harmonic set carried across bands, and the sign of the base-flat error.
+1. **Lemma 10.2** (p. 118) — the only partial with a named missing declaration left. E150 halved
+   it: the paper's `F_j` are the endpoint jets of the constructed force (`force_boundary_jets`), whose
+   compact spatial support is declared (`compactForce_supported`). What is missing is one support
+   statement for the limit tensors, which would upgrade `boundaryLimits_uniformOn_compact` to
+   uniformity on `ℝ³`. It is two lines and it is not in the tree.
 2. **Lemma 8.8** (p. 98) — the next §8 row, now that E146–E148 placed 8.1, 8.2 and 6.6.
-3. **Lemma 9.7 / Lemma 10.2** — the two partials unmatched for statement shape rather than for
-   missing mathematics.
+3. **Lemma 9.7** (p. 111) — structural: its third clause describes how the construction is written
+   and has no proposition to be true of.
 
 ## Standing limits
 
@@ -109,3 +111,5 @@ both radial divergence identities are `SignedStressPrimitive.angular_divergence`
   not that the proof of that declaration is valid.
 - The four partials are where the algebra is stated and the bounds are assembled. That is
   the most likely place for a real defect, because the kernel never weighs the bounds.
+
+<!-- ledger: placed=26 partial=2 unplaced=45 total=73 -->

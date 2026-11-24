@@ -1,0 +1,23 @@
+name: ledger-check
+
+# CROSSWALK.md's ledger is quoted, with counts, in six other documents, and those
+# numbers have drifted four times in this audit's history (E97, E135, E145, E148).
+# This turns the next drift into a red build instead of a review finding. The
+# check needs no Lean toolchain and no TeX: it is seconds, and it runs on push.
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ledger:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the ledger counts against every document
+        run: python3 tools/ledger_check.py

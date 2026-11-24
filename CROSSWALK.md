@@ -373,6 +373,22 @@ development applies, `(Tg^i Q^(1+h))^{-1} = c_i0^{-1}`. E129's "components only"
 the absence of a single five-row table and wrong about the row's content; the reclassification
 is recorded so a later reader can disagree on the record.
 
+E149 and E150 finish the §9 partials. **Proposition 9.3** places, and both of E144's remaining
+clauses turn out to be declarations. The band-independent harmonic set is `ActualCycleResidualBounds.modes
+residualBand` (`:44,59`): one `Finset ℤ`, with the band `n` universally quantified inside the statement
+and the set itself read off the construction — and the cycle doubles it once per stage
+(`CorrectionStep.lean:6830`), which is exactly "depends on the finite construction, not on the band".
+`HarmonicBlock.BandLimited`, `evaluate_over` and `iteratedAlong_wave` carry the finite display and its
+stability under differentiation. Clause (9.6)'s sign is not a discrepancy: the tree writes
+`⟨G*+F*⟩ = reduced + ⟨E_B*⟩` (`CorrectionState.lean:130`, `LiftedMeanResidual.angularMean_fullResidual`)
+and the paper writes `⟨G*+F*−E_B*⟩ = reduced` — the base error crossed the equals sign, and the
+docstring says so in words. **Lemma 10.2** stays partial, and this is the entry where rounding up would
+have been easiest: `force_boundary_jets` (`CandidateFromLimits.lean:158`) identifies every terminal jet
+with the limit family, so the `F_j` are the constructed force's own jets and `compactForce_supported`
+gives their compact support. What is missing is one statement — that the *limit tensors* vanish off
+that compact — without which `boundaryLimits_uniformOn_compact` does not upgrade to uniformity on
+`ℝ³`. E136's first reason narrows to that single support statement, its second to a naming difference.
+
 ### Unplaced (the rest)
 
 Fifty-nine, and slice three moved five of them (below). They are sections 4–10 and the
@@ -404,8 +420,8 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 25 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148) |
-| partial — components exist, statement not matched | 3 | Proposition 9.3 (E127), Lemma 9.7 (E133), Lemma 10.2 (E136) |
+| placed, statement read | 26 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149) |
+| partial — components exist, statement not matched | 2 | Lemma 9.7 (E133), Lemma 10.2 (E150) |
 | cited in a docstring, unchecked | 0 | — |
 | unplaced | 45 | the rest |
 | **total** | **73** | |
@@ -446,3 +462,5 @@ breakdown that counted 38 lemmas; a full-text scan finds 73 names in 3/26/37/7, 
 5. **This changes no verdict.** The audit's findings (existential constants, anisotropic
    weights, the Euler clause drift) are unchanged by the table, and the table does not
    support any claim that the paper's argument is wrong.
+
+<!-- ledger: placed=26 partial=2 unplaced=45 total=73 -->
