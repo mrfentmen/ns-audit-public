@@ -273,9 +273,25 @@ defined *as* the inverse and `FiveRowRank.finite_jet_bound` supplying the consta
 `S_α → M_α` sentence E131 called unwritten is the docstring and conclusion of
 `MeanRankUpdate.rank_update_meanClass`; the (8.24) exhaustiveness E131 called underived is the
 `hV`/`hG` hypothesis pair of `five_rows_on_patch`, discharged on the actual base by
-`reserved_five_rows`. The ledger reads 18 placed, 5 partial, 50 unplaced. Two shape differences
+`reserved_five_rows`. At E140 the ledger read 18 placed, 5 partial, 50 unplaced. Two shape differences
 are recorded rather than smoothed: uniqueness is `det ≠ 0` plus an inverse in use rather than a
 lemma named `unique`, and the class half lives in `MeanRankUpdate`, one module above the algebra.
+
+E141 does the same to **Lemma 8.6**, E132's other §8 partial, and for the same reason: both of
+E132's negatives are declarations one module away. Uniqueness is
+`TemporalMeanUpdate.timeDerivative_unique` (`:126-145`), stated as `f = g` from equal temporal
+derivatives and equal means — on the zero-mean class that is the paper's "unique smooth zero-mean
+solution". The seminorm-to-`C^m` conversion E132 called undeclared is
+`SmoothFourierData.coefficient_seminorm_bound` (`:368-395`), stated with `p+4` jets and the
+explicit lattice constant `3^(p+4) * C * sum (weight k ^ 4)^{-1}`; composed with
+`inverse_derivativeWord_bound` it becomes `ParametricTorusInverse.mixedJet_inverse_bound`, whose
+constant `mixedLossConstant` is a closed expression. Clause (d) is sharper than the paper's
+`c_i0^{-1} <= C S_*`: `temporalAtIndex` writes `-(Tg^i * Q^(1+h))^{-1}` as an identity, and the
+(8.22) cancellation is `desiredIncrement_fastDerivative`, exact with remainder `centered f`. One
+shape difference is recorded, not smoothed: the declared composite loss is `m+5` where the paper
+prints `m+4`, because the seminorm index is `m+1` and the conversion spends four on top; the slack
+is the tree's `weight^{-4}` summability where `weight^{-3}` would close the same two-dimensional
+sum. The ledger reads 19 placed, 4 partial, 50 unplaced, and §8 has no partial left.
 
 `LinearWaveBounds.lean:896` (`constructed_linear_wave_with_flat_error`) is the proposition's
 coefficient shadow, by its own docstring: the good class `α+1/2−3κ`, an all-order flat error,
@@ -338,8 +354,8 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 18 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140) |
-| partial — components exist, statement not matched | 5 | Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.6 (E132), Lemma 9.7 (E133), Lemma 10.2 (E136) |
+| placed, statement read | 19 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141) |
+| partial — components exist, statement not matched | 4 | Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 9.7 (E133), Lemma 10.2 (E136) |
 | cited in a docstring, unchecked | 0 | — |
 | unplaced | 50 | the rest |
 | **total** | **73** | |

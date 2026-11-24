@@ -2,7 +2,7 @@
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which eighteen are placed, five are partial, and **fifty are unplaced**.
+extracted text, of which nineteen are placed, four are partial, and **fifty are unplaced**.
 The ledger in `CROSSWALK.md` carries the same **73** as its denominator and the same three
 counts, so there is no discrepancy to record here.
 
@@ -11,7 +11,7 @@ carries any audit conclusion.
 
 ## The denominator, settled
 
-The ledger and this file now agree on **73** numbered results: 18 placed, 5 partial, 50
+The ledger and this file now agree on **73** numbered results: 19 placed, 4 partial, 50
 unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
 lemmas, 7 corollaries); the text has 37 lemmas. The indices 6.3–6.5, 9.4 and B.9 are section
 numbering, not results — 9.4 is the §9.4 heading. See E135. The fifty-two rows below are the
@@ -101,7 +101,8 @@ the two partials are partial on statement shape, not on content.*
 2. **Lemma 10.5** (p. 121) — completes the pair behind the compact assembly.
 3. **The §8 mean-correction rows** (Proposition 8.1, Lemma 8.2, Corollary 8.5, pp. 90–95) — the
    compatibility defects feeding the mean correction. Lemma 8.7 left the partial column in
-   E140; Lemma 8.6 is now the only §8 partial, and reading these rows is what would finish it.
+   E140 and Lemma 8.6 in E141, so §8 has no partial left; the four that remain are
+   Proposition 9.3, Proposition 6.6, Lemma 9.7 and Lemma 10.2.
 
 ## Standing limits
 
@@ -109,5 +110,5 @@ the two partials are partial on statement shape, not on content.*
   evidence has to go through `kernel-check.yml` on Actions.
 - "Placed" is statement-level. It says a declaration exists whose statement is the paper's,
   not that the proof of that declaration is valid.
-- The five partials are where the algebra is stated and the bounds are assembled. That is
+- The four partials are where the algebra is stated and the bounds are assembled. That is
   the most likely place for a real defect, because the kernel never weighs the bounds.

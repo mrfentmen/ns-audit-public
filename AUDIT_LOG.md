@@ -6864,3 +6864,66 @@ two blocks), `:5041` (Lemma 8.8); `FiveRowRank.lean:81–131,146–311,348–363
 `LocalizedMomentRepair.lean:88,91,111,114,165,232,329`; `MeanRankUpdate.lean:163,194,899,1399,1620,1660`;
 `CorrectionState.lean:449,462,478`; `DefectIncrementBounds.lean:621,635,650,775`; E94; E127; E131.
 Reading only — nothing compiled.*
+
+---
+
+## E141 — Lemma 8.6: both of E132's negatives were name misses; the row is placed (2026-11-23)
+
+*Reading entry. E132 left this row partial on two specific negatives — no declaration states uniqueness, and the seminorm-to-`C^m` conversion is not a declared lemma — plus the observation that clauses (d)–(g) live in the mean-update layer rather than in `TorusInverse`. Both negatives are declarations, and clause (d) is an identity with the paper's own factor written out. The row is placed at one recorded shape difference: the declared composite loss is `m+5`, not the paper's `m+4`. The ledger moves to 19 placed, 4 partial, 50 unplaced.*
+
+### 1. The operator, exactly
+
+Paper (6.2) fixes `bg = sqrt 2 - 1`, `vr = (1, -bg)`, `vt = (bg, 1)` (`.setup/paper/ns.txt:3251-3255`). `TorusInverse.Direction` (`:190-197`) has exactly those two vectors — `.radial = (1, 1 - sqrt 2)`, `.temporal = (sqrt 2 - 1, 1)` — and `symbol_formula` (`:224`) proves `symbol d k = k.1 * (vector d).1 + k.2 * (vector d).2`, which is `v_t · k`. The multiplier is `(omega * symbol d k)^{-1}` with `omega = 2 pi i`, so the series `sum_k a k * mode k x` is the paper's `sum Fhat(k) / (2 pi i v_t · k) e^{2 pi i k · y}` term for term. No constant is absorbed anywhere.
+
+### 2. Uniqueness is a declaration
+
+E132: "no declaration states uniqueness of the zero-mean solution." It is `TemporalMeanUpdate.timeDerivative_unique` (`:126-145`), whose docstring reads *"Uniqueness for the smooth periodic temporal equation with a prescribed mean. The proof uses actual Fourier differentiation and reconstruction."* The statement is `timeDerivative f = timeDerivative g` plus `squareAverage f = squareAverage g` implies `f = g`; on the zero-mean class both means are `0`, which is precisely the paper's "unique smooth zero-mean solution". The proof is the paper's own: `coefficient_timeDerivative` (`:112`) differentiates the series, `symbol_ne_zero` cancels the symbol `k != 0`, the `k = 0` slot is the mean, and `series_coefficient` reconstructs both functions. It sits one module above `TorusInverse` — the same reason E140's three negatives were misses: E132 searched the inverse module for a word the mean-update module owns.
+
+### 3. The conversion is a declaration, with the paper's `+4` in it
+
+E132: "the conversion itself is not a declared lemma: the file's only seminorm-to-pointwise step is `norm_series_le` at `m = 0`." The conversion is in `SmoothFourierData`, not `TorusInverse`:
+
+| Piece | Declaration | Statement |
+|---|---|---|
+| inverse loses one weight | `inverseCoeff_weighted_bound` (`TorusInverse.lean:412`), `inverseCoeff_seminorm_le` (`:427`) | `coeffSeminorm p (inverseCoeff d a) <= 6 * norm(omega^{-1}) * coeffSeminorm (p+1) a` |
+| pointwise jet of the inverse | `inverse_derivativeWord_bound` (`:498-506`) | `norm(derivativeWord w (directionalInverse d a) x) <= (6 * norm(omega^{-1}) * norm(omega)^|w|) * coeffSeminorm (|w|+1) a`, for **every** mixed word `w` |
+| seminorm from `C^{p+4}` data | `coefficient_seminorm_bound` (`SmoothFourierData.lean:368-395`) | from sup bounds on `f`, `xJet (p+4) f` and `xJet (p+4) (swap f)`: `coeffSeminorm p (coefficient f) <= (3^(p+4) * C) * sum_k (weight k ^ 4)^{-1}` |
+| composite, explicit constant | `ParametricTorusInverse.mixedJet_inverse_bound` (`:654-682`), `SmoothFamilyTorusInverse.mixedJet_inverse_bound` (`:1082`) | `norm(mixedJet q w (inverse d f) (p,Y)) <= mixedLossConstant |w| * C` |
+
+`mixedLossConstant r` is a closed expression — `((6 * norm(omega^{-1})) * norm(omega)^r) * 3^(r+5) * sum_k (weight k ^ 4)^{-1}` — so the constant here is not an existential. The paper's proof sentence ("four more derivatives of `F` than the requested output leave a summable `(1+|k|)^{-3}` bound") is mirrored by the `p+4` in `coefficient_seminorm_bound`.
+
+### 4. The one shape difference: `m+5` where the paper prints `m+4`
+
+The composite needs `|w|+5` pure torus jets of the input, not `|w|+4`. The extra order comes from composition order, not from a missing estimate: the inverse costs the seminorm index `|w|+1` (one for the multiplier, `:412`), and `coefficient_seminorm_bound` then spends four orders on top of whatever index it is handed. The paper spends three on top of the multiplier's one. The slack is inside the tree's own summability choice — `coefficient_seminorm_bound` is stated against `summable_weight_inv_four` (`SmoothFourierData.lean:345`), where `weight^{-3}` would close the same sum in two dimensions — so the printed `+4` is recoverable but not printed anywhere. Recorded as a shape difference, not smoothed: the tree proves the strictly weaker fixed-order inequality. Nothing downstream consumes the index; the chain only needs one fixed finite loss per order, which both forms supply.
+
+### 5. Clauses (d) and (g) are identities, not assemblies
+
+The paper's (8.20) writes `Delta v = -c_i0^{-1} N_i0^{-1} E_theta`, with `c_i0^{-1} = Q^{-1-h} T^{-i0} g` and `c_i0^{-1} <= C S_*`. The tree writes the same object twice:
+
+* `TemporalMeanUpdate.desiredIncrement h n f = -chartPrefactor h n * temporalInverse (centered f)` (`:544-546`), and `desiredIncrement_native_pullback` (`:654`) evaluates the prefactor as `Q n ^ (-1 - h)` — the paper's `Q^{-1-h}`, with the covering factor `T^{-i0} g` supplied by `MeanChartCompatibility.temporal_physical_pull` (`:465-492`), which cancels the native-cover and unit factors exactly;
+* `MeanChartCompatibility.temporalAtIndex h n i f = -((Tg^i * Q n ^ (1 + h))^{-1}) * temporalInverse (centered f)` (`:493-505`) — the paper's `c_i0^{-1} N_i0^{-1}` with the covering index left free, and `temporalAtIndex_native` (`:504`) proves the free index specializes to `desiredIncrement`.
+
+The bound `c_i0^{-1} <= C S_*` is not a separate inequality in the tree: it is an identity in explicit powers of `Tg` and `Q`, which is stronger than the paper's bounded-above form.
+
+Clause (g), the (8.22) cancellation, is likewise exact rather than asymptotic: `desiredIncrement_fastDerivative` (`:590`) proves `fastDerivative h n (desiredIncrement h n f) z = -centered f z`, and the general-index form is `temporalAtIndex_fast_cancellation` (`MeanChartCompatibility.lean:645`), with `centered f = f - torusAverage f` supplying the "flat remainder" the paper names as `c_i0 N_i0 a`.
+
+### 6. Clauses (e) and (f)
+
+* zero auxiliary mean at every slow and radial point: `desiredIncrement_zeroMean` (`:573`), and the weighted form `desiredIncrement_barMass` (`:584`);
+* the `M_alpha` membership survives a different covering index: `meanClass_temporalAtIndex_of_native` (`MeanChartCompatibility.lean:624`), whose hypothesis is exactly "the native-index update is `M_alpha`", with the band-index gap carried as a `BandBound` at exponent `0`;
+* the azimuthal realization `gamma_d - A_1 gamma_d`: `PressureStream.streamGamma_eq_desired_sub_alias_global` (`MeanChartCompatibility.lean:869`), with the chart forms of `Delta beta` and `Delta gamma` in `physicalBeta_naturality` (`:1134`) and `physicalGamma_naturality` (`:1116`).
+
+One clause is not a declaration and is recorded rather than claimed: divergence-freeness of the assembled `(Delta beta, Delta v, Delta gamma)` together with preservation of the two integral constraints (8.2) is carried by `MeanIncrementBounds` / `StateMomentBalances` for the increment class, not by a theorem about this specific triple. That is the same status `Corollary 8.5` and `Proposition 8.4` will get when their rows are worked.
+
+### 7. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 18 | 19 |
+| partial | 5 | 4 |
+| unplaced | 50 | 50 |
+| **total** | **73** | **73** |
+
+The remaining partials are Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 9.7 (E133) and Lemma 10.2 (E136). §8 now has no partial: the "algebra exact, bounds assembled" pattern that E131 described still holds for the four rows above, but it no longer covers 8.6, whose bounds are stated with explicit constants and a declared conversion.
+
+*Evidence: `.setup/paper/ns.txt:3251-3264` (6.2, (6.4)), `:4885-4935` (Lemma 8.6, (8.19)-(8.22)); `TorusInverse.lean:190-197,224,405-441,498-525,591-604`; `SmoothFourierData.lean:345,362-395,565-572`; `TemporalMeanUpdate.lean:112-145,215-245,544-600,654-670`; `MeanChartCompatibility.lean:465-505,624-660,869,1116-1145`; `ParametricTorusInverse.lean:645-682`; `SmoothFamilyTorusInverse.lean:1058-1100`; E132. Reading only — nothing compiled; "placed" is statement-level.*
