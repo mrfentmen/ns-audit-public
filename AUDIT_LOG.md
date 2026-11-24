@@ -6455,3 +6455,71 @@ This is a third failure mode, distinct from the two already named here. E94's ro
 Clause (a) is the strongest match in the queue so far in one narrow sense: the independence is visible in a type signature rather than argued in prose. Whether `bandFloor`'s dependence on `B` and `N0` is stage-independent *in fact* is a question about `ActualCycleParameters`, which is the next link if this row is ever promoted.
 
 *Evidence: `.setup/paper/ns.txt:5669–5695` (Lemma 9.7 and proof, pp. 111–112); `ActualCandidateConstruction.lean:142–192`; `MixedAxisPreservation.lean:448–462`; `GermEndpointInputs.lean:25–31,316–319`; `WeightedClasses.lean:125`; `DiagonalResidual.lean:33–52,196–214`; `WholeDomainPhysicalStageTheorem.lean:188`; `LocalScheduleWitness.lean:47`. Reading only — nothing compiled.*
+
+---
+
+## E134 — Lemma 9.8: the printed loss is the tree's definition, and the flat error is gone (2026-11-23)
+
+*Reading entry. This row places whole. The paper's `ℓ_m` is not merely bounded by something stage-independent in the tree — it is the definition, term for term. The stage index is absent from every constant in all three displays, and in the residual estimate the tree drops the paper's flat error term instead of bounding it. The ledger moves to 15 placed, 6 partial, 53 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 9.8` (p. 113), three displays for every Cartesian space–time derivative order `m`, where `g_j = h/10 · j → ∞`:
+
+| Display | Paper's claim |
+|---|---|
+| (9.17) | `|Z_j|_m + |Δu_j|_m ≤ C_{j,m} q^{g_j − ℓ_m} (1+|log q|)^{P_{j,m}}`, with `ℓ_m` **independent of `j`** and including the extra spatial derivative that recovers velocities from wave and mean vector potentials |
+| (9.18a) | `|(u^[j], p^[j])|_m ≤ C_{j,m} q^{−K_m} (1+|log q|)^{P_{j,m}}`, with `K_m` **independent of `j`** |
+| (9.18b) | `|R(u^[j], p^[j])|_m ≤ C_{j,m} q^{hσ_j − K_m} (1+|log q|)^{P_{j,m}} + E_{j,m}`, with `E_{j,m} ≤ C_{j,m,N} q^N` for every `N` |
+
+The printed proof fixes the four physical derivative costs (9.19) and sets `ℓ_m = 2A + (m+1)(1 + 3h/2)`.
+
+### 2. `ℓ_m` is the definition, not a stand-in
+
+`SharpPhysicalCarrier.physicalLoss h m = 2*CoordinateAlgebra.A h + ((m:ℝ)+1)*derivativeCost h` (`SharpPhysicalCarrier.lean:16`), with `derivativeCost h = 1 + 3*h/2` (`:13`) and `A h = 1/2 + h` (`CoordinateAlgebra.lean:18`). Substituting gives the paper's `2A + (m+1)(1 + 3h/2)` exactly, including the `(m+1)` rather than `m` — which is how the prose's "additional spatial differentiation recovering velocities" is carried. The file's own docstring says so: "The printed physical loss includes one derivative for potential recovery."
+
+That is a stronger form of correspondence than E133 could claim for the threshold. There the independence was in the signature and the *value* was unconstrained; here the value is printed in the paper and is the same closed expression in the tree.
+
+### 3. The stage index is absent from every constant
+
+| Constant | Definition | Stage index |
+|---|---|---|
+| `g_j` | `ActualIterationLedger.gain h j = h * j / 10` (`:29`) | present, as the paper intends — this is the gain, not the loss |
+| `ℓ_m` | `physicalLoss h m` | **absent** |
+| `K_m` | `paperLoss B N0 m = max (finiteLoss B N0 m) (fixedLoss m)` (`:147`) | **absent** |
+| `K_m` for all orders ≤ m | `paperJetLoss B N0 m = Σ_{k≤m} |paperLoss B N0 k|` (`:188`) | **absent** |
+| domain | `commonQ B N0 = ChartScales.Q (residualBand B N0)` (`:13`), with `commonQ_lt_original : commonQ B N0 < qbig B N0` (`:20`) | **absent** |
+
+The composition is transparent at each layer: `prefixLoss initial positive m = max (initial m) (positive m)` (`WholeDomainPrefixBounds.lean:12`), `finiteLoss` is the max of the two prefix losses against `physicalLoss h`, and `fixedLoss m = physicalLoss h (2h) m` (`ActualCycleResidualBounds.lean:1145`). No layer takes a stage parameter, so there is no place for a hidden per-stage choice to hide — which is exactly the failure mode the row was opened to test.
+
+The three displays are then `actual_increment_bound` (`WholeDomainPhysicalStageTheorem.lean:114`), and the second and third conclusions of `paper_physical_loss` (`:243`), which quantify `∀ J m … ∀ k ≤ m` — the paper's jet norm, all derivatives through order `m`, in one bound. `C` and `P` are existentially quantified inside the `∀ J m`, so they may depend on both, matching `C_{j,m}` and `P_{j,m}`.
+
+### 4. Where the tree is stronger, and by how much
+
+The paper's (9.18b) carries `+ E_{j,m}` with `E_{j,m}` flat to every order. The tree's residual conclusion has **no error term**:
+
+```
+‖∂^k R(u^[J], p^[J]) w‖ ≤ C * q^(h*σ_J − paperJetLoss B N0 m) * (1+|log q|)^P
+```
+
+for all `k ≤ m`. The file states the reason in its own docstring: "The residual conclusion is stronger than the displayed estimate: all flat remainders are absorbed, so its additional flat-error term can be chosen to be zero." So the `E` term is not omitted, it is unnecessary — the sharper per-order form is `actual_finite_residual_bound` (`WholeDomainActualStageBounds.lean:37`), which carries `fixedLoss m` rather than the summed loss and likewise no `E`.
+
+This is the second place in the audit where the formalization is stronger than the prose rather than weaker. The first was E132's `directionalInverse_solves`, which states the Fréchet derivative where the paper writes the equation for the series. Both belong in the manuscript's limits section as instances of the same direction of divergence, not as findings against the paper.
+
+### 5. Two caveats that are not defects
+
+* **Index shift.** The paper's cycle is `j−1 → j`, so its `Z_j` is the increment entering stage `j`. The tree's `actual_increment_bound` is stated at `j+1` and its prefix theorems at `J`. The content is the same object one index later; the audit should not record this as an off-by-one in the mathematics, and does not.
+* **`K_m`'s value is a choice.** The paper never prints `K_m`; it prints only that it is `j`-independent and that it includes the recovery derivative. The tree's `max (finiteLoss) (fixedLoss)` is therefore one admissible value among many, and the only property the paper demands of it — no stage index — is the property the type has. What the tree does *not* show is that this particular `K_m` is the one a later argument needs; but the later arguments consume `paperJetLoss` itself (E66's chain, and `paper_physical_loss`'s third conclusion), so the constant is not chosen independently of its consumers.
+
+### 6. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 14 | 15 |
+| partial | 6 | 6 |
+| unplaced | 54 | 53 |
+| **total** | **74** | **74** |
+
+First whole placement since Lemma 7.7 (E130). It also settles the concern that opened this row: the `j`-independence in `paperJetLoss` is not a `∀ J` quantifier hiding a per-stage choice, because no definition in the chain from `physicalLoss` to `paperJetLoss` accepts a stage index at all.
+
+*Evidence: `.setup/paper/ns.txt:5734–5760` (Lemma 9.8, (9.17)–(9.19), pp. 113–114); `SharpPhysicalCarrier.lean:13,16`; `CoordinateAlgebra.lean:18`; `WholeDomainPrefixBounds.lean:12`; `ActualCycleResidualBounds.lean:1145`; `WholeDomainPhysicalStageTheorem.lean:114,147,188,243`; `WholeDomainActualStageBounds.lean:13–20,37`; `ActualIterationLedger.lean:29`; E133. Reading only — nothing compiled.*

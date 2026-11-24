@@ -316,10 +316,10 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 14 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130) |
+| placed, statement read | 15 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134) |
 | partial — components exist, statement not matched | 6 | Lemma 9.2, Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.7 (E131), Lemma 8.6 (E132), Lemma 9.7 (E133) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 54 | the rest |
+| unplaced | 53 | the rest |
 | **total** | **74** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
@@ -332,6 +332,13 @@ are declarations — `ActualCandidateConstruction.qbig` has neither a stage nor 
 derivative-order argument, and `GermEndpointInputs` carries one `qbig` across `∀ j` — while its
 third clause, the finite count of input derivatives per stage, describes the construction's
 syntax and so has no proposition in the object language to be true of.
+
+E134 places the next §9 row whole, and for a reason worth separating from E133: Lemma 9.8's
+`ℓ_m` is not merely stage-free in the tree, it is the paper's printed closed form —
+`physicalLoss h m = 2*A h + (m+1)*(1+3h/2)`. `gain h j = h*j/10` supplies `g_j` verbatim, and
+no definition between `physicalLoss` and `paperJetLoss` accepts a stage index. The tree is also
+stronger than the paper here: the displayed `+ E_{j,m}` flat error is absent because all flat
+remainders are absorbed.
 
 ## Limits of this file
 
