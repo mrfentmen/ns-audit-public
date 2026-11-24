@@ -2,7 +2,7 @@
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which sixteen are placed, seven are partial, and **fifty are unplaced**.
+extracted text, of which seventeen are placed, six are partial, and **fifty are unplaced**.
 The ledger in `CROSSWALK.md` carries **73** as its denominator and therefore 52 unplaced. The
 two counts differ by one, and the difference is recorded below rather than smoothed away.
 

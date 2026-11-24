@@ -6694,3 +6694,53 @@ Until the split is read, Lemma 9.2 stays partial. What changes is the reason: th
 This is the third time a row was held open by the name rather than by the mathematics: E94 could not find the normalized linear residual until it stopped searching for that phrase and searched for `globalGood`; E133's row was pointed at `LocalScheduleWitness` when the threshold is defined in `ActualCandidateConstruction`; this one searched `mean_wave` and missed `meanCross`. The habit worth keeping is now explicit in `NEXT.md`: search the conclusion's shape, then the paper's words.
 
 *Evidence: `HarmonicMeanInteraction.lean:293,310,275,329`; `WaveInteractionBounds.lean:71`; `.setup/paper/ns.txt:5242–5245` (Lemma 9.2 and the mean–wave clause); E127; E94; E133. Reading only — nothing compiled.*
+
+---
+
+## E139 — Lemma 9.2 is placed: the split is the record's two exponent slots (2026-11-23)
+
+*Reading entry. E127 recorded the mean–wave clause as unmatched on two counts, the half-loss and the tangential/radial split. E138 removed the first. The second is also in the tree, in `IncrementBounds`: the radial slot is at `H + 1` and both tangential slots at `H`, which is the paper's `(M_µ, M_{µ+1})` with `µ = H`. With the wave–wave and label clauses already matched, the lemma places. The ledger moves to 17 placed, 6 partial, 50 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 9.2` (pp. 102–103), three clauses:
+
+| Clause | Paper's claim |
+|---|---|
+| a | for a wave `w ∈ W_α` and a mean field `v` with tangential components in `M_µ` and radial in `M_{µ+1}`, the nonzero harmonics of `(w·∇*)v + (v·∇*)w` lie in `W_{α+µ−1/2}` |
+| b | for two curl-generated waves of one label, the nonzero harmonics of `(w·∇*)w′ + (w′·∇*)w` lie in `W_{α+α′−κs}`, and the zero harmonic in `M_{α+α′−κs}` |
+| c | distinct labels have zero products on their closed supports |
+
+### 2. How each clause lands
+
+* **(a), the exponent.** `meanCross_class` (`HarmonicMeanInteraction.lean:310`) concludes `WaveClass s P (α + H - 1/2)` for every component `i` and every `j ≠ 0`, from `IncrementBounds s H h` and the band bounds at `−1/2`. That is `α + µ − 1/2` with `µ = H`, on nonzero harmonics. E138 records the correction; this entry records the consequence.
+* **(a), the split.** `IncrementBounds` (`MeanIncrementBounds.lean:392`) has exactly three fields:
+
+  ```
+  radial  : MeanClass s (H + 1) h.radial
+  angular : MeanClass s H       h.angular
+  axial   : MeanClass s H       h.axial
+  ```
+
+  The radial component carries the *higher* exponent and the two tangential components the lower one. That is the paper's hypothesis verbatim: tangential in `M_µ`, radial in `M_{µ+1}`, with `µ = H`. `tripleField_bound` (`:245`) transports the three fields to the complex vector the interaction consumes.
+* **(b).** Already matched by E127: `transport_wave_class` (`HarmonicWaveInteraction.lean:386`) and `transport_mean_class` (`:404`) at `α + α′ − κ`, exact, stated per harmonic and component.
+* **(c).** Already matched by E127: `labelCarrier_disjoint` (`ActualCarrierGeometry.lean:342`).
+
+The per-component and per-harmonic form is a decomposition of a vector-valued membership, not a weakening of it: `WaveClass`/`MeanClass` are componentwise predicates, and the paper's own statement quantifies harmonics.
+
+### 3. What this cost, and what it says about the earlier passes
+
+Two entries, two greps, and neither was about the mathematics. E127 searched `mean_wave` and concluded the half-loss was absent; the declaration is called `meanCross`. It read the mean data as a `Triple` and did not open `IncrementBounds`; the split was in its first three fields. Both misses are the same failure E94 recorded — the paper's word is not the tree's name — and both were recoverable by searching the conclusion's shape rather than the prose.
+
+### 4. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 16 | 17 |
+| partial | 7 | 6 |
+| unplaced | 50 | 50 |
+| **total** | **73** | **73** |
+
+Unplaced does not move: a row left the partial column and joined the placed column. `NEXT.md` keeps its fifty rows.
+
+*Evidence: `.setup/paper/ns.txt:5242–5248` (Lemma 9.2 and its proof); `MeanIncrementBounds.lean:392–394`; `HarmonicMeanInteraction.lean:310,245`; `HarmonicWaveInteraction.lean:386,404`; `ActualCarrierGeometry.lean:342`; E94; E127; E138. Reading only — nothing compiled.*

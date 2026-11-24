@@ -261,6 +261,11 @@ E138 corrects the first half of that sentence. The `−1/2` loss is proved, in
 hypothesis: whether `MeanIncrementBounds.Triple`'s two exponent slots are the
 paper's `(M_µ, M_{µ+1})` pair. The row stays partial for that reason alone.
 
+E139 reads the split and closes the row. `IncrementBounds` carries three fields —
+`radial : MeanClass (H + 1)`, `angular : MeanClass H`, `axial : MeanClass H` — which is
+the paper's tangential `M_µ` / radial `M_{µ+1}` hypothesis with `µ = H`. Lemma 9.2 moves
+to placed at 17 placed, 6 partial, 50 unplaced.
+
 `LinearWaveBounds.lean:896` (`constructed_linear_wave_with_flat_error`) is the proposition's
 coefficient shadow, by its own docstring: the good class `α+1/2−3κ`, an all-order flat error,
 and the pointwise `R = G + F` identity. Proposition 9.3's source supports `⊂ Ω_γ`, the `C^∞`
@@ -322,8 +327,8 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 16 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137) |
-| partial — components exist, statement not matched | 7 | Lemma 9.2, Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.7 (E131), Lemma 8.6 (E132), Lemma 9.7 (E133), Lemma 10.2 (E136) |
+| placed, statement read | 17 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139) |
+| partial — components exist, statement not matched | 6 | Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.7 (E131), Lemma 8.6 (E132), Lemma 9.7 (E133), Lemma 10.2 (E136) |
 | cited in a docstring, unchecked | 0 | — |
 | unplaced | 50 | the rest |
 | **total** | **73** | |
