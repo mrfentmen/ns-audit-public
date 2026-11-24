@@ -316,11 +316,11 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 15 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134) |
-| partial — components exist, statement not matched | 6 | Lemma 9.2, Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.7 (E131), Lemma 8.6 (E132), Lemma 9.7 (E133) |
+| placed, statement read | 16 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137) |
+| partial — components exist, statement not matched | 7 | Lemma 9.2, Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.7 (E131), Lemma 8.6 (E132), Lemma 9.7 (E133), Lemma 10.2 (E136) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 53 | the rest |
-| **total** | **74** | |
+| unplaced | 50 | the rest |
+| **total** | **73** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
 result; it leaves the numerator. That and the 74 are the corrections this slice makes to
@@ -339,6 +339,11 @@ E134 places the next §9 row whole, and for a reason worth separating from E133:
 no definition between `physicalLoss` and `paperJetLoss` accepts a stage index. The tree is also
 stronger than the paper here: the displayed `+ E_{j,m}` flat error is absent because all flat
 remainders are absorbed.
+
+E135 then corrects the denominator itself. The ledger has said 74 since E91, from a kind
+breakdown that counted 38 lemmas; a full-text scan finds 73 names in 3/26/37/7, and the
+"missing" numbers 6.3–6.5, 9.4 and B.9 are section numbering rather than results (9.4 is the
+§9.4 heading). The numerator never moved: 15 placed, 6 partial, 52 unplaced of 73.
 
 ## Limits of this file
 

@@ -6523,3 +6523,137 @@ This is the second place in the audit where the formalization is stronger than t
 First whole placement since Lemma 7.7 (E130). It also settles the concern that opened this row: the `j`-independence in `paperJetLoss` is not a `∀ J` quantifier hiding a per-stage choice, because no definition in the chain from `physicalLoss` to `paperJetLoss` accepts a stage index at all.
 
 *Evidence: `.setup/paper/ns.txt:5734–5760` (Lemma 9.8, (9.17)–(9.19), pp. 113–114); `SharpPhysicalCarrier.lean:13,16`; `CoordinateAlgebra.lean:18`; `WholeDomainPrefixBounds.lean:12`; `ActualCycleResidualBounds.lean:1145`; `WholeDomainPhysicalStageTheorem.lean:114,147,188,243`; `WholeDomainActualStageBounds.lean:13–20,37`; `ActualIterationLedger.lean:29`; E133. Reading only — nothing compiled.*
+
+---
+
+## E135 — The denominator is 73, not 74: a lemma count the paper never had (2026-11-23)
+
+*Reading entry. The paper has seventy-three numbered results. The ledger has carried seventy-four since E91, because a per-kind breakdown added one lemma too many and the total was computed from the breakdown rather than from the text. No row moves — the numerator was always right — but every "x of 74" and "53 unplaced" in this log, in `CROSSWALK.md` and in `NEXT.md` inherits the error and is corrected here.*
+
+### 1. What the text actually contains
+
+A full-text scan for `(Lemma|Proposition|Corollary|Theorem) n.m.` — every occurrence, not only line-initial — returns **73 distinct names, all 73 of which occur at the start of a line**. The kind breakdown is 3 theorems, 26 propositions, **37** lemmas, 7 corollaries.
+
+E91 printed `3 theorems, 26 propositions, 38 lemmas, 7 corollaries` and summed to 74. That sum is internally consistent, which is exactly why the error survived four subsequent entries: nothing downstream re-derived the total from the text. E91 also wrote "73 of which have at least one statement-length occurrence", which was an attempt to reconcile the arithmetic with what it had actually seen; the correct reading is that there were only ever 73 labels and no missing statement.
+
+### 2. The numbering gaps are the paper's, not the extractor's
+
+| Section | Present | Absent |
+|---|---|---|
+| §6 | 6.1, 6.2, 6.6 | 6.3, 6.4, 6.5 |
+| §9 | 9.1, 9.2, 9.3, 9.5, 9.6, 9.7, 9.8, 9.9 | 9.4 |
+| §B | B.1–B.8, B.10 | B.9 |
+| every other section | contiguous | none |
+
+These are not holes in the PDF conversion. `9.4` is a subsection heading, not a result: `.setup/paper/ns.txt:5664` reads "9.4. A common domain and physical derivative estimates." and the lemma that follows it is Lemma 9.7. The §6 and §B gaps are consistent with the same pattern — section and sub-appendix numbering that does not allocate a result at every index. A statement hidden inside a figure would not be extractable, but it would also not have been counted by E91, so it cannot account for the difference.
+
+### 3. What moves
+
+| | Before | After |
+|---|---|---|
+| total | 74 | 73 |
+| placed | 15 | 15 |
+| partial | 6 | 6 |
+| unplaced | 53 | 52 |
+
+Nothing in the numerator changes. `NEXT.md`'s queue already listed 52 concrete rows, because its generator counted the text rather than the ledger — the file and the ledger now agree instead of differing by one.
+
+### 4. Why it is worth an entry rather than a quiet edit
+
+Every rate in this audit is a fraction over this denominator, and "53 unplaced" was one larger than the number of unplaced results that exist. A reader who trusted it would have gone looking for a fifty-third row that is not there. The correction also closes the question E94 and E127 taught this log to ask of every number: *was the query wrong, or is the object missing?* Here it was neither — the arithmetic was wrong, and it was wrong in the one place the audit had not re-derived.
+
+*Evidence: `.setup/paper/ns.txt` full-text scan (73 names; 3/26/37/7 by kind; §6 present {1,2,6}, §9 present {1,2,3,5,6,7,8,9}, §B present {1..8,10}); `.setup/paper/ns.txt:5664` (the 9.4 heading); E91; E133; E134.*
+
+---
+
+## E136 — Lemma 10.2: joint jet limits are constructed, the global uniform statement is not (2026-11-23)
+
+*Reading entry. The terminal-time derivative limits exist in the tree, and in a stronger form than the paper's display: one tensor family indexed by order, with continuity, local uniform convergence, smoothness in the spatial variable, compatibility under spatial differentiation, and origin vanishing. Two clauses are not statements of this lemma — global uniformity on all of ℝ³, and the bundled compactly supported `F_j` family. The row is partial; the ledger moves to 15 placed, 7 partial, 51 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 10.2` (p. 118), for every spatial multi-index `α` and integer `j ≥ 0`:
+
+| Clause | Paper's claim |
+|---|---|
+| a | `∂^α_x ∂^j_t f` **converges uniformly on ℝ³** as `t ↑ 1` |
+| b | there are `F_j ∈ C_c^∞(ℝ³;ℝ³)`, all supported in `K`, with `lim ∂^α_x ∂^j_t f = ∂^α_x F_j` |
+| c | `∂^α_x F_j(0) = 0` |
+| d | the limits are compatible under spatial and time differentiation |
+
+The proof has two regions: near the origin the flatness bound (10.9) `|∂^α∂^j f| ≤ C(τ + |z|^(1/D))^N` gives vanishing; away from it Theorem 3.1(ii) plus the exterior heat flow (10.8) give uniform Cauchy on compact sets. A finite cover upgrades compact uniformity to `ℝ³`, and (10.10) transfers the limits across derivative orders.
+
+### 2. What is constructed
+
+`JointResidualLimits` builds the limit family from actual data, not from an assumed extension:
+
+* `VanishingJointJets f : ∀ n, Tendsto (iteratedFDeriv ℝ n f) (𝓝[openPast 1] (1,0)) (𝓝 0)` (`:84`) is the paper's near-origin input, as a hypothesis on the actual residual.
+* `boundaryLimits f hext x` (`:120`) is one formal multilinear series per point — defined to be zero at `x = 0`, elsewhere the Taylor series of a chosen one-sided extension. `boundaryLimits_zero` (`:126`) proves the origin case at every order, which is clause (c) in bundled form: all spatial derivatives of all `F_j` vanish at `0`.
+* `boundaryLimits_joint` (`:130`) proves convergence at every `x`, and `boundaryLimits_continuous` (`:141`) derives continuity of the limit rather than assuming it.
+* `boundaryLimits_locallyUniform` (`:148`) and `boundaryLimits_uniformOn_compact` (`:156`) give uniform convergence on every compact set — the paper's finite-cover conclusion.
+* `boundaryLimits_smooth` (`:220`) gives `ContDiff ℝ ∞ (fun x => boundaryLimits f hext x n)` for each order, so the `F_j` are smooth.
+* `boundaryLimits_hasFDerivAt` (`:240`) is the compatibility: the spatial derivative of the limit at order `n` is the next tensor restricted to a spatial direction.
+* `extendedResidual_smooth` (`:264`) and `exists_smooth_compatible_limits` (`:308`) bundle the time-side compatibility with the rest.
+
+The family does not depend on how the extension was chosen: `boundaryLimits_eq_extension` and `boundaryLimits_independent` show it is determined by the function, which is what makes it a limit rather than an artefact of `Classical.choice`.
+
+### 3. The two clauses that are not stated
+
+* **Uniform convergence on ℝ³.** The tree states local uniformity and uniformity on each compact set. For the constructed force these imply the global statement, because the force is supported in `outerSupport` (`R3CompactCandidate.compactForce_supported`) and vanishes identically outside a compact set. But implication is not statement, and no declaration concludes "uniformly on `ℝ³`". This is the distinction E129 drew about Proposition 6.6's rectangle qualifier.
+* **The bundled `F_j` with compact support.** The paper indexes `F_j` by the time-derivative order and carries a support condition. The tree indexes by full tensor order `n` (which mixes `α` and `j`), proves smoothness and origin-vanishing of each limit, but never states that the limit function is compactly supported in `K`. Support lives on the force, one layer up.
+
+Neither gap threatens the mathematics; both are statement-shape differences, and under this audit's rule they make the row partial rather than placed.
+
+### 4. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 15 | 15 |
+| partial | 6 | 7 |
+| unplaced | 52 | 51 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:5997–6005` (Lemma 10.2, (10.6)–(10.9)); `JointResidualLimits.lean:84,120–240,264,308`; `R3CompactCandidate.lean` (`compactForce_supported`); E129; E135. Reading only — nothing compiled.*
+
+---
+
+## E137 — Lemma 10.3 is placed: the positive-time cutoff is the extension (2026-11-23)
+
+*Reading entry. The lemma asks for a smooth compactly supported extension of the force through time one. `R3/PositiveTimeForce` is exactly that construction — smaller support interval, smoothness on all of spacetime rather than only the open half-space. The row is placed; the ledger moves to 16 placed, 7 partial, 50 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 10.3` (p. 120): the force in (10.5) extends to `f ∈ C_c^∞(ℝ³ × (0,∞);ℝ³)`, with support contained in `K × [0,2]`.
+
+The proof multiplies by a cutoff `χ₀ ∈ C_c^∞(ℝ)` equal to one near zero and zero at arguments at least one, applied to `σ = t − 1 ≥ 0`, with supports shrinking by derivative order.
+
+### 2. What the tree has
+
+`R3/PositiveTimeForce` is that construction, and it is the same object:
+
+| Clause | Lean |
+|---|---|
+| smooth extension | `force f = fun z => timeCutoff z.1 • f z`, with `force_contDiff` (`:49`) giving `ContDiff ℝ ∞ (force f)` from `ContDiff ℝ ∞ f` |
+| agrees with the original force | `force_eq` (`:53`): `force f (t,x) = f (t,x)` for `t ∈ [3/8, 1]` |
+| compactly supported in time | `force_compactPositiveTimeSupport` (`:72`) |
+| support inside `K × [0,2]` | `force_tsupport_subset` (`:61`): `tsupport (force f) ⊆ Icc (1/16) (21/16) ×ˢ K` |
+
+The cutoff is `timeCutoff t = cutoff ((8/5)(t − 11/16))` (`:21`), one on `[3/8, 1]` (`:28`) and zero outside `[1/16, 21/16]` (`:34`). Since `21/16 < 2` and `1/16 > 0`, the support sits strictly inside `K × [0,2]`.
+
+### 3. Two differences, both in the tree's favour
+
+* **Smoothness is global.** The paper asks for `C^∞` on `ℝ³ × (0,∞)`; `force_contDiff` gives `ContDiff ℝ ∞` on all of `ℝ³ × ℝ`, which is stronger on the positive half-space.
+* **The extension is a product, not a Taylor continuation.** The paper builds the extension from the terminal jets of Lemma 10.2 with order-shrinking cutoffs. The tree does not need those jets here: the force is a residual times a compactly supported spatial cutoff, and the time cutoff alone produces the extension. Lemma 10.3 is therefore independent of Lemma 10.2 in the formalization — consistent with E136 finding the 10.2 statements present but unbundled, and with E65 having traced the force's smoothness separately.
+
+The tree proves containment for whatever compact `K` the caller supplies as the force's spatial support, which is the general form of the lemma.
+
+### 4. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 15 | 16 |
+| partial | 7 | 7 |
+| unplaced | 51 | 50 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:6071–6060` (Lemma 10.3 and the cutoff); `R3/PositiveTimeForce.lean:21–72`; `R3CompactCandidate.lean` (`compactForce_time_support`); E65; E136. Reading only — nothing compiled.*

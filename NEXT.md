@@ -1,28 +1,21 @@
-# NEXT — the queue for the remaining 52 numbered results
+# NEXT — the queue for the remaining 50 numbered results
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which fourteen are placed, five are partial, and **fifty-two are unplaced**.
-The ledger in `CROSSWALK.md` carries **74** as its denominator and therefore 53 unplaced. The
+extracted text, of which sixteen are placed, seven are partial, and **fifty are unplaced**.
+The ledger in `CROSSWALK.md` carries **73** as its denominator and therefore 52 unplaced. The
 two counts differ by one, and the difference is recorded below rather than smoothed away.
 
 This file is a work order, not a finding. Nothing here has been read yet, and no row below
 carries any audit conclusion.
 
-## The one-entry gap against the ledger
+## The denominator, settled
 
-| Source | Total | Placed | Partial | Unplaced |
-|---|---|---|---|---|
-| `CROSSWALK.md` ledger | 74 | 15 | 6 | 53 |
-| `ns.txt` extraction here | 73 | 15 | 6 | 52 |
-
-The extraction finds no result named 6.3, 6.4, 6.5, 9.4 or B.9, and no statement whose name is
-indented or split across lines, so the missing entry is not simply a parsing failure of the
-obvious kind. It is either a statement the text extraction dropped — for instance one set
-inside an equation or figure block — or a miscount carried in the ledger since the first
-version. Resolving it costs one pass over the paper's table of contents against the ledger and
-should be done before the ledger is cited again as an exact denominator. The fifty-four rows
-below are the concrete work items either way; none of them depends on which total is right.
+The ledger and this file now agree on **73** numbered results: 16 placed, 7 partial, 50
+unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
+lemmas, 7 corollaries); the text has 37 lemmas. The indices 6.3–6.5, 9.4 and B.9 are section
+numbering, not results — 9.4 is the §9.4 heading. See E135. The fifty-two rows below are the
+whole remaining queue, and none of them was ever a phantom.
 
 ## How to use it
 
@@ -46,8 +39,6 @@ supporting machinery.
 
 | Result | Page | Statement | Candidate modules |
 |---|---|---|---|
-| Lemma 10.2 | 118 | `ns.txt:5997` | `R3CompactCandidate`, `R3/PositiveTimeForce`, `R3/CandidateBreakdown`, `R3/WholeSpaceComparisonClosure`, `Periodic*` |
-| Lemma 10.3 | 120 | `ns.txt:6071` | `R3CompactCandidate`, `R3/PositiveTimeForce`, `R3/CandidateBreakdown`, `R3/WholeSpaceComparisonClosure`, `Periodic*` |
 | Lemma 10.4 | 121 | `ns.txt:6115` | `R3CompactCandidate`, `R3/PositiveTimeForce`, `R3/CandidateBreakdown`, `R3/WholeSpaceComparisonClosure`, `Periodic*` |
 | Lemma 10.5 | 121 | `ns.txt:6143` | `R3CompactCandidate`, `R3/PositiveTimeForce`, `R3/CandidateBreakdown`, `R3/WholeSpaceComparisonClosure`, `Periodic*` |
 | Corollary 8.5 | 95 | `ns.txt:4842` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
@@ -101,19 +92,16 @@ supporting machinery.
 
 ## The next three, concretely
 
-*Worked from this queue since it was written: **Lemma 9.7** is partial (E133) and **Lemma 9.8**
-is placed whole (E134). The second row turned out to be the strongest match in the queue so far —
-the printed `ℓ_m` is the tree's definition, not a bound on it.*
+*Worked from this queue: Lemma 9.7 partial (E133), Lemma 9.8 placed (E134), Lemma 10.2 partial
+(E136), Lemma 10.3 placed (E137). Both §10 placements came from modules already in the assembly;
+the two partials are partial on statement shape, not on content.*
 
-1. **Lemma 10.2** (p. 118) — uniform convergence of `d^a_x d^j_t f`. This is the statement behind
-   `R3/PositiveTimeForce`'s compact force and the `R3CompactCandidate` assembly, and it is the
-   shortest row left in the load-bearing chain. E65 left this gap at the cutoff; this is where it
-   closes at the convergence.
-2. **Lemma 10.3** (p. 120) — the next §10 row. §10 is now read ahead of §8 because it is the last
-   step before Theorem 1.1 and the least read of the load-bearing sections.
+1. **Lemma 10.4** (p. 121) — the next §10 row, and §10 is now the least read of the load-bearing
+   sections.
+2. **Lemma 10.5** (p. 121) — completes the pair behind the compact assembly.
 3. **The §8 mean-correction rows** (Proposition 8.1, Lemma 8.2, Corollary 8.5, pp. 90–95) — the
-   compatibility defects that feed the five-row correction of Lemma 8.7, which is itself partial.
-   Reading these is what would let the §8 partials be promoted rather than left assembled.
+   compatibility defects feeding Lemma 8.7, which is one of the six partials. Reading these is
+   what would let the §8 partials be promoted rather than left assembled.
 
 ## Standing limits
 
