@@ -266,6 +266,17 @@ E139 reads the split and closes the row. `IncrementBounds` carries three fields 
 the paper's tangential `M_µ` / radial `M_{µ+1}` hypothesis with `µ = H`. Lemma 9.2 moves
 to placed at 17 placed, 6 partial, 50 unplaced.
 
+E140 re-read `FiveRowRank` past where E131 stopped and placed **Lemma 8.7**, which had been
+recorded as a partial on three negatives that all turn out to be name misses. The block inverses
+E131 called absent are `LocalizedMomentRepair.matrix` / `matrix_det_ne_zero`, with `coefficients`
+defined *as* the inverse and `FiveRowRank.finite_jet_bound` supplying the constant; the
+`S_α → M_α` sentence E131 called unwritten is the docstring and conclusion of
+`MeanRankUpdate.rank_update_meanClass`; the (8.24) exhaustiveness E131 called underived is the
+`hV`/`hG` hypothesis pair of `five_rows_on_patch`, discharged on the actual base by
+`reserved_five_rows`. The ledger reads 18 placed, 5 partial, 50 unplaced. Two shape differences
+are recorded rather than smoothed: uniqueness is `det ≠ 0` plus an inverse in use rather than a
+lemma named `unique`, and the class half lives in `MeanRankUpdate`, one module above the algebra.
+
 `LinearWaveBounds.lean:896` (`constructed_linear_wave_with_flat_error`) is the proposition's
 coefficient shadow, by its own docstring: the good class `α+1/2−3κ`, an all-order flat error,
 and the pointwise `R = G + F` identity. Proposition 9.3's source supports `⊂ Ω_γ`, the `C^∞`
@@ -327,8 +338,8 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 17 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139) |
-| partial — components exist, statement not matched | 6 | Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.7 (E131), Lemma 8.6 (E132), Lemma 9.7 (E133), Lemma 10.2 (E136) |
+| placed, statement read | 18 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140) |
+| partial — components exist, statement not matched | 5 | Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 8.6 (E132), Lemma 9.7 (E133), Lemma 10.2 (E136) |
 | cited in a docstring, unchecked | 0 | — |
 | unplaced | 50 | the rest |
 | **total** | **73** | |

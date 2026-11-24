@@ -6744,3 +6744,123 @@ Two entries, two greps, and neither was about the mathematics. E127 searched `me
 Unplaced does not move: a row left the partial column and joined the placed column. `NEXT.md` keeps its fifty rows.
 
 *Evidence: `.setup/paper/ns.txt:5242–5248` (Lemma 9.2 and its proof); `MeanIncrementBounds.lean:392–394`; `HarmonicMeanInteraction.lean:310,245`; `HarmonicWaveInteraction.lean:386,404`; `ActualCarrierGeometry.lean:342`; E94; E127; E138. Reading only — nothing compiled.*
+
+---
+
+## E140 — Lemma 8.7 is placed: all three of E131's negatives were name misses (2026-11-23)
+
+*Reading entry. E131 recorded the five-row correction as half placed: exponents exact, and the
+block inverses, the `S_α → M_α` statement and the `G_q = 0` exhaustiveness all absent. Re-reading
+`FiveRowRank` past the line where E131 stopped, and following it forward into `MeanRankUpdate`,
+finds a declaration for each of those three. The row is placed; the ledger moves to 18 placed,
+5 partial, 50 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 8.7` (p. 97), eight clauses:
+
+| | Clause |
+|---|---|
+| a | three fixed azimuthal bump profiles and two fixed axial bump profiles, supported in `I_m` |
+| b | a unique linear combination solving the five equations (8.25), for arbitrary targets `(P, J_θ, J_z)` at each `(Z,T)` |
+| c | targets normalized row by row as in (8.17) |
+| d | increments independent of the angular and auxiliary variables, linear in the targets |
+| e | for every `α`, targets in `S_α` give increments in `M_α` at every fixed coefficient derivative, constants permitted to depend on `λ` |
+| f | the (8.14) realization has `Δγ = γ_d` exactly and `Δβ ∈ M_{α+1}` |
+| g | the two integral constraints of (8.2) preserved exactly |
+| h | with the current defects as targets, the last three rows cancel the displayed base contributions |
+
+### 2. Where each clause is stated
+
+| Clause | Declaration | Note |
+|---|---|---|
+| a | `FiveRowRank.deltaV` (`:100`), `gamma` (`:105`), built by `LocalizedMomentRepair.repair` (`:114`) | five disjoint cells, not the paper's three scaled copies; `tsupport ⊆ Ioo a b` at `:126`, `:131` |
+| b (rows) | `FiveRows` (`:241`), `five_rows_on_patch` (`:249`), `five_rows` (`:280`) | all five equations, as one predicate, proved |
+| b (existence) | `exists_five_row_repair` (`:311`) | smooth, compact support, inside the patch, no moment-rank hypothesis |
+| b (uniqueness) | `LocalizedMomentRepair.matrix` (`:88`), `matrix_det_ne_zero` (`:91`), `coefficients := (matrix)⁻¹.mulVec d` (`:111`) | see §4 |
+| c | `angularPowers` (`:81`) `= ![2, -2-2λ, -2λ]`, `axialPowers` (`:82`) `= ![1, 1-2λ]`; `angularDebt` (`:94`) `= ![0, -P/(2C), J_z/C]`, `axialDebt` (`:97`) `= ![0, -J_θ/C]` | the debts are the targets divided by the three row coefficients `2C`, `C`, `C` — (8.17) with `q` for `Q` |
+| d | `deltaVLinearMap` (`:348`), `gammaLinearMap` (`:353`), `deltaV_add` (`:363`), `deltaV_smul`, `repair_eq_sum_coordinate` (`:232`) | functions of `R` alone |
+| e | `MeanRankUpdate.rank_update_meanClass` (`:899`) | see §3, second negative |
+| f | `MeanRankUpdate.radial_physical_scale_gain` (`:1660`) | `MeanClass s α β → MeanClass s (α+1) (ε • β)`: `ε` is the only thing that raises the class, which is (8.14) |
+| g | `angular_mass_zero` (`:158`), `axial_mass_zero` (`:163`); `DefectIncrementBounds.fiveRows_preserve_masses` (`:635`), `fiveRows_mass_zero` (`:621`) | |
+| h | `DefectIncrementBounds.linearRows_eq_neg_of_fiveRows` (`:650`); `CorrectionState.rank_model_rows` (`:449`), `rank_rows_on_patch` (`:462`); `DefectIncrementBounds.fiveRows` (`:775`) | rows for the actual stream, not for a desired increment |
+
+The normalization check is the sharpest one in the row and it is arithmetic: the paper's three
+coefficients in (8.25) are `2V/R`, `R²V`, `-RV`; on (8.24) with `V = C R^{-1-2λ}` and `G = 0`
+those are `2C R^{-2-2λ}`, `C R^{1-2λ}`, `-C R^{-2λ}`, i.e. the three powers `2`, `-2-2λ`, `-2λ`
+scaled by `2C`, `C`, `C`. The tree's debt slots are `-P/(2C)`, `-J_z/C`, `-J_θ/C`, the same
+three divisors, against those same three powers. E131's exponent match is confirmed and is now
+tied to the normalization rather than standing beside it.
+
+### 3. The three negatives E131 recorded, and why each was wrong
+
+**(i) "The explicit block inverses … it is not `A_θ` and `A_z`, and it carries no inverse
+norm."** E131 compared the paper's displayed matrices against
+`PowerMomentMatrix.powerEvaluationMatrix_det_ne_zero` and stopped there. `LocalizedMomentRepair.matrix`
+*is* the block: `PowerMomentMatrix.bumpMomentMatrix a (fun j => bump (l j) (u j))`, instantiated by
+`FiveRowRank` at `a := angularPowers lam` and `a := axialPowers lam`. `matrix_det_ne_zero` proves
+it nonsingular, and `coefficients` does not merely assert an inverse — it *is* `(matrix a l u)⁻¹`
+applied to the debt. The norm half is present too, and stronger than the paper asks: `FiveRowRank.finite_jet_bound`
+(`:444`) bounds every derivative through a prescribed order by `K ‖C⁻¹‖ ‖d-e‖` uniformly in space,
+and `uniform_finite_jet_bound` (`:474`) removes the `C⁻¹` for `|C| ≥ η`. That is the paper's
+"the inverse may deteriorate as `λ ↓ 0`; no uniformity in that limit is required" turned into a
+theorem with the deterioration displayed rather than waved at.
+
+**(ii) "No single declaration states `S_α → M_α`."** `MeanRankUpdate.rank_update_meanClass`
+(`:899`) states it, and its docstring names the paper's own equation: *"Equation (35) maps the
+slow defect class `S_α` to `M_α` in every finite stripped jet, uniformly over the band index."*
+Its conclusion is `MeanClass s α` in both blocks from `UnweightedClass s α` on the debt family.
+E131 searched `MeanResidualBounds` and `MeanIncrementBounds` — the interface records — and did not
+open the class layer that satisfies them.
+
+**(iii) "`G_q = 0` exhaustiveness … no declaration derives it from (8.24)."**
+`five_rows_on_patch` takes `hV : ∀ R ∈ Ioo a b, V R = background lam C R` and
+`hG : ∀ R ∈ Ioo a b, G R = 0`, and proves all five rows for *arbitrary* `V`, `G` satisfying those
+pointwise identities. That is (8.24) as a hypothesis pair, with the rows as the conclusion. It is
+then discharged on the real thing: `MeanRankUpdate.reserved_five_rows` (`:1399`) derives both from
+`ReservedPatches.radial_heated_fields` on the untouched heated outgoing patch, and
+`MeanRankUpdate.physical_rows_on_patch` (`:194`) transports it through the physical scaling.
+
+The pattern is E94's, running the other way. E94 recorded a *positive* finding as missing because
+the paper's word was not the tree's name; E131 recorded three *negatives* on the same basis. A
+negative is only as strong as the search vocabulary behind it, and E131's vocabulary was the
+paper's (`A_θ`, `A_z`, "inverse norm", `S_α → M_α`), not the tree's (`matrix`, `coefficients`,
+`finite_jet_bound`, `rank_update_meanClass`). One entry later, E127's half-loss came back for the
+same reason under the name `meanCross`. Three entries, five misses, one cause.
+
+### 4. What is left, stated as shape rather than as absence
+
+Two differences survive, and neither is an unmatched clause:
+
+* **Uniqueness of the combination is not a named lemma.** It is `det ≠ 0` on a square moment
+  matrix plus an inverse that is actually used in the definition of `coefficients`. That is the
+  content of "unique"; it is not a theorem called `unique`. A reader who wants the sentence
+  spelled out will not find it, and that is a shape difference, not a gap.
+* **The lemma is stated in two modules.** The algebra is in `FiveRowRank`; the class half is in
+  `MeanRankUpdate`, which imports it. E131's complaint about assembly was fair as a description
+  and wrong as a verdict: every clause has its own declaration, which is what "placed" has meant
+  since E91.
+* **One naming question remains and does not affect the exponent.** The paper's `S_α` for targets
+  may be the tree's weighted `MemClass` rather than the `UnweightedClass` that
+  `rank_update_meanClass` consumes. Both carry the index `α`, and `MeanClass`/`MemClass` are the
+  mean and weighted forms of one predicate family. This is a vocabulary question of exactly the
+  E94 kind, and it is recorded here as the first thing a re-read should test rather than as a
+  clause that failed.
+
+### 5. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 17 | 18 |
+| partial | 6 | 5 |
+| unplaced | 50 | 50 |
+| **total** | **73** | **73** |
+
+`NEXT.md` keeps its fifty rows. The remaining five partials are Proposition 9.3, Proposition 6.6,
+Lemma 8.6, Lemma 9.7 and Lemma 10.2 — and Lemma 8.6 is now the only one in §8.
+
+*Evidence: `.setup/paper/ns.txt:4955–4990` (Lemma 8.7), `:4826` (8.17), `:4996–5030` (Step 2, the
+two blocks), `:5041` (Lemma 8.8); `FiveRowRank.lean:81–131,146–311,348–363,444–500`;
+`LocalizedMomentRepair.lean:88,91,111,114,165,232,329`; `MeanRankUpdate.lean:163,194,899,1399,1620,1660`;
+`CorrectionState.lean:449,462,478`; `DefectIncrementBounds.lean:621,635,650,775`; E94; E127; E131.
+Reading only — nothing compiled.*

@@ -2,16 +2,16 @@
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which seventeen are placed, six are partial, and **fifty are unplaced**.
-The ledger in `CROSSWALK.md` carries **73** as its denominator and therefore 52 unplaced. The
-two counts differ by one, and the difference is recorded below rather than smoothed away.
+extracted text, of which eighteen are placed, five are partial, and **fifty are unplaced**.
+The ledger in `CROSSWALK.md` carries the same **73** as its denominator and the same three
+counts, so there is no discrepancy to record here.
 
 This file is a work order, not a finding. Nothing here has been read yet, and no row below
 carries any audit conclusion.
 
 ## The denominator, settled
 
-The ledger and this file now agree on **73** numbered results: 16 placed, 7 partial, 50
+The ledger and this file now agree on **73** numbered results: 18 placed, 5 partial, 50
 unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
 lemmas, 7 corollaries); the text has 37 lemmas. The indices 6.3–6.5, 9.4 and B.9 are section
 numbering, not results — 9.4 is the §9.4 heading. See E135. The fifty-two rows below are the
@@ -100,8 +100,8 @@ the two partials are partial on statement shape, not on content.*
    sections.
 2. **Lemma 10.5** (p. 121) — completes the pair behind the compact assembly.
 3. **The §8 mean-correction rows** (Proposition 8.1, Lemma 8.2, Corollary 8.5, pp. 90–95) — the
-   compatibility defects feeding Lemma 8.7, which is one of the six partials. Reading these is
-   what would let the §8 partials be promoted rather than left assembled.
+   compatibility defects feeding the mean correction. Lemma 8.7 left the partial column in
+   E140; Lemma 8.6 is now the only §8 partial, and reading these rows is what would finish it.
 
 ## Standing limits
 
