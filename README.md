@@ -20,8 +20,8 @@ The audit's two findings:
 | `MANUSCRIPT.tex` | The audit paper. LuaLaTeX or XeLaTeX. |
 | `MANUSCRIPT.pdf` | The typeset paper: 27 pages, LuaLaTeX, built by `typeset.yml` (E78). |
 | `CAVEMAN.pdf`, `LAYMAN.pdf` | The two standalone reader editions: 23 and 17 pages, pandoc and XeLaTeX in the same workflow, 0 missing glyphs in either edition. |
-| `AUDIT_LOG.md` | The working log: entries E0–E150, every `path:line` citation behind the paper. |
-| `CROSSWALK.md` | The published paper against the Lean tree: sections labelled `cited`, `object` or `family` (E89), the twenty paper labels the source cites verbatim (E90), and the per-result ledger — 73 numbered results, 26 placed, 2 partial, 0 cited-unchecked (E91–E150). |
+| `AUDIT_LOG.md` | The working log: entries E0–E151, every `path:line` citation behind the paper. |
+| `CROSSWALK.md` | The published paper against the Lean tree: sections labelled `cited`, `object` or `family` (E89), the twenty paper labels the source cites verbatim (E90), and the per-result ledger — 73 numbered results, 27 placed, 1 partial, 0 cited-unchecked (E91–E151). |
 | `NEXT.md` | The work order for the remaining 45 unplaced results: page, statement line, candidate modules, and the order the chain consumes them, at the settled denominator of 73 (E135). |
 | `PHASE2-FINDINGS.md` | Second-pass findings: the anisotropic weights, the three "free doors", the packets. |
 | `LEADS.md` | Working reading notes, not promoted to log entries: statement fidelity end to end, the estimate chain down to its floor, the pressure-flux bodies, and the unused alternate branch (E77). |
@@ -76,4 +76,4 @@ The Euler development was outside this audit until E79. That entry now runs its 
 
 Independent commentary, not affiliated with OpenAI. The upstream repository's own licence governs its code; the audit documents are the authors' own work.
 
-<!-- ledger: placed=26 partial=2 unplaced=45 total=73 -->
+<!-- ledger: placed=27 partial=1 unplaced=45 total=73 -->

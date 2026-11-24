@@ -7415,3 +7415,80 @@ So the row stays partial, with E136's first reason narrowed to one missing suppo
 | **total** | **73** | **73** |
 
 *Evidence: `.setup/paper/ns.txt:5997–6030` (Lemma 10.2, (10.6)–(10.10)); `JointResidualLimits.lean:81,84,120,126,141,148,156,220,238,240,264,308`; `CandidateFromLimits.lean:75,94,150,158,175`; `R3CompactCandidate.lean:24,42,90,99`; `PeriodicResidualLimits.lean:220–260`; E136; E137; E144; E149. Reading only — nothing compiled.*
+
+---
+
+## E151 — Lemma 8.8 is placed: `R_g` is a definition, (8.27) is an exact identity, and the gain is derived at the paper's exponent (2026-11-24)
+
+*Reading entry. The §8.6 gain lemma is the strongest match in the §8 column. The paper's `R_g` is `actualRadialError`, defined as `gr(new) − gr(old) − (2V/R)Δv`; (8.26) is a theorem about it, derived from the averaged equation; (8.27) is `defects_after_solved_rows`, an identity that holds before any estimate is applied; and `H + 9/10 − 2κ` is `α + 0.9 − 2κ_s` with the paper's own hypotheses. The row is placed; the ledger moves to 27 placed, 1 partial, 45 unplaced.*
+
+### 1. What the paper asks
+
+`Lemma 8.8` (pp. 98–99, `.setup/paper/ns.txt:5041–5099`). Suppose the base satisfies (8.24) with `λ > 0` and `|a(η)| ≥ a₀ > 0`; let `(β, v, γ)` be a smooth divergence-free mean correction supported in the active shell; form `g_r` and `(P, Jθ, Jz)` by (8.3), (8.12), (8.15); apply Lemma 8.7 with the three defects as targets; realize `γ_d` by (8.14). Then
+
+| Clause | Paper's claim |
+|---|---|
+| a | `R_g := g_{r,new} − g_r − (2V/R)Δv` equals the displayed (8.26) |
+| b | `P_new = ∫⟨R_g⟩_Y dR`, `(Jθ)_new = ∫R²⟨γΔv + vΔγ + ΔγΔv⟩_Y dR`, `(Jz)_new = ∫R⟨2γΔγ + (Δγ)²⟩_Y dR − ½∫R²⟨R_g⟩_Y dR` (8.27) |
+| c | under base coefficient bounds and `v, γ ∈ M_{0.9}`, `β ∈ M_{1.9}`, targets in `S_α` for `α ≥ 0.9`: `R_g ∈ M_{α+0.9−2κ_s}` and the three new defects in `S_{α+0.9−2κ_s}` |
+
+### 2. `R_g` is the definition, and (8.26) is derived
+
+| Paper | Declaration | Statement |
+|---|---|---|
+| `R_g` | `actualRadialError o base m h W` (`:349`) | `gr o base (updated m h) W − gr o base m W − leadingRadial o base h` |
+| `(2V/R)Δv` | `MeanIncrementBounds.leadingRadial` (`:365`) | `o.invRadius * ((2 : ℝ) • (base.angular * h.angular))` |
+| (8.26) | `actualRadialError_eq_formula` (`:395`) | `Agree U (actualRadialError …) (radialRemainder o base m h)` |
+
+`radialRemainder` (`MeanIncrementBounds.lean:368–371`) is `−time(β) − radialDiv 1(δ_{rr}) − dz(δ_{zr}) + invRadius·radialAngularRemainder + viscosity 1(β)`. The three deltas are the paper's three groups: `δ_{rr}` carries `2bΔβ + 2βΔβ + (Δβ)²`, `δ_{zr}` the `bΔγ + GΔβ + βΔγ + γΔβ + ΔβΔγ`, and `radialAngularRemainder` the `(2vΔv + (Δv)²)/R`. The identity is not assumed: `gr_change` (`:683`) derives it by splitting `gr(updated) − gr` through `radialRadial_updated` and `radialAngular_updated` and expanding the products. So clause (a) is a theorem, and it is the paper's own derivation.
+
+### 3. (8.27) is an identity, before any estimate
+
+`defects_update` (`:474`) is the exact split
+
+```
+defects(new) = defects(old) + linearRows(h) + remainders(m, h),
+```
+
+with `linearRows` (`:340`) the three rows of (8.25) — pressure `barMoment 0 (leadingRadial)`, angular `barMoment 2 (thetaLeading)`, axial `barMoment 1 (axialLeading) − ½ barMoment 2 (leadingRadial)`, i.e. the paper's minus sign and factor one half — and `remainders` (`:339`) the paper's right-hand side:
+
+| (8.27) | `remainders` component |
+|---|---|
+| `P_new = ∫⟨R_g⟩_Y dR` | `barMoment 0 (actualRadialError …)` |
+| `(Jθ)_new = ∫R²⟨γΔv + vΔγ + ΔγΔv⟩` | `barMoment 2 (thetaQuadratic m h)`, `thetaQuadratic = m.axial*h.angular + h.axial*m.angular + h.axial*h.angular` |
+| `(Jz)_new = ∫R⟨2γΔγ + (Δγ)²⟩ − ½∫R²⟨R_g⟩` | `barMoment 1 (axialQuadratic m h) − ½ barMoment 2 (actualRadialError …)`, `axialQuadratic = 2•(m.axial*h.axial) + h.axial*h.axial` |
+
+Then `defects_after_solved_rows` (`:504`) applies "Lemma 8.7 with these three defects as its targets" in the tree's form, `linearRows o base h = -defects o base m W`, and cancels: `defects o base (updated m h) W = remainders o base m h W`. The cancellation is what supplies the claim that the increments have zero angular momentum and zero axial flux: `fiveRows_mass_zero` (`:621`) proves `barMoment 2 h.angular = 0 ∧ barMoment 1 h.axial = 0` from the rows, and `fiveRows_preserve_masses` (`:635`) carries the two constraints through the update. That is `γ_d = Δγ` and the last three rows of (8.25) cancelling the old defects.
+
+### 4. The exponent, and every hypothesis
+
+The paper's gain is `α + 0.9 − 2κ_s`; the tree's is `H + 9/10 − 2 * κ`, and `H` is the increment's own class:
+
+| Paper | Lean |
+|---|---|
+| `v, γ ∈ M_{0.9}` | `IncrementBounds.angular`, `.axial : MeanClass s H` — at `H = 0.9` these are the paper's classes exactly, and stronger for `H > 0.9` |
+| `β ∈ M_{1.9}` | `IncrementBounds.radial : MeanClass s (H + 1)` |
+| `α ≥ 0.9` | `hH : 9 / 10 ≤ H` |
+| `R_g ∈ M_{α+0.9−2κ_s}` | `actualRadialError_mem` (`:440`), `MeanClass s (H + 9/10 − 2κ)` |
+| the three new defects in `S_{α+0.9−2κ_s}` | `remainders_mem` (`:556`) and `defects_after_rank_mem` (`:567`), `UnweightedClass (H + 9/10 − 2κ)` on the moment-integrated strip |
+
+The hypothesis structures are the paper's, one for one: `BaseBounds s base` is (8.24)'s coefficient bounds `C_I ε S^{B_I}_*`; `OperatorBounds s o κ` is the operator layer's `κ` loss; `CumulativeBounds s m` is the current correction's class `M_{0.9}`/`M_{1.9}`; `IncrementBounds s H h` is the paper's `v, γ ∈ M_{0.9}`, `β ∈ M_{1.9}` written at the target class. `RankGeometry` (`:735–800`) supplies the geometry and discharges "apply Lemma 8.7": `solved_rows` composes `fiveRows` with `linearRows_eq_neg_of_fiveRows`, and `debt_eq_remainders` (`:838`) instantiates `defects_after_solved_rows` on the actual constructed stage. `rankStage_defect_class` (`:855`) then states the debt of the actual `rankStage` at `H + 9/10 − 2κ`, and `rankStage_defectBounds` (`:870`) weakens it to `DefectBounds σ` whenever `1 + σ ≤ H + 9/10 − 2κ` — which is how the iteration consumes it.
+
+### 5. Three shape differences, recorded rather than smoothed
+
+* **Divergence-freeness is not a binder of this lemma.** The paper's `(β, v, γ)` is assumed smooth, divergence-free and supported in the shell; the tree's `ShellTriple` gives smoothness and support, and divergence lives one layer down in the mean-increment construction (`MeanIncrementBounds` / `StateMomentBalances`), as E141 recorded for the increment triple. Nothing in (8.26)–(8.27) uses divergence, so this is a locality of statement rather than a missing hypothesis.
+* **Local bounds become strip bounds.** The paper requires the base coefficients bounded "on the support of the azimuthal potential for this correction"; `BaseBounds` and `OperatorBounds` are stated on the whole logarithmic strip. Stronger, and it removes the need to re-establish the bound on each patch.
+* **The paper's `M`/`S` are the tree's `MeanClass`/`UnweightedClass`.** The `S` side is the moment-integrated strip `MeanMomentBounds.slowStripData`, so the "belongs to `S_α`" conclusion is a class of the actual radial moments, not of the pre-integration field. That is what (8.15) defines and what the five rows consume.
+
+No clause is matched only by a component. The one thing this entry does not claim is that the proof of `defects_after_rank_mem` is valid — it is statement-level reading, as every placed row is.
+
+### 6. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 26 | 27 |
+| partial | 2 | 1 |
+| unplaced | 45 | 45 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:5041–5099` (Lemma 8.8, (8.26)–(8.27)); `DefectIncrementBounds.lean:300–360` (`leadingRadial`, `thetaLeading`, `axialLeading`, `thetaQuadratic`, `axialQuadratic`, `actualRadialError`, `defects`, `linearRows`, `remainders`), `:380–460` (the splits, `actualRadialError_eq_formula`, the class bounds), `:470–515` (`defects_update`, `defects_after_solved_rows`), `:556,567` (`remainders_mem`, `defects_after_rank_mem`), `:621,635,650`; `:735–875` (`RankGeometry`, `solved_rows`, `debt_eq_remainders`, `rankStage_defect_class`, `rankStage_defectBounds`); `MeanIncrementBounds.lean:365–371,683,747`; `MeanLocalDefectBounds.lean:94`; E139; E140; E141. Reading only — nothing compiled; "placed" is statement-level.*

@@ -389,6 +389,18 @@ gives their compact support. What is missing is one statement — that the *limi
 that compact — without which `boundaryLimits_uniformOn_compact` does not upgrade to uniformity on
 `ℝ³`. E136's first reason narrows to that single support statement, its second to a naming difference.
 
+E151 places **Lemma 8.8**, the §8.6 gain lemma, and it is the closest match in the column: the
+paper's `R_g` is `actualRadialError`, *defined* as `gr(new) − gr(old) − (2V/R)Δv` with
+`leadingRadial = invRadius * (2 • (base.angular * h.angular))`; (8.26) is `actualRadialError_eq_formula`,
+derived from `gr_change`; and (8.27) is `defects_after_solved_rows`, an identity `defects(new) =
+remainders` that holds once `linearRows = −defects(old)` cancels the old rows. The three remainders are
+the paper's three displays, including the `− ½ barMoment 2` in the axial flux. The gain is
+`H + 9/10 − 2κ`, which is `α + 0.9 − 2κ_s` with `9/10 ≤ H`, and the two zero-mass constraints are
+`fiveRows_mass_zero` and `fiveRows_preserve_masses`. Three shape differences are recorded: divergence
+lives in the increment layer rather than in this lemma's binders, the base bounds are strip-wide rather
+than local to the azimuthal support, and `S_α` is the moment-integrated `UnweightedClass`. Lemma 10.2
+therefore leaves the partial column, and Lemma 9.7 is the only row left there: 27 placed, 1 partial.
+
 ### Unplaced (the rest)
 
 Fifty-nine, and slice three moved five of them (below). They are sections 4–10 and the
@@ -420,8 +432,8 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 26 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149) |
-| partial — components exist, statement not matched | 2 | Lemma 9.7 (E133), Lemma 10.2 (E150) |
+| placed, statement read | 27 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151) |
+| partial — components exist, statement not matched | 1 | Lemma 9.7 (E133) |
 | cited in a docstring, unchecked | 0 | — |
 | unplaced | 45 | the rest |
 | **total** | **73** | |
@@ -463,4 +475,4 @@ breakdown that counted 38 lemmas; a full-text scan finds 73 names in 3/26/37/7, 
    weights, the Euler clause drift) are unchanged by the table, and the table does not
    support any claim that the paper's argument is wrong.
 
-<!-- ledger: placed=26 partial=2 unplaced=45 total=73 -->
+<!-- ledger: placed=27 partial=1 unplaced=45 total=73 -->
