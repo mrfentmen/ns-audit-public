@@ -7157,7 +7157,7 @@ The four partials stay Proposition 9.3, Proposition 6.6, Lemma 9.7 and Lemma 10.
 
 ## E146 — Proposition 8.1 is placed: the mean residual decomposition is *derived*, not defined (2026-11-24)
 
-*Reading entry. The §8.1 proposition states what the angular mean of the residual is. The tree does not merely define the three components: `MeanResidual` proves the decomposition as an identity from the averaged equations, with the base terms subtracted and the angular derivative dropped by the zero-mean hypothesis. The row is placed; the ledger moves to 23 placed, 3 partial, 46 unplaced.*
+*Reading entry. The §8.1 proposition states what the angular mean of the residual is. The tree does not merely define the three components: `MeanResidual` proves the decomposition as an identity from the averaged equations, with the base terms subtracted and the angular derivative dropped by the zero-mean hypothesis. The row is placed; the ledger moves to 23 placed, 4 partial, 46 unplaced.*
 
 ### 1. What the paper asks
 
@@ -7211,7 +7211,7 @@ The tree's `time` operator carries the fast term as a coefficient times the auxi
 | Status | Before | After |
 |---|---|---|
 | placed | 22 | 23 |
-| partial | 4 | 3 |
+| partial | 4 | 4 |
 | unplaced | 47 | 46 |
 | **total** | **73** | **73** |
 
@@ -7221,7 +7221,7 @@ The tree's `time` operator carries the fast term as a coefficient times the auxi
 
 ## E147 — Lemma 8.2 is placed: the primitive, its exact radial identity, and the moment that kills the remainder (2026-11-24)
 
-*Reading entry. The compactly supported primitive of §8.2 is `SignedStressPrimitive`: the integral, the division by `r^e`, the exact `D_e T_e f = f − A_e f` identity at both connection weights, support in the active shell with no growth in `Z`, and the `M_α` class. The moment condition is not assumed — `bumpCorrection_moment` makes the remainder's moment equal the source's, so under the paper's hypothesis the remainder is identically zero, which is stronger than (8.8). The row is placed; the ledger moves to 24 placed, 3 partial, 45 unplaced.*
+*Reading entry. The compactly supported primitive of §8.2 is `SignedStressPrimitive`: the integral, the division by `r^e`, the exact `D_e T_e f = f − A_e f` identity at both connection weights, support in the active shell with no growth in `Z`, and the `M_α` class. The moment condition is not assumed — `bumpCorrection_moment` makes the remainder's moment equal the source's, so under the paper's hypothesis the remainder is identically zero, which is stronger than (8.8). The row is placed; the ledger moves to 24 placed, 4 partial, 45 unplaced.*
 
 ### 1. What the paper asks
 
@@ -7262,7 +7262,7 @@ The paper's flatness clause is conditional on `∫ R^e ⟨f⟩_Y dR = 0`. The tr
 | Status | Before | After |
 |---|---|---|
 | placed | 23 | 24 |
-| partial | 3 | 3 |
+| partial | 4 | 4 |
 | unplaced | 46 | 45 |
 | **total** | **73** | **73** |
 
@@ -7303,10 +7303,10 @@ E129's verdict was "components only", and it was correct about the *table*: ther
 | Status | Before | After |
 |---|---|---|
 | placed | 24 | 25 |
-| partial | 3 | 2 |
+| partial | 4 | 3 |
 | unplaced | 45 | 45 |
 | **total** | **73** | **73** |
 
-The two remaining partials are Proposition 9.3 (E127, narrowed in E144) and Lemma 9.7 (E133, structural), plus Lemma 10.2 (E136) — three rows, and §6 now has none.
+The three remaining partials are Proposition 9.3 (E127, narrowed in E144), Lemma 9.7 (E133, structural) and Lemma 10.2 (E136). §6 now has none.
 
 *Evidence: `.setup/paper/ns.txt:3640-3710` (Proposition 6.6, (6.30)–(6.32)); `MeanLocalCoefficient.lean:11-20,41-70`; `TemporalMeanUpdate.lean:286,300,319,335`; `MeanChartCompatibility.lean:624,658,676`; `WeightedClasses.lean:247,299,335`; E129; E141; E145. Reading only — nothing compiled.*
