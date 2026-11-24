@@ -7492,3 +7492,108 @@ No clause is matched only by a component. The one thing this entry does not clai
 | **total** | **73** | **73** |
 
 *Evidence: `.setup/paper/ns.txt:5041–5099` (Lemma 8.8, (8.26)–(8.27)); `DefectIncrementBounds.lean:300–360` (`leadingRadial`, `thetaLeading`, `axialLeading`, `thetaQuadratic`, `axialQuadratic`, `actualRadialError`, `defects`, `linearRows`, `remainders`), `:380–460` (the splits, `actualRadialError_eq_formula`, the class bounds), `:470–515` (`defects_update`, `defects_after_solved_rows`), `:556,567` (`remainders_mem`, `defects_after_rank_mem`), `:621,635,650`; `:735–875` (`RankGeometry`, `solved_rows`, `debt_eq_remainders`, `rankStage_defect_class`, `rankStage_defectBounds`); `MeanIncrementBounds.lean:365–371,683,747`; `MeanLocalDefectBounds.lean:94`; E139; E140; E141. Reading only — nothing compiled; "placed" is statement-level.*
+
+## E152 — Proposition 8.3 is placed: the pressure residual, the bar derivative and the three stream classes are all declarations (2026-11-24)
+
+*Reading entry. The §8.3 reconstruction proposition splits into pressure and axial velocity, and every clause is a declaration rather than an assembly: (8.13) with both the bump mass and the cutoff alias displayed, the bar derivative, `P ∈ S_α`, `pm ∈ M_α`, the same-class difference, zero auxiliary mean, superflat alias; and for the stream, `r⁻¹Ic(rγd)`, `Δγ = γd − A₁γd`, exact divergence-freeness including the axis, the bar equality, the pointwise clause, and the classes at the paper's `α`, `α` and `α+1`. The row is placed; the ledger moves to 28 placed, 1 partial, 44 unplaced.*
+
+### 1. What the paper asks
+
+`Proposition 8.3` (pp. 92–93, `.setup/paper/ns.txt:4735–4780`), after fixing the radial operators of Lemma 8.2 and the bump `ρ` with `∫ρ dR = 1`:
+
+| Part | Clause |
+|---|---|
+| (i)a | `P = ∫⟨gr⟩_Y dR`, `pm = T0(gr − ρP)` |
+| (i)b | `Dr pm − gr = −ρP − A0(gr − ρP)`; `∂R⟨pm⟩_Y = ⟨gr⟩_Y − ρP` |
+| (i)c | `gr ∈ M_α ⟹ P ∈ S_α`, `pm ∈ M_α`; differences at the same class |
+| (i)d | the cutoff remainder has zero auxiliary mean and is flat at every fixed derivative order |
+| (ii)a | `Ψ = r⁻¹Ic(rγd,phys)`, `Ψ* = T1γd`, `Δβ = −ε∂ZΨ*`, `Δγ = (Dr + 1/R)Ψ* = γd − A1γd` |
+| (ii)b | `(Δβ, 0, Δγ)` divergence-free; `⟨Δγ⟩_Y = ⟨γd⟩_Y` |
+| (ii)c | `γd ∈ M_α ⟹ Ψ*, Δγ ∈ M_α` and `Δβ ∈ M_{α+1}` |
+| (ii)d | `γd` independent of `Y` and `∫R⟨γd⟩_Y dR = 0` ⟹ `Δγ = γd` pointwise |
+| (ii)e | compact support in the active shell; the source `(Z,T)`-projection retained |
+
+### 2. Part (i): every line of (8.13) is a theorem
+
+| Paper | Declaration | Statement |
+|---|---|---|
+| `P` | `PressureStream.pressureMass f s` (`:121`) | `∫ r, torusAverage f (r, s)` |
+| `gr − ρP` | `pressureSource a b hab f` (`:154`) | `f p − rho a b hab p.1 * pressureMass f p.2.1` |
+| `T0` | `meanPressure d a b M hab v f` (`:383`) | `physicalCompact d a b M (0, v) (pressureSource a b hab f)` |
+| `A0` | `pressureAlias d a b M hab v f` (`:387`) | the same primitive's cutoff derivative |
+
+`meanPressure_radial_residual_global` (`:796`) then states
+
+```
+graphDr (physicalSpeed d M) (0, v) (meanPressure … f) p − f p
+  = −rho a b hab p.1 * pressureMass f p.2.1 − pressureAlias d a b M hab v f p ,
+```
+
+which is (8.13) with `A0(gr − ρP)` written as `pressureAlias`. A second form, `meanPressure_radial_residual_cutoff` (`:809`), expands the alias as `deriv (physicalCutoff d a b) p.1 * physicalTotal d a M (0,v) (pressureSource …) p` — the paper's cutoff remainder named as a derivative of the bump times the primitive. `meanPressure_bar_hasDerivAt` (`:697`) states
+
+```
+HasDerivAt (fun R => torusAverage (meanPressure … f) (R, s))
+  (torusAverage f (r, s) − rho a b hab r * pressureMass f s) r ,
+```
+
+derived from `meanPressure_bar_eq_integral` (`:682`), not assumed: the integral representation is proved first, then differentiated by the fundamental theorem.
+
+The four class and remainder clauses:
+
+| Clause | Declaration | Statement |
+|---|---|---|
+| `P ∈ S_α` | `barMoment_mem` (`DefectIncrementBounds.lean:281`) | `MeanClass logStrip α f` + `Shell a b f` ⟹ `UnweightedClass (slowStripData) α (barMoment 0 f)` |
+| `pm ∈ M_α` | `meanClass_meanPressure` (`MeanIncrementBounds.lean:968`) | `MeanClass logStrip α f` ⟹ `MeanClass logStrip α (meanPressure … f)` |
+| differences | `meanClass_meanPressure_change` (`:985`) | `MeanClass α (f − g)` ⟹ `MeanClass α (meanPressure f − meanPressure g)`, linearity by `meanPressure_sub` (`:936`) |
+| zero mean | `pressureAlias_mean_zero` (`PressureStream.lean:616`) | `torusAverage (pressureAlias …) p = 0` |
+| superflat | `dividedAlias_superflat` (`TemporalMeanUpdate.lean:1157–1174`) | `∀ m N, ∃ C ≥ 0, ∀ᶠ n, ∀ j ≤ m, ∀ z, ‖iteratedFDeriv j (divideRadius (physicalAlias …)) z‖ ≤ C * ε n ^ N` |
+
+`barMoment 0` is `pressureMass`: `barMoment_apply` (`:295`) rewrites it as `IntegratedMeanBalances.radialMoment 0 (torusAverage f)`, which is the same integral. So `S_α` here is the moment-integrated strip, exactly as in E151, and the statement's hypotheses (`Shell a b`) are the paper's "smooth shell-supported source".
+
+### 3. Part (ii): the ε is in the direction, not added afterwards
+
+| Paper | Declaration | Statement |
+|---|---|---|
+| `Ψ = r⁻¹Ic(rγd)` | `streamPotential d a b M v γd` (`:438`) | `divideRadius (physicalCompact d a b M v (weightedSource γd))`, with `weightedSource γd p = p.1 * γd p` (`:423`) |
+| `Δβ = −∂ZΨ` | `streamBeta w Ψ` (`:310`) | `−graphDz w Ψ` |
+| `Δγ = (Dr + 1/R)Ψ` | `streamGamma k v Ψ` (`:313`) | `graphDr k v Ψ + divideRadius Ψ` |
+| `γd − A1γd` | `streamGamma_eq_desired_sub_alias_global` (`:759`) | `streamGamma … p = γd p − physicalAlias … p / p.1`, every `p`, axis included |
+
+The three class claims are three declarations, and the exponent on the third is the point of the row:
+
+| Paper | Declaration | Exponent |
+|---|---|---|
+| `Ψ* ∈ M_α` | `meanClass_streamPotential` (`TemporalMeanUpdate.lean:893–915`) | `α` |
+| `Δγ ∈ M_α` | `meanClass_streamGamma` (`PhysicalMeanDomain.lean:1616`) | `α` |
+| `Δβ ∈ M_{α+1}` | `meanClass_scaledRadialUpdate` (`TemporalMeanUpdate.lean:1097`) | `α + 1` |
+
+`meanClass_streamBeta` (`:916–930`) states the *unscaled* `streamBeta` at `α`: the tree does not claim that a bare axial derivative gains an exponent. The gain is stated for the scaled direction — `radialUpdate d a b (M n) (v n) (ε n • w) h n (f n)` lands in `MeanClass (α + 1)` because the band scale is a `BandBound 1 ε` and `band_smul` adds one. That is the object the construction actually builds: `CorrectionState.rankIncrement.radial` (`CorrectionState.lean:434`) is `streamBeta (c.operators.epsilon n • axial) (rankPotential …)`. So the paper's `Δβ = −ε∂ZΨ*` is not assembled in this proposition — the `ε` sits inside the vector the derivative is taken along, which is where the paper's own `Q^{1/2−D} = Q^h = ε` puts it.
+
+### 4. Divergence, bar and pointwise
+
+* `reconstructed_divergence_zero` (`:740`) proves `graphDivergence (physicalSpeed d M) v w Δβ Δγ p = 0` for every `p`, with an explicit axis branch: below `a` both fields and their derivatives vanish (`radial_zero_of_lt`, `radialSupport_fderiv`), so the `1/r` in `Δγ` never meets `r = 0`. The paper's commutation `(r + r⁻¹)(−∂zΨ) + ∂z((r + r⁻¹)Ψ) = 0` is `stream_divergence_zero` (`:321`), proved from `graphDr_graphDz_comm` (`:233`) — symmetry of the second derivative plus the vanishing cross derivative of the radial vector field.
+* `⟨Δγ⟩_Y = ⟨γd⟩_Y` is `streamGamma_bar_eq_desired` (`:843`). Its hypothesis is the paper's `∫ R⟨γd⟩_Y dR = 0` at every `(Z,T)` together with periodicity; `torusAverage_physicalAlias` (`:589`) makes the alias average vanish exactly, by the same `pressureSource_mass_zero` that part (i) uses.
+* The pointwise clause is `slow_streamGamma_eq_desired` (`MeanRankUpdate.lean:406`): for slow `f` with `∫ r f = 0`, `streamGamma (physicalSpeed d M) (0,v) (streamPotential … (slowLift f)) p = slowLift f p` at every `p`. That is the paper's "if `γd` is independent of `Y`". `rank_axial_eq_desired` (`CorrectionState.lean:478`) applies it to the actual rank stage under the five-row condition, so the constructed `Δγ` *is* `γd` there rather than merely matching its mean.
+
+Support is one lemma per object: `meanPressure_supported` (`:398`), `streamPotential_supported` (`:451`), `streamBeta_supported` (`:718`), `streamGamma_supported` (`:726`), plus `streamGamma_tsupport ⊆ tsupport Ψ` (`MeanLocalDefectBounds.lean:119`). The paper's `(Z,T)`-projection claim is the primitive's own support statement (`RadialPullback.physicalCompact_supported`) rather than a separate theorem about the pair.
+
+### 5. Shape differences, recorded
+
+* **`D_r` is a graph derivative.** The paper writes `D_r`; the tree writes `graphDr (physicalSpeed d M) v` at the fixed direction `(1, physicalSpeed • v)`, with `graphDr_eq_physical` (`:373`) proving it equals the physical radial derivative. Same operator, chart form.
+* **`P` has two names.** `pressureMass` and `barMoment 0` are one integral; the class theorem is stated for `barMoment` because that is what the five rows consume, and `barMoment_apply` is the identification.
+* **Strip, not support.** Every class is stated on the whole logarithmic strip where the paper asks only on the azimuthal support. Stronger, as in E151.
+* **The `(Z,T)`-projection is inherited.** It is the support of `physicalCompact`, not a clause of the proposition. Nothing downstream asks for more.
+* **Smoothness and support are binders.** `Shell a b` and `RadiallySupported` carry what the paper states in prose; the proposition's hypotheses are therefore the paper's, one for one.
+
+No clause here is matched only by a component, and no clause is weaker than the paper's: the two class exponents that could have been (`Ψ*` and `Δγ`) are at `α`, and the one that gains (`Δβ`) gains at the direction the construction uses.
+
+### 6. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 27 | 28 |
+| partial | 1 | 1 |
+| unplaced | 45 | 44 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:4735–4780` (Proposition 8.3, (8.12)–(8.14)); `PressureStream.lean:121,154,310,313,321,383,387,398,423,438,451,589,616,682,697,718,726,740,759,796,809,843`; `DefectIncrementBounds.lean:281–296`; `MeanIncrementBounds.lean:936,968,985`; `TemporalMeanUpdate.lean:893–930,1097–1128,1157–1174`; `PhysicalMeanDomain.lean:1616–1630`; `MeanRankUpdate.lean:406–417`; `MeanLocalDefectBounds.lean:111–128`; `CorrectionState.lean:429,434,478`; E141; E145; E151. Reading only — nothing compiled; "placed" is statement-level.*

@@ -401,6 +401,20 @@ lives in the increment layer rather than in this lemma's binders, the base bound
 than local to the azimuthal support, and `S_α` is the moment-integrated `UnweightedClass`. Lemma 10.2
 therefore leaves the partial column, and Lemma 9.7 is the only row left there: 27 placed, 1 partial.
 
+E152 places **Proposition 8.3**, the §8.3 reconstruction. Part (i): `meanPressure_radial_residual_global`
+is (8.13) with the bump mass `−ρP` and the cutoff alias `−A₀(g_r − ρP)` both displayed,
+`meanPressure_bar_hasDerivAt` is the bar derivative derived from the integral representation,
+`barMoment_mem` puts `P` in `S_α`, `meanClass_meanPressure` and `meanClass_meanPressure_change` put
+`p_m` and its differences in `M_α`, `pressureAlias_mean_zero` kills the alias's auxiliary mean, and
+`dividedAlias_superflat` gives every fixed derivative order a `Cε^N` bound. Part (ii): `streamPotential`
+is literally `r⁻¹I_c(rγ_d)`, `streamGamma_eq_desired_sub_alias_global` is `γ_d − A₁γ_d`,
+`reconstructed_divergence_zero` holds at the axis too, `streamGamma_bar_eq_desired` is the bar equality,
+and the classes are `meanClass_streamPotential` and `meanClass_streamGamma` at `α` with
+`meanClass_scaledRadialUpdate` at `α+1` — the `ε` is inside the direction the derivative is taken
+along, which is where the paper's `Q^{1/2−D} = ε` puts it, and where `rankIncrement.radial` builds it.
+The one shape difference recorded: the tree does not claim a bare axial derivative gains an exponent,
+only the scaled direction it actually constructs. 28 placed, 1 partial.
+
 ### Unplaced (the rest)
 
 Fifty-nine, and slice three moved five of them (below). They are sections 4–10 and the
@@ -432,10 +446,10 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 27 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151) |
+| placed, statement read | 28 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152) |
 | partial — components exist, statement not matched | 1 | Lemma 9.7 (E133) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 45 | the rest |
+| unplaced | 44 | the rest |
 | **total** | **73** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
@@ -475,4 +489,4 @@ breakdown that counted 38 lemmas; a full-text scan finds 73 names in 3/26/37/7, 
    weights, the Euler clause drift) are unchanged by the table, and the table does not
    support any claim that the paper's argument is wrong.
 
-<!-- ledger: placed=27 partial=1 unplaced=45 total=73 -->
+<!-- ledger: placed=28 partial=1 unplaced=44 total=73 -->

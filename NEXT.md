@@ -2,7 +2,7 @@
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which twenty-seven are placed, one is partial, and **forty-five are unplaced**.
+extracted text, of which twenty-eight are placed, one is partial, and **forty-four are unplaced**.
 The ledger in `CROSSWALK.md` carries the same **73** as its denominator and the same three
 counts, so there is no discrepancy to record here.
 
@@ -11,10 +11,10 @@ carries any audit conclusion.
 
 ## The denominator, settled
 
-The ledger and this file now agree on **73** numbered results: 27 placed, 1 partial, 45
+The ledger and this file now agree on **73** numbered results: 28 placed, 1 partial, 44
 unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
 lemmas, 7 corollaries); the text has 37 lemmas. The indices 6.3–6.5, 9.4 and B.9 are section
-numbering, not results — 9.4 is the §9.4 heading. See E135.The forty-five rows below are the whole remaining queue, and none of them was ever a phantom.
+numbering, not results — 9.4 is the §9.4 heading. See E135.The forty-four rows below are the whole remaining queue, and none of them was ever a phantom.
 
 ## How to use it
 
@@ -39,7 +39,6 @@ supporting machinery.
 | Result | Page | Statement | Candidate modules |
 |---|---|---|---|
 | Lemma 8.8 | 98 | `ns.txt:5041` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
-| Proposition 8.3 | 92 | `ns.txt:4735` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Proposition 8.4 | 94 | `ns.txt:4795` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
 | Corollary 7.3 | 80 | `ns.txt:4114` | `TorusInverse`, `CurlClassBounds`, `PrimaryPulseBounds`, `PhysicalParticularWave`, `WeightedClasses` |
 | Corollary 7.8 | 87 | `ns.txt:4455` | `TorusInverse`, `CurlClassBounds`, `PrimaryPulseBounds`, `PhysicalParticularWave`, `WeightedClasses` |
@@ -92,10 +91,12 @@ placements came from modules already in the assembly; the two partials are parti
 shape, not on content, and §10 now has no unplaced row left. Corollary 8.5 was placed by E145:
 both radial divergence identities are `SignedStressPrimitive.angular_divergence` and
 `axial_divergence`, at the paper's own `2/R` and `1/R` weights. Proposition 9.3 was placed by
-E149, Lemma 10.2 was re-read and narrowed but not moved by E150, and Lemma 8.8 was placed by E151.*
+E149, Lemma 10.2 was re-read and narrowed but not moved by E150, Lemma 8.8 was placed by E151,
+and Proposition 8.3 by E152.*
 
-1. **Lemma 8.8** (p. 98) — closed by E151, so the next §8 rows are **Proposition 8.3** (p. 92,
-   `ns.txt:4735`) and **Proposition 8.4** (p. 94, `ns.txt:4795`), both on the same moment modules.
+1. **Proposition 8.3** (p. 92) — closed by E152: the pressure half is five declarations and the
+   stream half is the `ε`-scaled direction the construction builds. The next §8 row is
+   **Proposition 8.4** (p. 94, `ns.txt:4795`), on the same moment modules.
 2. **Lemma 9.7** (p. 111) — the only partial left, and it is structural: its third clause describes
    how the construction is written and has no proposition to be true of.
 3. **Corollary 7.3** (p. 80) — the first §7 row, where not one estimate has been read at lemma level.
@@ -109,4 +110,4 @@ E149, Lemma 10.2 was re-read and narrowed but not moved by E150, and Lemma 8.8 w
 - The four partials are where the algebra is stated and the bounds are assembled. That is
   the most likely place for a real defect, because the kernel never weighs the bounds.
 
-<!-- ledger: placed=27 partial=1 unplaced=45 total=73 -->
+<!-- ledger: placed=28 partial=1 unplaced=44 total=73 -->
