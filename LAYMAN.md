@@ -511,7 +511,15 @@ Three things, and the first is a correction to this file's own claim that one re
 
 - **Then the last three partial results closed (E97).** Proposition 5.3's divergence clause is `divergence_slowVelocity_eq_zero`, stated for the ordinary three-dimensional divergence of the summed field — and the neighbouring theorem shows that divergence is *exactly* the finite coefficient series, not merely small. Proposition 9.5's `6/5` is `MeanResidualBounds`, which states the class as `1 + σ` for every admissible `σ`, and stage zero has `σ = 1/5`. Proposition 9.6's cycle output is stated one tenth higher, `σ + 1/10`. The profile question above also resolved: `FinalSlowBase.profileSequence` *defines* the §5 profile from the same cone certificate, so there was only ever one object. One qualification stands: Proposition 9.6's four corrections are four declarations, not one composed step.
 
-Counts after these entries: of the paper's 74 numbered results, 12 are placed at statement level (was 8 at the start of the day), 1 is partial, 2 are cited but unchecked, and 59 are unplaced. The single partial row is Proposition 10.1's clause that the fields vanish for a short initial interval.
+Counts after these entries: of the paper's 74 numbered results, 12 were placed at statement level (was 8 at the start of the day), 1 was partial, 2 were cited but unchecked, and 59 were unplaced. The single partial row was Proposition 10.1's clause that the fields vanish for a short initial interval.
+
+Later entries moved both the denominator and the numerator, so this is the paragraph to correct:
+
+- **The paper has 73 numbered results, not 74.** A full-text scan finds 3 theorems, 26 propositions, 37 lemmas and 7 corollaries; three of the numbers the earlier count expected are section headings (`9.4` is the §9.4 title). This is E135.
+- **That partial row closed.** E98 found `theorem_1_1_with_initial_rest`, which proves the fields vanish for `|t| ≤ 3/8`. The paper only asks for "sufficiently small `t ≥ 0`", so the tree proves a stronger statement, and the compressibility argument downstream uses it.
+- **The current ledger, as of E145, is 22 placed, 4 partial, 0 cited-but-unchecked, 47 unplaced.** The four partials are Propositions 9.3 and 6.6 and Lemmas 9.7 and 10.2, all partial on the *shape* of the statement rather than on missing mathematics. §8 has none: E140, E141 and E145 closed Lemmas 8.7 and 8.6 and Corollary 8.5, whose two radial divergence identities are declared at the paper's own weights.
+
+What has not changed is what "placed" means. It says a declaration exists whose statement is the paper's. It does not say anyone read its proof, and none of this was compiled by the audit.
 
 ---
 

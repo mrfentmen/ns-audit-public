@@ -950,6 +950,13 @@ And the two-profile worry from 16.8 is gone. `FinalSlowBase.profileSequence` **b
 
 One honest line stays: Prop 9.6's four corrections are four separate theorems, not one big "do all four" theorem. Placing it means caveman assumes they can be chained. That is a small assumption and caveman says it out loud.
 
-So the score is **12 placed, 1 partial, 2 named-only, 59 untouched, of 74**. The one partial row is the little-time-vanishing clause of Prop 10.1.
+So the score at that point was **12 placed, 1 partial, 2 named-only, 59 untouched, of 74**. It did not stay there. Two things changed and eleven more rows landed:
+
+- The denominator is **73**, not 74. E135 found the paper has 3 theorems, 26 propositions, 37 lemmas and 7 corollaries, and that three of the "missing" numbers are section headings (`9.4` is the §9.4 title).
+- The little-time-vanishing row closed. E98 found `theorem_1_1_with_initial_rest`, which proves `u = p = 0` for `|t| ≤ 3/8` — stronger than the paper's "for sufficiently small `t ≥ 0`".
+
+As of E145 the ledger reads **22 placed, 4 partial, 0 cited-unchecked, 47 untouched, of 73**. The four partial rows are Proposition 9.3 (the tree proves the coefficient shadow, and two clauses are stated in a different shape), Proposition 6.6 (four of its six clauses), Lemma 9.7 (its third clause describes how the construction is written and has no proposition to be true of), and Lemma 10.2 (partial on statement shape). §8 has no partial left at all: E140, E141 and E145 closed Lemmas 8.7 and 8.6 and Corollary 8.5.
+
+One thing has not changed and caveman keeps saying it: **placed means a declaration exists whose statement is the paper's.** It does not mean caveman checked that the proof of it is valid. Nothing in this file was compiled.
 
 *Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E97. If this file and the paper disagree, the paper is right and caveman is wrong.*
