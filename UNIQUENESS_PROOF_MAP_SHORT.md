@@ -19,7 +19,7 @@ Suppose two smooth divergence-free flows on `ℝ³ × [0,T]` have the same zero 
 
 2. **Move the pressure onto the cutoff.** `∫ χ w·∇π = -∫ π ∇χ·w` is `LocalizedDifferenceEnergy.integral_weighted_pressure` (`NavierStokes/R3/LocalizedTransport.lean:83`). Only the cutoff is compact; the pressure is never paired with `w` itself. No pressure decay is used.
 
-3. **Recover the pressure pairing from the equation.** `PressureRecovery.gradient_recovery` (`NavierStokes/R3/PressureRecovery.lean:407`) proves the physical gradient pairing equals the canonical Riesz pairing. Compact integration by parts then turns that pairing into the cutoff pressure flux.
+3. **Recover the pressure pairing from the equation.** `PressureRecovery.gradient_recovery` (`NavierStokes/R3/PressureRecovery.lean:407`) proves the physical gradient pairing equals the canonical Riesz pairing. Compact integration by parts then turns that pairing into the cutoff pressure flux. In plain terms, the equation fixes the pressure only up to a harmonic function; the uniform `H³` bound and the Fourier argument rule that function out.
 
 4. **Bound the pressure flux.** `PressureFlux.exists_uniform_actual_pressure_flux_bound` (`NavierStokes/R3/PressureFlux.lean:576`) gives `CP · ((B^(1/2)+1)(A/R + 1/R²) + R^(-7/4) B^(3/4))`, with `A` the weighted dissipation root and `B` the cutoff `L⁶` norm. `CP` is existential; only finiteness is used.
 
