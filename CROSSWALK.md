@@ -415,6 +415,38 @@ along, which is where the paper's `Q^{1/2−D} = ε` puts it, and where `rankInc
 The one shape difference recorded: the tree does not claim a bare axial derivative gains an exponent,
 only the scaled direction it actually constructs. 28 placed, 1 partial.
 
+E153 places **Proposition 8.4**, the §8.4 flux identities. The three defects of (8.15) are
+`CorrectionState.pressureDefect`, `.thetaDefect` and `.axialDefect` — the axial one carrying the
+`− ½ radialMoment 2 (gr c)` term — with `c_ρ` as `IntegratedMeanBalances.pressureCoefficient`.
+Both identities of (8.16) are stated about the actual residual, not about a chosen balance:
+`state_angular_moment` composes `averaged_thetaResidual` with `integrated_angular_balance`, and
+`state_axial_moment` does the same with `axialDebtPotential = axialDefect + pressureCoefficient •
+pressureDefect` and `pressureRecipe_moment`. The pressure half is `flux_pressure_moment`, i.e.
+`∫R⟨p_m⟩ = −½∫R²⟨g_r⟩ + c_ρP` derived from `pressure_moment_reconstructed`, and
+`constructed_pressure_moment` states it for the constructed primitive. `integrated_axial_reconstructed`
+differentiates the sum `J_z + c_ρP` in one `fderiv`, so the moving `c_ρ` never has to be differentiable
+on its own — the paper's own remark. One shape difference: `pressureCoefficient r` is a real number on
+the state layer and a parameter function on the abstract layer, and the parameter form is the one the
+`fderiv` statement uses. 29 placed, 2 partial.
+
+E154 moves **Corollary 7.3** out of the unplaced column but not into the placed one. Its substance is
+proved three times over: `GrowingMode.modalOperator` is (7.17) with the damping as a scalar parameter,
+`growing_slot` / `scaled_growing_slot` give the cone and envelope with `coneConstant lamMin C / S`
+containing no harmonic index, `TorusInverse.norm_directionalInverse_le` bounds the inverse by
+`6‖ω⁻¹‖·coeffSeminorm 1 a` for the whole coefficient family, and
+`SmoothFamilyTorusInverse.norm_jet_applyMultiplier_le` puts the jet order only in `n + l + 4`. What is
+missing is the operator itself: the paper's `f_m ↦ (t_m, π_m)` for the driven equation with `t_m(0) = 0`
+has no declaration of that type, the only initial data in `GrowingMode` is the cone initialization, and
+no declaration names a threshold `q*` independent of `M`. That is the Lemma 9.7 shape — content under
+other names, statement absent — so the row is partial with those three clauses named.
+
+E155 answers the (8.17) question and does not move the ledger, because (8.17) is an equation inside
+§8.4 rather than a numbered result. The tree has no declaration of the six factor identities; the
+normalisation lives in one moving weight, `qLength = √(coordinateQ)` (and `chartScale = √Q` in chart
+form), with one exponent per row. Two things survive the failed search and both matter: `P` and `c_ρ`
+share one `radialMoment 2` weight, and `integrated_axial_reconstructed` differentiates their product.
+So the table is consistent with the tree and not stated by it — recorded as a lead, not a finding.
+
 ### Unplaced (the rest)
 
 Fifty-nine, and slice three moved five of them (below). They are sections 4–10 and the
@@ -446,10 +478,10 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 28 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152) |
-| partial — components exist, statement not matched | 1 | Lemma 9.7 (E133) |
+| placed, statement read | 29 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153) |
+| partial — components exist, statement not matched | 2 | Lemma 9.7 (E133), Corollary 7.3 (E154) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 44 | the rest |
+| unplaced | 42 | the rest |
 | **total** | **73** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
@@ -489,4 +521,4 @@ breakdown that counted 38 lemmas; a full-text scan finds 73 names in 3/26/37/7, 
    weights, the Euler clause drift) are unchanged by the table, and the table does not
    support any claim that the paper's argument is wrong.
 
-<!-- ledger: placed=28 partial=1 unplaced=44 total=73 -->
+<!-- ledger: placed=29 partial=2 unplaced=42 total=73 -->

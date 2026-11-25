@@ -6915,685 +6915,164 @@ Clause (g), the (8.22) cancellation, is likewise exact rather than asymptotic: `
 
 One clause is not a declaration and is recorded rather than claimed: divergence-freeness of the assembled `(Delta beta, Delta v, Delta gamma)` together with preservation of the two integral constraints (8.2) is carried by `MeanIncrementBounds` / `StateMomentBalances` for the increment class, not by a theorem about this specific triple. That is the same status `Corollary 8.5` and `Proposition 8.4` will get when their rows are worked.
 
-### 7. The ledger move
 
-| Status | Before | After |
-|---|---|---|
-| placed | 18 | 19 |
-| partial | 5 | 4 |
-| unplaced | 50 | 50 |
-| **total** | **73** | **73** |
+## E153 — Proposition 8.4 is placed: both flux identities of (8.16) are theorems about the actual residual, and `c_ρ` stays inside `∂_Z` (2026-11-24)
 
-The remaining partials are Proposition 9.3 (E127), Proposition 6.6 (E129), Lemma 9.7 (E133) and Lemma 10.2 (E136). §8 now has no partial: the "algebra exact, bounds assembled" pattern that E131 described still holds for the four rows above, but it no longer covers 8.6, whose bounds are stated with explicit constants and a declared conversion.
-
-*Evidence: `.setup/paper/ns.txt:3251-3264` (6.2, (6.4)), `:4885-4935` (Lemma 8.6, (8.19)-(8.22)); `TorusInverse.lean:190-197,224,405-441,498-525,591-604`; `SmoothFourierData.lean:345,362-395,565-572`; `TemporalMeanUpdate.lean:112-145,215-245,544-600,654-670`; `MeanChartCompatibility.lean:465-505,624-660,869,1116-1145`; `ParametricTorusInverse.lean:645-682`; `SmoothFamilyTorusInverse.lean:1058-1100`; E132. Reading only — nothing compiled; "placed" is statement-level.*
-
----
-
-## E142 — Lemma 10.4 is placed: `F` is the integral of the norm, and every conjunct is one theorem (2026-11-23)
-
-*Reading entry. The paper's `F(t)` is `∫₀ᵗ ‖f(s)‖₂ ds`, the integral of the `L²` norm rather than of its square, and the tree's `cumulativeForceNorm` is the same object. With that read, the lemma's four clauses are one declaration's three quantitative conjuncts plus one theorem one module over. The row is placed; the ledger moves to 20 placed, 4 partial, 49 unplaced.*
+*Reading entry. The §8.4 flux proposition is the cleanest row in the column: the three defects are definitions, both identities are stated about `u.thetaResidual` / `u.axialResidual` rather than about a supplied balance, and the pressure moment is derived from the constructed primitive rather than assumed. Every clause matches. The one thing the entry records as a difference is that the tree differentiates the whole combination `J_z + c_ρP` and therefore never needs `c_ρ` to be differentiable on its own — which is the paper's own remark about the moving `q`.*
 
 ### 1. What the paper asks
 
-`Lemma 10.4` (p. 121, `.setup/paper/ns.txt:6115`). With `F(t) = ∫₀ᵗ ‖f(s)‖₂ ds`:
+`Proposition 8.4` (p. 94, `.setup/paper/ns.txt:4795–4820`). With the corrections of (8.1) smooth and shell-supported, the two moments (8.2) zero at every `(Z,T)`, and `p_m` reconstructed from `g_r` by (8.12), the residual components `E_θ, E_z` of (8.3) and the defects
 
-| Clause | Claim |
-|---|---|
-| a | `F(1) < ∞` |
-| b | `‖u(t)‖₂² + 2∫₀ᵗ ‖∇u(s)‖₂² ds ≤ F(t)²` for `0 ≤ t < 1` |
-| c | the kinetic energy is uniformly bounded |
-| d | the total dissipation on `[0,1)` is finite |
+`Jθ = ∫R²⟨Gv + Vγ + γv + W_zθ⟩_Y dR`, `Jz = ∫R⟨2Gγ + γ² + W_zz⟩_Y dR − ½∫R²⟨g_r⟩_Y dR`, `cρ = ½∫R²ρ dR` (8.15)
 
-### 2. Every clause
+satisfy `∫R²⟨Eθ⟩_Y dR = ε∂_Z Jθ` and `∫R⟨Ez⟩_Y dR = ε∂_Z(Jz + cρP)` (8.16). The proof has four moves: auxiliary averaging turns `D_r` into `∂_R` and `t*` into `−ε∂_T`; every radial divergence, the residual stress tensor's included, is an endpoint term after the displayed weight; the two viscous integrals vanish by explicit integration by parts; and the time and axial-viscosity terms are derivatives of the two zero integrals. The pressure moment is fixed by compact support, `∫R⟨p_m⟩_Y dR = −½∫R²∂_R⟨p_m⟩_Y dR = −½∫R²⟨g_r⟩_Y dR + cρP`, and because `ρ` is scaled by the moving `q`, `cρ` may depend on `(Z,T)` and the whole product stays inside `∂_Z`.
 
-`R3/ForceL2Norm.lean:20–24` defines `l2Norm f t = sqrt (l2Sq f t)` and `cumulativeForceNorm f T = ∫ t in (0)..T, l2Norm f t`. That is `F` exactly: the integrand is the norm, not the square, so the `F(t)²` on the paper's right-hand side is the square of the same accumulated quantity and no exponent is silently traded. `R3/IntegratedDissipation.candidate_energy_estimates` (`:279–288`) then states all four conclusions for one candidate:
-
-| Clause | Conjunct |
-|---|---|
-| a | `IntervalIntegrable (l2Norm f) volume 0 1`, from `force_smooth` (`ContDiff ℝ ∞ f`) and `force_support` (`CompactPositiveTimeSupport f`) |
-| b | `l2Sq u T + 2 * ν * (∫ t in (0)..T, dissipation u t) ≤ (cumulativeForceNorm f T) ^ 2`, for every `T ∈ Ico 0 1`; at `ν = 1` this is the display |
-| c | `CompactEnergy.uniform_finite_energy` proves it; `CandidateProperties.energy_bounded` carries it as a field |
-| d | `IntegrableOn (dissipation u) (Ico (0 : ℝ) 1)` |
-
-`dissipation u t = ∑ᵢ ∫ ‖∂ᵢu(t,x)‖²` (`R3/CompactEnergy.lean:195`), which is `‖∇u(t)‖₂²` for a vector field, so the viscous term is the paper's `2∫‖∇u‖²` at `ν = 1`. The underlying identity is `integrated_energy_balance` (`:26–45`), an equality before the force term is bounded; the inequality is `candidate_energy_dissipation_le`.
-
-### 3. Differences, all in the tree's direction
-
-* **General viscosity.** The tree states the bound with the coefficient `2ν`; the paper's lemma is the `ν = 1` instance, which is what `theorem_1_1_with_dissipation` consumes.
-* **The endpoint is a conjunct, not a limit.** The paper reaches `t = 1` by monotone convergence after proving the bound for `t < 1`. The tree states `2 * ν * ∫_{Ico 0 1} dissipation ≤ (cumulativeForceNorm f 1)^2` separately (`candidate_total_dissipation_le`), so the half-open endpoint is carried rather than approached. That is the same conclusion with the limit already taken.
-* **Energy is proved, then carried.** `R3/CompactEnergy.uniform_finite_energy` (`:343–381`) derives the uniform bound from smoothness, compact support, zero datum and the equation by the paper's own Gronwall argument; `CandidateProperties.energy_bounded` then carries it as a field so later lemmas can consume it without re-proving it. The clause is therefore a theorem about the constructed candidate, not an assumption — but it is not a conjunct of `candidate_energy_estimates`, and the entry says so rather than letting the table imply it.
-
-No clause is unproved in the tree. The row places.
-
-### 4. The ledger move
-
-| Status | Before | After |
-|---|---|---|
-| placed | 19 | 20 |
-| partial | 4 | 4 |
-| unplaced | 50 | 49 |
-| **total** | **73** | **73** |
-
-*Evidence: `.setup/paper/ns.txt:6115–6141` (Lemma 10.4, (10.13)–(10.14)); `R3/ForceL2Norm.lean:20–24`; `R3/IntegratedDissipation.lean:26–45,279–288`; `R3/CompactEnergy.lean:195,209`; `R3/Theorem.lean:66–79`; `R3/ProblemStatement.lean:92–109`. Reading only — nothing compiled.*
-
----
-
-## E143 — Lemma 10.5 is placed: the competitor is a `UniformFiniteEnergy` field and the conclusion is `candidate_unique_on_Icc` (2026-11-23)
-
-*Reading entry. The paper's comparison lemma assumes smoothness, the force of Lemma 10.3, zero datum and a uniform `L²` bound on the competitor, and imposes no growth condition on its pressure. `WholeSpaceUniqueness.candidate_unique_on_Icc` has exactly those binders and that conclusion. The row is placed; the ledger moves to 21 placed, 4 partial, 48 unplaced.*
-
-### 1. What the paper asks
-
-`Lemma 10.5` (p. 121, `.setup/paper/ns.txt:6143`). Fix `T < 1`. If `v, P` is a smooth solution of (1.1) at viscosity one on `ℝ³ × [0,T]`, with the force `f` of Lemma 10.3, zero initial velocity, and `v ∈ L∞([0,T]; L²(ℝ³))`, then `v = u` on that interval, where `u` is the localized velocity of Proposition 10.1.
-
-### 2. Clause by clause
-
-`NavierStokesR3.WholeSpaceUniqueness.candidate_unique_on_Icc`:
-
-| Paper | Binder |
-|---|---|
-| `v, P` smooth on `ℝ³ × [0,T]` | `ContDiffOn ℝ ∞ v (Comparison.slab 0 T)`, `ContDiffOn ℝ ∞ q (Comparison.slab 0 T)` |
-| `v ∈ L∞([0,T]; L²)` | `UniformFiniteEnergy (Icc 0 T) v`, i.e. `∃ E ≥ 0, ∀ t ∈ Icc 0 T, SquareIntegrableAtTime v t ∧ ½‖v‖₂² ≤ E` |
-| smooth solution of (1.1) | `∀ t ∈ Ioo 0 T, ∀ x, spatialDivergence v t x = 0` and `navierStokesResidual 1 v q t x = f (t,x)` |
-| zero initial velocity | `∀ x, v (0,x) = 0` |
-| `T < 1` | `hT : T < 1` |
-| conclusion `v = u` on `[0,T]` | `∀ t ∈ Icc 0 T, ∀ x, u (t,x) = v (t,x)` |
-
-The force's three properties are not hypotheses of this lemma; they enter through `h : CandidateProperties 1 u p f K`, which supplies `force_smooth`, `force_support` and the equation. That is the paper's structure: the lemma is about the *candidate* `u`, and the force is whatever that candidate satisfies.
-
-### 3. The proof layer under it
-
-The paper's argument is a Riesz-transform pressure recovery, a commutator estimate, and Gronwall on expanding balls, with the pressure allowed arbitrary spatial growth. The tree has that chain, and it has been read: `PressureFlux.exists_uniform_actual_pressure_flux_bound` produces the boundary pressure bound from the equations, and `WholeSpaceComparisonClosure.eq_of_pressure_flux_bound` closes the energy estimate with that bound, with all constants preceding the radius quantifier (`LEADS.md` §4). `classical_uniqueness_on_Icc` is the general form; `candidate_unique_on_Icc` instantiates it at the candidate and discharges the pressure flux internally, so no estimate is a hypothesis of the final statement.
-
-### 4. The one shape note
-
-The paper states the lemma for the constructed `u` and proves it by comparing against that field. The tree states it for *any* `CandidateProperties` witness, with the equation as a hypothesis `hNSv`. That is generality, not a weakening: the constructed candidate is an instance, and `candidate_global_agrees_before_one` is the paper's use of the lemma against a `GlobalFiniteEnergySolution`. Recorded so the row is not read as an identification of the paper's `u` with a particular declaration.
-
-### 5. The ledger move
-
-| Status | Before | After |
-|---|---|---|
-| placed | 20 | 21 |
-| partial | 4 | 4 |
-| unplaced | 49 | 48 |
-| **total** | **73** | **73** |
-
-*Evidence: `.setup/paper/ns.txt:6143–6170` (Lemma 10.5 and the pressure-flux proof); `R3/WholeSpaceUniqueness.lean:30–86,88–130,132–150`; `R3/WholeSpaceComparisonClosure.lean:26–60`; `R3/PressureFlux.lean`; `R3/ProblemStatement.lean:81–83,92–109`; `LEADS.md` §4. Reading only — nothing compiled.*
-
----
-
-## E144 — Proposition 9.3 stays partial on two clauses, not three: the decomposition, the supports and the mean fields are all stated (2026-11-23)
-
-*Reading entry. E127 left this row partial because the cited declaration is the coefficient shadow of the statement. Re-reading it against the periodized assembly finds the decomposition, the support carrier, the smooth zero-extension layer and the mean equations as separate declarations. Two clauses remain unmatched, both statement-shape: the paper's single finite harmonic set carried across bands, and the sign of the base-flat error in (9.6). The row does not move, and neither does the ledger: 21 placed, 4 partial, 48 unplaced.*
-
-### 1. What the paper asks
-
-`Proposition 9.3` (p. 103, `.setup/paper/ns.txt:5272`), three groups:
-
-| Group | Claim |
-|---|---|
-| (i) supported sources | `R(u,p) = G + F`; nonzero angular harmonics expand over a finite `H_j ⊂ ℤ \ {0}` independent of the band; coefficients supported in `Ω_γ` with smooth zero extension, `f ∈ W_α`, `⟨G⟩_θ ∈ M_μ` |
-| (ii) flat remainder | `|F|_m ≤ C_{j,m,N} q^N`, uniform over bands, labels and points |
-| (iii) exact mean equations | `W_ab = ⟨w_a w_b⟩_θ`, `P = ∫⟨g_r⟩ dR`, `p_m = T₀(g_r − ρP)`, and (9.6) with `E_θ`, `E_z` |
-
-### 2. Where each group lands
-
-* **The decomposition.** `PeriodizedWaveBounds.common_cancellation` (`:1044–1067`) states
-  `residual + source·carrier = (globalGood + globalGaussian)·carrier` at every point of the domain,
-  with `globalGaussian` the retained tail plus the uncovered source (`:809`) — the paper's `F`.
-  The mean layer has its own exact split, `CorrectionState.meanResidual_eq_good_add_excluded` (`:140`).
-* **The supports.** `globalGood_support` (`:1141`) and `globalGaussian_support` (`:1147`) put both
-  supports inside the union of native cells. `HarmonicSourceSupport.NonzeroSupportedOn` (`:620`) is
-  the per-harmonic statement that nonzero modes vanish outside a set, and `InputSupportOn` (`:679`)
-  bundles velocity, pressure, Gaussian and alias carriers.
-* **The smooth zero extension.** `ComplementJets` (`:188–192`) carries `ContDiffAt` and all-order
-  bounds off the cells; `zero_complementJets_of_germs` (`:745`) turns a zero germ into that record;
-  `residualSource_zero_germ_on` (`:737`) supplies the germ; `ActualSource.sourceSupport_mono`
-  (`ActualGaussianCoverage.lean:319`) moves supports between carriers.
-* **The classes.** Wave side `LabelSumBounds.UniformWaveClass`; mean side
-  `MeanRankUpdate.rank_update_meanClass` and `MeanIncrementBounds.meanClass_meanPressure` (`:968`).
-* **(ii).** `LocalResidualFlatness.AllResidualJetRates` with `selected_schedule` gives *every* rate
-  for the whole mixed residual, which is stronger than the flat part alone.
-* **(iii).** `radialResidual = dr pressure − gr` (`CorrectionState.lean:120–121`), with `gr` the
-  literal `MeanIncrementBounds.gr` (`:338`); `thetaResidual` and `axialResidual` are `:328` and
-  `:333`; `reducedMeanResidual` bundles the three (`:123`); and `MeanResidual.meanPressure_reconstruction`
-  (`:1026`) is (8.12), `average p = pb + meanPressure p pb`.
-
-### 3. The two clauses that are not stated
-
-* **One finite harmonic set, band-independent.** `HarmonicFields.BandLimited` (`:332`) bounds
-  `|j| ≤ N` for a single coefficient, and `CorrectionStep`'s `sourceBand` instantiates `N` as the
-  residual band per stage. No declaration states the paper's `H_j` — one finite set depending on the
-  finite construction and not on the band — carried through the sequence.
-* **The sign of `E_B` in (9.6).** The paper displays
-  `⟨G* + F* − E_B*⟩_θ = (D_r p_m − g_r, E_θ, E_z)`. The tree defines
-  `meanResidual = reducedMeanResidual + meanBaseError` (`:130`), and its own docstring says the
-  paper's (32) omits the fixed base-flat error and the tree restores it. The three components are the
-  same expression, but the base error enters with a **plus** where the paper's display has a minus.
-  Whether the two agree depends on how `errors.base` is folded into the residual, which this entry
-  does not assert.
-
-### 4. Why the row still does not move
-
-Under the rule E136 fixed, an implied identity is not a stated one. Both remaining items are
-statement-shape rather than missing mathematics, and both are now narrow: the row is no longer
-"the coefficient shadow only". But this is precisely the row where a defect would hide — the algebra
-is stated and the bounds are assembled — so it stays partial, with E127's reason replaced by these
-two clauses.
-
-### 5. The ledger
-
-| Status | Before | After |
-|---|---|---|
-| placed | 21 | 21 |
-| partial | 4 | 4 |
-| unplaced | 48 | 48 |
-| **total** | **73** | **73** |
-
-*Evidence: `.setup/paper/ns.txt:5272–5330` (Proposition 9.3, (9.3)–(9.6)); `PeriodizedWaveBounds.lean:188–192,620–679,737–745,809,1044–1067,1141–1157`; `CorrectionState.lean:110–141`; `MeanIncrementBounds.lean:50–60,328–342,968`; `MeanResidual.lean:1021–1027`; `HarmonicFields.lean:332`; `LocalResidualFlatness.lean:19–132`; `LabelSumBounds.lean`; `MeanRankUpdate.lean:899`; `ActualGaussianCoverage.lean:311–331`; E127; E136. Reading only — nothing compiled.*
-
----
-
-## E145 — Corollary 8.5: both radial divergence identities are declared, exact, with the paper's `2/R` and `1/R` (2026-11-24)
-
-*Reading entry. The covariance-target corollary was the row E141 predicted would be "carried by `MeanIncrementBounds` / `StateMomentBalances` for the increment class" rather than stated. That prediction was wrong in the same direction as E140 and E141: both displayed identities are declarations in `SignedStressPrimitive`, at exactly the paper's connection weights, and the moment condition that makes the cutoff remainder vanish is itself a theorem. The row is placed; the ledger moves to 22 placed, 4 partial, 47 unplaced.*
-
-### 1. What the paper asks
-
-`Corollary 8.5` (p. 95, `.setup/paper/ns.txt:4842-4861`). With `T_e f = R^{-e} I_c(R^e f)` and `D_e = D_r + e/R`,
-
-```
-H_θ = −T_2(⟨E_θ⟩_Y − σ_θ ε∂_Z J_θ),      H_z = −T_1(⟨E_z⟩_Y − σ_z ε∂_Z(J_z + cρ_P))     (8.18)
-(D_r + 2/R)H_θ = −⟨E_θ⟩_Y + σ_θ ε∂_Z J_θ,
-(D_r + 1/R)H_z = −⟨E_z⟩_Y + σ_z ε∂_Z(J_z + cρ_P).
-```
-
-Clauses: (a) the two targets are independent of the auxiliary variable; (b) compactly supported in the active shell; (c) the two identities, with the primitives taken at fixed `(Z,T)`; (d) `H_θ`/`H_z` vanish wherever their integrands vanish for every `R`, and the construction does not enlarge support in `Z`.
-
-### 2. The declaration pair
-
-`SignedStressPrimitive` builds the primitive and divides by `r^e`, which is `T_e` with the cutoff already inside the integral:
-
-| Object | Declaration | Statement |
-|---|---|---|
-| primitive | `primitive P e F` (`:150`) | `∫₀^r s^e * adjusted P e F (s, p)` — the paper's `I_c` at `M = 0`, `v = 0` (`primitive_eq_integral` `:262`) |
-| target | `sigma P e F` (`:168`) | `−primitive / r^e` (`sigma_eq_negative_primitive` `:294`), i.e. `−T_e` |
-| **angular identity** | `angular_divergence` (`:342`) | `radialDivergence 2 (fun t => sigma P 2 F (t,p)) r = −adjusted P 2 F (r,p)` |
-| **axial identity** | `axial_divergence` (`:357`) | `radialDivergence 1 (fun t => sigma P 1 F (t,p)) r = −adjusted P 1 F (r,p)` |
-
-`IntegratedMeanBalances.radialDivergence 2` is `2σ/r + σ'` and `radialDivergence 1` is `σ/r + σ'` — the proof of each theorem divides the displayed `2rσ + r²σ'` and `σ + rσ'` by `r²` and `r` respectively. That is `D_r + 2/R` and `D_r + 1/R` with the paper's own `e`-weights, not a rescaled or `e`-free form. Both proofs derive the derivative from `weighted_sigma_hasDerivAt` (`:381`), which comes from `primitive_hasDerivAt` (`:318`) and hence from the transport identity `transport_compactIntegral` — the derivative is *derived*, not assumed.
-
-The right-hand sides match the paper's factor structure rather than merely its sign. `adjusted P e F = F − bumpCorrection` (`:207`), `bumpCorrection = momentDensity · mass e F` (`:196`), and `momentDensity = ∂_r χ` through `cutoff_eq_integral` (`:254`). So `−adjusted = −F + (∂_r χ)·(moment of F)`, which is `−⟨E⟩_Y + σ ε∂_Z J` with the bump playing `σ` and the moment playing the `ε∂_Z J` term. The factors `ε∂_Z` the paper insists on keeping are not dropped in the Lean statement because they are never introduced: the tree carries them in the source `F`, and the corollary's job — that they survive the primitive — is the identity itself.
-
-### 3. Support, class, and the vanishing clause
-
-- same shell, no `Z` enlargement: `sigma_supported` (`:245`) concludes `RadiallySupported P.a P.b (sigma P e F)`, which is support inside the active radial shell **and** inside the input's `(Z,T)` projection. That is clauses (b) and the second half of (d) together, and it is proved from `compactIntegral_supported` plus the two cutoff endpoint conditions.
-- `M_α` membership: `meanClass_sigma` (`:424`) takes `MeanClass α F` and returns `MeanClass α (fun n => sigma P e (F n))`, with constant `K * C` for `K` supplied by `sigma_finiteJets_uniform` (`:377`) — the paper's "belongs to `M_α`" under the primitive normalization.
-- the moment half: `bumpCorrection_moment` (`:200`) proves `mass e (bumpCorrection) = mass e F`, so `adjusted_moment_zero` (`:296`) gives `∫ r^e (adjusted) = 0` at every `p`. Under the paper's hypothesis `∫ R^e ⟨f⟩_Y dR = 0` this is `⟨A_e f⟩_Y = 0` — clause (c) of (8.8), and it is an identity rather than an estimate.
-- identically zero: if `mass e F = 0` then `bumpCorrection` is `momentDensity * 0`, so `adjusted = F` and the remainder is zero pointwise. The paper's last sentence holds definitionally here, and `primitive_eq_zero_of_le` (`RadialPrimitive.lean:80`) supplies the support side.
-
-### 4. Two shape differences, recorded rather than smoothed
-
-1. **Y-pointwise, not Y-averaged.** `sigma P e F` is a function of `p : E`, the auxiliary variable, and `angular_divergence` is stated at fixed `p`. The paper's targets are `⟨·⟩_Y`-averages and are therefore independent of `Y` by construction. In the tree that independence is inherited from a `Y`-independent source, not asserted: clause (a) is conditional on the source being `Y`-independent, which the paper's own definition `⟨E_θ⟩_Y` supplies. Recorded as a shape difference; it is not a missing estimate, and the identity does not use the averaging.
-2. **The paper's `T_1`, `T_2` prefactors are the class index.** The paper writes `H_θ = −T_2(…)` with `T_e f = R^{-e} I_c (R^e f)`. The tree writes `sigma` as `−primitive / r^e` and pushes the normalization into `meanClass_sigma`'s single `α`. Same object, one exponent slot instead of an explicit `R^{-e}` factor, so the displayed `T_e` is not a separate definition in the tree.
-
-Neither difference changes a bound. Nothing downstream consumes a `T_e` symbol.
-
-### 5. The ledger move
-
-| Status | Before | After |
-|---|---|---|
-| placed | 21 | 22 |
-| partial | 4 | 4 |
-| unplaced | 48 | 47 |
-| **total** | **73** | **73** |
-
-The four partials stay Proposition 9.3, Proposition 6.6, Lemma 9.7 and Lemma 10.2. §8 now has seven placed rows and no partial: 8.1, 8.3 and 8.4 remain unplaced in the queue, and Corollary 8.5 leaves it.
-
-*Evidence: `.setup/paper/ns.txt:4608-4630` (Lemma 8.2), `:4842-4861` (Corollary 8.5, (8.18)); `SignedStressPrimitive.lean:150,168,196,200,207,245,254,262,294,296,318,342,357,377,381,424`; `RadialPrimitive.lean:39,80`; `IntegratedMeanBalances.lean:556`; `WeightedClasses.lean:299`; E141. Reading only — nothing compiled; "placed" is statement-level.*
-
----
-
-## E146 — Proposition 8.1 is placed: the mean residual decomposition is *derived*, not defined (2026-11-24)
-
-*Reading entry. The §8.1 proposition states what the angular mean of the residual is. The tree does not merely define the three components: `MeanResidual` proves the decomposition as an identity from the averaged equations, with the base terms subtracted and the angular derivative dropped by the zero-mean hypothesis. The row is placed; the ledger moves to 23 placed, 4 partial, 46 unplaced.*
-
-### 1. What the paper asks
-
-`Proposition 8.1` (p. 89, `.setup/paper/ns.txt:4536-4575`). With the divergence-free decomposition `u = base + mean + oscillation`, `⟨w⟩_θ = 0`, angularly invariant `p_m` and normalized base stress `Σ_a`, the angular mean of the remaining normalized residual is `(D_r p_m − g_r, E_θ, E_z)` with
-
-```
-E_θ = t*v + (D_r+2/R)(bv + βV + βv + W_rθ) + D_z(Gv + Vγ + γv + W_zθ)
-        − ε(∆₀−R⁻²)v − (D_r+2/R)Σ_θ
-E_z = t*γ + (D_r+1/R)(bγ + βG + βγ + W_rz) + D_z(2Gγ + γ² + W_zz + p_m)
-        − ε∆₀γ − (D_r+1/R)Σ_z
-g_r = −t*β − (D_r+1/R)(2bβ + β² + W_rr) − D_z(bγ + Gβ + βγ + W_zr)
-        + (2Vv + v² + W_θθ)/R + ε(∆₀−R⁻²)β.
-```
-
-The proposition's own hypotheses are the three structural ones — divergence-free decomposition, angular invariance, zero angular mean of the oscillation — plus the base flat residual retained as a separate additive error.
-
-### 2. The three carriers
-
-`MeanIncrementBounds` defines the components with the paper's operators, not an expansion of them:
-
-| Paper | Declaration | Body |
-|---|---|---|
-| `t*` | `Operators.time` (`:75`) | `slowTime + fastTime`, i.e. `−ε∂_T + c∂_v` |
-| `D_r + e/R` | `Operators.radialDiv e` (`:83`) | `dr f + e • (r⁻¹ * f)` |
-| `D_z` | `Operators.dz` (`:71`) | `ε • ∂_Z`, the normalized axial derivative |
-| `ε(∆₀ − R⁻²)`, `ε∆₀` | `Operators.viscosity c` (`:88`) | `ε(dr² + r⁻¹dr + dz² − c(r⁻² f))`, with `c = 1` for `E_θ` and `0` for `E_z` |
-
-and the residuals at `:328-342` are the paper's displays: `thetaResidual = time m.angular + radialDiv 2 (thetaRadial + W 0 1) + dz (thetaAxial + W 2 1) − viscosity 1 m.angular − radialDiv 2 T`, with `axialResidual` at connection `1`, viscosity connection `0`, and the pressure slot `p` in the axial `D_z` group — the paper's `p_m` inside `D_z(2Gγ+γ²+W_zz+p_m)`. `gr` (`:338`) is the negated radial balance, carrying `−r⁻¹(radialAngular + W 1 1)` for the paper's `+(2Vv+v²+W_θθ)/R` and `−viscosity 1 m.radial` for `+ε(∆₀−R⁻²)β`.
-
-### 3. The part that makes it a proposition
-
-The definitions alone would only be a restatement of (8.3). `MeanResidual` proves the decomposition from the averaged equations:
-
-- `reynoldsAngular_total_sub` (`:821`): for smooth angularly invariant base and mean, zero-mean oscillation and a stress `T_θ`, `reynoldsAngular(total) − baseAngular − radialDivergence 2 T_θ = E_theta`. The proof averages the product, uses `average_total_product` for the two cross terms, splits the radial divergence and the Laplacian by `radialDivergence_add`/`meanLaplacian_add`, and closes by `ring`.
-- `reynoldsRadial_total_sub` (`:837`): `reynoldsRadial(total) − baseRadial = dr p_m − gr` under `average p = base pressure + p_m`.
-
-So the choice of which flux terms appear is *derived* from the averaging identities, and the hypothesis `⟨w⟩_θ = 0` is consumed exactly where the paper says it is: the angular derivative terms average to zero. `gr`'s `−meanLaplacian (m 0) + m 0 / radius²` is the paper's `ε(∆₀ − R⁻²)β` at the normalization `ε = 1`.
-
-### 4. The base-flat error
-
-The paper insists the base's flat residual is retained separately. `CorrectionState` makes that a field and a theorem: `meanBaseError` (`:126`) is the angular average of the stored base error, `meanResidual := reducedMeanResidual + meanBaseError` (`:130`), and `meanResidual_eq_good_add_excluded` (`:140`) is the split used downstream. The docstring records the divergence from the paper's own numbering: equation (32) omits the fixed base-flat error, and the tree restores it.
-
-`reducedMeanResidual` (`:123`) orders the triple `![radial, theta, axial]` = `(D_r p_m − g_r, E_θ, E_z)`, the proposition's own ordering.
-
-### 5. One shape difference
-
-The tree's `time` operator carries the fast term as a coefficient times the auxiliary derivative, with the coefficient supplied by `OperatorBounds.fastCoefficient : BandBound s 0`. The paper writes `t* = −ε∂_T + c_{i0}N_{i0}` and keeps `c_{i0}` as a chart quantity. Same operator, with the normalization in the bound rather than in the symbol. No exponent is traded.
-
-### 6. The ledger move
-
-| Status | Before | After |
-|---|---|---|
-| placed | 22 | 23 |
-| partial | 4 | 4 |
-| unplaced | 47 | 46 |
-| **total** | **73** | **73** |
-
-*Evidence: `.setup/paper/ns.txt:4520-4575` ((8.2), Proposition 8.1, (8.3)); `MeanIncrementBounds.lean:71,75,83,88,328,333,338`; `MeanResidual.lean:816,821,837`; `CorrectionState.lean:110-142`; `WeightedClasses.lean:247` (`directional`), `:299` (`bilinear`). Reading only — nothing compiled; "placed" is statement-level.*
-
----
-
-## E147 — Lemma 8.2 is placed: the primitive, its exact radial identity, and the moment that kills the remainder (2026-11-24)
-
-*Reading entry. The compactly supported primitive of §8.2 is `SignedStressPrimitive`: the integral, the division by `r^e`, the exact `D_e T_e f = f − A_e f` identity at both connection weights, support in the active shell with no growth in `Z`, and the `M_α` class. The moment condition is not assumed — `bumpCorrection_moment` makes the remainder's moment equal the source's, so under the paper's hypothesis the remainder is identically zero, which is stronger than (8.8). The row is placed; the ledger moves to 24 placed, 4 partial, 45 unplaced.*
-
-### 1. What the paper asks
-
-`Lemma 8.2` (p. 90, `.setup/paper/ns.txt:4608-4630`). With `I_c g = I g − χ_m J g`, `T_e f = R^{-e} I_c(R^e f)`, `D_e = D_r + e/R` and `A_e f = R^{-e}(∂_R χ_m) J(R^e f)`:
-
-- `T_e f` is supported in the same active radial shell and in the projection of the input support to `(Z,T)`, and lies in `M_α`;
-- `D_e T_e f = f − A_e f` exactly (8.7);
-- if `∫ R^e ⟨f⟩_Y dR = 0`, then `⟨A_e f⟩_Y = 0` and `A_e` is flat to every order `p` (8.8);
-- if `f` is `Y`-independent with zero radial mean, `A_e f ≡ 0`.
-
-### 2. The declarations
-
-| Clause | Declaration | Statement |
-|---|---|---|
-| the primitive | `primitive P e F` (`:150`) | `∫₀^r s^e * adjusted P e F (s,p)` via `primitive_eq_integral` (`:262`) |
-| `T_e` | `sigma P e F` (`:168`) | `−primitive / r^e` (`sigma_eq_negative_primitive` `:294`) |
-| (8.7) at `e = 2` | `angular_divergence` (`:342`) | `radialDivergence 2 (sigma 2 F) = −adjusted 2 F` |
-| (8.7) at `e = 1` | `axial_divergence` (`:357`) | `radialDivergence 1 (sigma 1 F) = −adjusted 1 F` |
-| (8.7) at general `e` | `weighted_sigma_hasDerivAt` (`:381`) | `HasDerivAt (t ↦ t^e σ(t,p)) (−r^e · adjusted)` |
-| support | `sigma_supported` (`:245`) | `RadiallySupported P.a P.b (sigma P e F)` |
-| class | `meanClass_sigma` (`:424`) | `MeanClass α F → MeanClass α (sigma e F)` |
-| the moment | `bumpCorrection_moment` (`:200`) | `mass e (bumpCorrection) = mass e F` |
-| zero moment | `adjusted_moment_zero` (`:296`) | `mass e (adjusted) = 0` |
-
-`adjusted = F − bumpCorrection` and `bumpCorrection = momentDensity · mass e F`, with `momentDensity = ∂_r χ` via `cutoff_eq_integral` (`:254`). So `A_e` is `bumpCorrection` and `−adjusted = −F + A_e`: the identity is (8.7) verbatim, not an analogue.
-
-### 3. Why (8.8) is weaker than what is proved
-
-The paper's flatness clause is conditional on `∫ R^e ⟨f⟩_Y dR = 0`. The tree's `bumpCorrection` is `momentDensity · mass e F`, so under that hypothesis it is `momentDensity · 0` — zero pointwise, not merely flat. `adjusted` then equals `F`, `T_e` is the plain primitive, and `A_e ≡ 0`. This is the paper's *last* sentence ("if `f` is independent of `Y` and `∫ R^e f dR = 0`, the remainder is identically zero") holding in the case where the paper only claims flatness. The audit records the strength, not a defect: the tree never needs (8.10)'s Diophantine multiplier because it removes the moment instead of estimating it.
-
-### 4. One shape difference, and one scope note
-
-- **The shift along the radial phase map is not in this module.** The paper's `I g` integrates `g(r′, Y + ((r′)^{dr} − r^{dr})v_r)`. `SignedStressPrimitive`'s primitive is the `M = 0`, `v = 0` instance; the general moving-path integral is `TransportPrimitive` with `M` and `v` parameters, whose `transport_compactIntegral` is the identity the specialization uses. The statement is therefore the unshifted case; the shifted one exists one layer up and is what the main line consumes.
-- **`e` is a natural number, not `{0,1,2}`.** `primitive P e F` takes `e : ℕ`. That is a relaxation, and the two consumers use `e = 2` and `e = 1`.
-
-### 5. The ledger move
-
-| Status | Before | After |
-|---|---|---|
-| placed | 23 | 24 |
-| partial | 4 | 4 |
-| unplaced | 46 | 45 |
-| **total** | **73** | **73** |
-
-*Evidence: `.setup/paper/ns.txt:4580-4630` ((8.4), Lemma 8.2, (8.7)–(8.9)); `SignedStressPrimitive.lean:150,168,196,200,207,245,254,262,294,296,318,342,357,377,381,424`; `TransportPrimitive` (`transport_compactIntegral`, `totalIntegral_eq_radialInterval`); `RadialPrimitive.lean:39,80`; E145. Reading only — nothing compiled.*
-
----
-
-## E148 — Proposition 6.6 is placed: the rectangle qualifier is a hypothesis form and the `N_abs` row is the inverse direction (2026-11-24)
-
-*Reading entry. E129 left this row partial on two negatives. Both are declarations, and one of them E129 saw and rejected on a stricter reading than this audit applies elsewhere: the pre-cutoff rectangle is the hypothesis shape of `LocalCoefficientBounds`, not a missing two-wave statement. The other, `Q^{1+h}N_{abs}: C_α → C_α`, is `meanClass_chartPrefactor_all` — stated for the prefactor the development applies, `(Tg^{i0}Q^{1+h})^{-1}`, which is the paper's `c_{i0}^{-1}`. The row is placed; the ledger moves to 25 placed, 3 partial, 45 unplaced, and no partial remains in §6.*
-
-### 1. Clause 3's rectangle: a hypothesis, not a domain
-
-E129's objection was that `MeanLocalCoefficient.coefficient_mul` "localizes a coefficient to `A n` … and proves the product mean-class there", and that no declaration states the two-wave product *with the rectangle as its domain of validity*.
-
-The objection names the declaration and then asks it to be a different kind of statement. `LocalCoefficientBounds s A α f` (`:11-20`) is a record whose entire content is: `f` is smooth on `s.domain`, and every jet of `f` up to order `m` is bounded **only on `A n`**, with constants uniform in band and point. `coefficient_mul` (`:41`) then takes `MeanClass s β g` plus `tsupport (g n) ∩ s.domain ⊆ A n` and concludes `MeanClass s (α+β) (f*g)`. The set `A` is a parameter of the statement on both sides — hypothesis and support inclusion — so "the coefficient algebra is used only on its labelled band rectangle" is exactly the shape of the theorem, with `A n` the rectangle. What is *not* there is a second, redundant statement of the same fact restricted to a domain.
-
-This is the rule the log already applies at E127's follow-up: a clause counts as carried when it is the ambient form of every declaration in the chain, or a definitional restatement. The rectangle is the first. I am recording the reclassification explicitly rather than silently, because E129's reading was defensible and a later reader should be able to disagree with this one on the record.
-
-### 2. Clause 5's last row: the prefactor is the inverse
-
-Paper (6.32): `Q^{1+h}N_{abs} = c_{i0}N_{i0} : C_α → C_α`, with `N_{abs} = v_t·∂_Y` and `c_{i0} = T^{i0}g Q^{1+h}`.
-
-The tree states the class preservation for the object it actually applies, and the constant is the paper's exactly:
-
-- `TemporalMeanUpdate.chartPrefactor_eq` (`:286`): `chartPrefactor h n = Q n ^ (-1-h) * (Tg ^ nativeIndex h n)⁻¹` — that is `c_{i0}⁻¹`, with the covering factor written as a negative power.
-- `meanClass_chartPrefactor_all` (`:335`): `MeanClass s α f → MeanClass s α (fun n z => chartPrefactor h n • f n z)`, through `chartPrefactor_bandBound_all`, whose constant is explicit: `Tg + Σ_{i<4} chartPrefactor h i`, exponent `1`. So multiplication by `c_{i0}⁻¹` preserves the exponent — the table's `C_α → C_α` for the prefactor half.
-- `MeanChartCompatibility.fastAtIndex` (`:658`) is the forward operator: `(Tg^i * Q n ^ (1+h)) * graphDz ((0), vector .temporal) f`. Its inverse is `temporalAtIndex`, and `temporalAtIndex_fast_cancellation` (`:676`) proves `fastAtIndex (temporalAtIndex f) = −centered f`. The class of the inverse is `meanClass_temporalAtIndex_of_native` (`:624`), stated at a free covering index with the band gap carried as a `BandBound` at exponent `0`.
-
-So the row's content — the scaled fast operator and its prefactor act on the classes without moving the exponent — is stated, in the direction the construction uses (inverse first, then the forward operator only through the cancellation identity). The paper's forward-only table entry is not separately stated. Recorded as a direction difference; the exponent is the same and the explicit constant is present.
-
-### 3. What this does to E129
-
-E129's verdict was "components only", and it was correct about the *table*: there is no single declaration listing five operator rows. It was wrong about the row's content, for the reason E140, E141 and E145 were wrong in the other direction: the statements live where the operators are consumed, under names the paper does not use (`chartPrefactor`, `fastAtIndex`, `temporalAtIndex`, `LocalCoefficientBounds`). Four of the five rows were already counted as literally present at E129; the fifth is now too.
-
-### 4. The ledger move
-
-| Status | Before | After |
-|---|---|---|
-| placed | 24 | 25 |
-| partial | 4 | 3 |
-| unplaced | 45 | 45 |
-| **total** | **73** | **73** |
-
-The three remaining partials are Proposition 9.3 (E127, narrowed in E144), Lemma 9.7 (E133, structural) and Lemma 10.2 (E136). §6 now has none.
-
-*Evidence: `.setup/paper/ns.txt:3640-3710` (Proposition 6.6, (6.30)–(6.32)); `MeanLocalCoefficient.lean:11-20,41-70`; `TemporalMeanUpdate.lean:286,300,319,335`; `MeanChartCompatibility.lean:624,658,676`; `WeightedClasses.lean:247,299,335`; E129; E141; E145. Reading only — nothing compiled.*
-
----
-
-## E149 — Proposition 9.3 is placed: `H_j` is one `Finset` quantified outside the band, and the base error's minus is on the other side (2026-11-24)
-
-*Reading entry. E144 left this row partial on two statement-shape clauses. Both are declarations. The band-independent harmonic set is `modes residualBand`, a `Finset ℤ` fixed by the construction and quantified outside the band index, with the residual band updated once per stage; and (9.6)'s `−E_B*` is not dropped — the tree writes `⟨G*+F*⟩ = reduced + ⟨E_B*⟩`, which is the paper's display with the base error moved across the equals sign, and says so in words. The row is placed; the ledger moves to 26 placed, 2 partial, 45 unplaced.*
-
-### 1. Clause (i)'s `H_j`: a fixed finite set, with the band quantified inside
-
-E144: "No declaration states the paper's `H_j` — one finite set depending on the finite construction and not on the band." It is `modes`:
-
-| Object | Declaration | Statement |
-|---|---|---|
-| the finite set | `ActualCycleResidualBounds.modes (M : ℕ) : Finset ℤ` (`:44`) | `Finset.Icc (-(M : ℤ)) M` |
-| membership from the band bound | `mem_modes` (`:46`) | `j.natAbs ≤ M → j ∈ modes M` |
-| every band's support inside it | `source_support (l) (n) (i)` (`:59`) | `((source x l).velocity n i).support ⊆ modes x.coefficients.residualBand` |
-
-The quantifier order is the paper's, not a rearrangement of it. `residualBand` is a field of the cycle's coefficient data (`CorrectionStep.lean:4998`), read off the finite construction, and `n` is universally quantified *inside* the statement — one set, every band, every component, every label. It is also not a constant across the induction: the cycle sets `residualBand := 2 * max v.residualBand 1` (`:6830`), which is exactly the paper's "`H_j` depends on the finite construction but not on the band".
-
-Three further declarations carry the rest of (9.4):
-
-* the finite display itself: `HarmonicFields.evaluate_over` sums a coefficient over any `Finset` containing its support, which is the paper's `∑_{γ∈Γ} ∑_{m∈H_j}` with `Γ` the label set of `Represents` (`CorrectionState.lean:210`);
-* one `N` across all bands and components: `CorrectionState.HarmonicBlock.BandLimited` (`:187-190`) is `(∀ n i, BandLimited (velocity n i) N) ∧ ∀ n, BandLimited (pressure n) N`, and `HarmonicFields.BandLimited` is `∀ j ∈ support, j.natAbs ≤ N`, so `modes N` contains every band's support by `mem_modes`;
-* derivatives never enlarge the set: `support_differentiate`, `band_iteratedCoefficients` and `iteratedAlong_wave` — the last states that all repeated actual directional derivatives retain the original finite set of harmonic values. The paper's (9.4) is a statement about the current coefficients; this says the set is stable under the operations that produce them.
-
-The set the tree exhibits is the interval `Icc (-N) N`, a finite superset of the nonzero support rather than the support itself. The paper asks only `H_j ⊂ ℤ \ {0}`, `|H_j| < ∞`, band-independent; a finite superset satisfying the same three is the same statement about finiteness, and `ParticularWaveAssembly.modes` (`:24`) is the same construction with the zero erased where the zero-free form is wanted.
-
-### 2. Clause (iii)'s sign: the base error is added, which is the paper's subtracted
-
-E144: the paper displays `⟨G* + F* − E_B*⟩_θ = (D_r p_m − g_r, E_θ, E_z)`, while the tree defines `meanResidual := reducedMeanResidual + meanBaseError`. Read as an equation rather than as a definition, the tree's is
-
-```
-⟨G* + F*⟩ = reduced + ⟨E_B*⟩        ⟺        ⟨G* + F* − E_B*⟩ = reduced,
-```
-
-which is the paper's display. Two declarations state it, and one states it in the paper's direction with the other two errors as well:
-
-* `LiftedMeanResidual.angularMean_fullResidual` (`:1176`) — the actual angular mean of the *full* residual equals `u.meanResidual c`. Its docstring is the whole point: *"The actual full residual averages to equation (32) plus exactly the stored base error."*
-* `CorrectionState.meanResidual` (`:130`) — `reducedMeanResidual c + meanBaseError`, with the docstring on the line above recording that the paper's (32) omits the fixed base-flat error and the tree restores it.
-* `LiftedMeanResidual.meanGoodResidual_errors` (`:1206`) and `angularMean_fullGoodResidual_errors` (`:1221`) — the same identity with the Gaussian and alias errors subtracted explicitly, `meanGoodResidual = reduced − ⟨gaussian⟩ − ⟨alias⟩`.
-
-So the minus sign is not lost; it is on the right-hand side. E144 recorded "whether the two agree depends on how `errors.base` is folded into the residual, which this entry does not assert". It is now asserted: `errors.total = base + gaussian + alias` (`CorrectionInitializationNoOptions.lean:1177-1181`) with `base` the stored base error, and `meanBaseError` is its angular average (`CorrectionState.lean:126`). The fold is by addition, once, and the identity above is what it produces.
-
-### 3. The rest of the proposition, restated as closing
-
-The decomposition (`PeriodizedWaveBounds.common_cancellation`), the supports (`globalGood_support`, `globalGaussian_support`, `HarmonicSourceSupport.NonzeroSupportedOn`), the smooth zero-extension layer (`ComplementJets`, `zero_complementJets_of_germs`, `residualSource_zero_germ_on`), the classes, (ii) (`LocalResidualFlatness.AllResidualJetRates` with `selected_schedule`), and the mean fields of (9.6) (`CorrectionState.radialResidual`/`thetaResidual`/`axialResidual`/`gr`) were already read at E144. With §1 and §2 above, no clause of the proposition is unmatched.
-
-One shape note is carried rather than smoothed: the paper's `f^{[j]}_{γ,m} ∈ W_α` is the wave-class membership on the *coefficients*, which is `HarmonicBlock.WaveBounds` (`:193-197`) — per harmonic, nonzero only — while the label-summed class is `LabelSumBounds.UniformWaveClass`. The two are the two halves of `f^{[j]}_{γ,m} ∈ W_α` and its sum being locally finite; neither is a substitute for the other and both are present.
-
-### 4. The ledger move
-
-| Status | Before | After |
-|---|---|---|
-| placed | 25 | 26 |
-| partial | 3 | 2 |
-| unplaced | 45 | 45 |
-| **total** | **73** | **73** |
-
-*Evidence: `.setup/paper/ns.txt:5272–5330` (Proposition 9.3, (9.3)–(9.6)); `ActualCycleResidualBounds.lean:44,46,59,65`; `ParticularWaveAssembly.lean:24,26`; `CorrectionState.lean:123,126,130,140,187–197,210`; `CorrectionStep.lean:4998,5097–5100,6830`; `HarmonicFields.lean` (`evaluate_over`, `BandLimited`, `support_differentiate`, `band_iteratedCoefficients`, `iteratedAlong_wave`); `LiftedMeanResidual.lean:1176,1206,1221`; `CorrectionInitializationNoOptions.lean:1177–1181`; `PeriodizedWaveBounds.lean`; `LocalResidualFlatness.lean`; E127; E136; E144. Reading only — nothing compiled; "placed" is statement-level.*
-
----
-
-## E150 — Lemma 10.2 stays partial: the `F_j` family is now the force's own endpoint jets, but global uniformity is still inferred (2026-11-24)
-
-*Reading entry. Placing this row was the point of the re-read, and it does not place. One of E136's two gaps is halved: the paper's `F_j` are the terminal jets of one smooth compactly supported force, not a separate family, so clause (b) is a bundling difference over declarations that exist. The other gap is unchanged and is the reason the row stays: no declaration concludes uniform convergence on `ℝ³`, and the missing step is the support of the limit tensors, which is nowhere stated. The ledger is unchanged at 26 placed, 2 partial, 45 unplaced.*
-
-### 1. What improved
-
-`CandidateFromLimits` builds the force as the traced residual glued to its endpoint series, and identifies its jets:
-
-* `force_boundary_jets (n) (x)` (`:158`) — `iteratedFDeriv ℝ n (force …) (1, x) = L x n`. Every full spacetime jet of the constructed force at the terminal time is the supplied limit tensor. That is the paper's `lim ∂^α_x ∂^j_t f = ∂^α_x F_j` with `F_j` realised as the force's own time-derivative trace rather than as a separately indexed family.
-* `force_smooth` (`:94`), `force_time_support` (`:150`) — smooth on all of spacetime, compact future time support.
-* `R3CompactCandidate.compactForce_supported` (`:90`) — `SupportedIn outerSupport (compactForce f)` with `outerSupport` compact (`outerSupport_compact`, `:42`). So the object whose jets are the `F_j` does have compact spatial support, and the support is a named set.
-* `JointResidualLimits.extendedJets_compatible` (`:238`) and `boundaryLimits_hasFDerivAt` (`:240`) — clause (d)'s time and space halves, both derived from the actual derivative recurrence rather than assumed.
-* `boundaryLimits_zero` (`:126`) — clause (c): every order vanishes at the origin, for all `j` at once.
-
-That is more than E136 recorded. E136 said the tree "never states that the limit function is compactly supported in `K`"; the limit *tensors* are the jets of a compactly supported force, which is the same content one layer up, and the force's support is declared.
-
-### 2. What did not improve, and why it is the blocker
-
-Clause (a) is `∂^α_x ∂^j_t f` converges **uniformly on `ℝ³`**. The tree has:
-
-* `boundaryLimits_locallyUniform` (`:148`) — locally uniform convergence;
-* `boundaryLimits_uniformOn_compact` (`:156`) — `TendstoUniformlyOn … K` for every compact `K`, obtained from the local statement by `tendstoLocallyUniformly_iff_forall_isCompact`.
-
-The upgrade to `ℝ³` is exactly the paper's own last step — *"All these derivatives vanish off `K`. They are therefore uniformly Cauchy on `ℝ³`"* — and it needs two premises: the approximants vanish off a fixed compact, and so does the limit. The first is `compactForce_supported`. The second is not stated anywhere: `boundaryLimits` is defined from `Classical.choice (hext x hx)`, an arbitrary one-sided extension with no support condition, and `AwayExtensions` (`:81`) says nothing about where the extension lives. `boundaryLimits_smooth` gives smoothness, `boundaryLimits_continuous` continuity, and no support theorem exists in the module. Without it the supremum over `ℝ³` is not the supremum over `K` for the limit side, and no declaration concludes the global statement.
-
-Clause (b)'s remaining half is the same shape and one line wide: no declaration names the `F_j` slice functions with `support ⊆ K`. The force and its jets are named; the slices are not.
-
-### 3. Why this does not place, stated as the rule rather than as taste
-
-This is the row where it would be easiest to round up: every clause has a declaration *except one that follows in two lines from a declaration that exists*. That is precisely the standard E136 set and E144 applied, and E149 is the case that shows why the standard is worth keeping: Proposition 9.3 looked the same at E144, and the re-read found `source_support` — a declaration, not an argument. Here the re-read found the opposite: a support hypothesis that is not in the tree, because the extension is chosen rather than constructed.
-
-So the row stays partial, with E136's first reason narrowed to one missing support statement and E136's second reason reduced to a naming difference. It is not a claim about the mathematics: for the constructed force the global statement is true, and nothing downstream consumes it. E137 already recorded that Lemma 10.3's extension does not go through the `F_j` at all — it is a cutoff product — so the missing bundle is unused by the proof that the paper uses it for.
-
-### 4. The ledger
-
-| Status | Before | After |
-|---|---|---|
-| placed | 26 | 26 |
-| partial | 2 | 2 |
-| unplaced | 45 | 45 |
-| **total** | **73** | **73** |
-
-*Evidence: `.setup/paper/ns.txt:5997–6030` (Lemma 10.2, (10.6)–(10.10)); `JointResidualLimits.lean:81,84,120,126,141,148,156,220,238,240,264,308`; `CandidateFromLimits.lean:75,94,150,158,175`; `R3CompactCandidate.lean:24,42,90,99`; `PeriodicResidualLimits.lean:220–260`; E136; E137; E144; E149. Reading only — nothing compiled.*
-
----
-
-## E151 — Lemma 8.8 is placed: `R_g` is a definition, (8.27) is an exact identity, and the gain is derived at the paper's exponent (2026-11-24)
-
-*Reading entry. The §8.6 gain lemma is the strongest match in the §8 column. The paper's `R_g` is `actualRadialError`, defined as `gr(new) − gr(old) − (2V/R)Δv`; (8.26) is a theorem about it, derived from the averaged equation; (8.27) is `defects_after_solved_rows`, an identity that holds before any estimate is applied; and `H + 9/10 − 2κ` is `α + 0.9 − 2κ_s` with the paper's own hypotheses. The row is placed; the ledger moves to 27 placed, 1 partial, 45 unplaced.*
-
-### 1. What the paper asks
-
-`Lemma 8.8` (pp. 98–99, `.setup/paper/ns.txt:5041–5099`). Suppose the base satisfies (8.24) with `λ > 0` and `|a(η)| ≥ a₀ > 0`; let `(β, v, γ)` be a smooth divergence-free mean correction supported in the active shell; form `g_r` and `(P, Jθ, Jz)` by (8.3), (8.12), (8.15); apply Lemma 8.7 with the three defects as targets; realize `γ_d` by (8.14). Then
-
-| Clause | Paper's claim |
-|---|---|
-| a | `R_g := g_{r,new} − g_r − (2V/R)Δv` equals the displayed (8.26) |
-| b | `P_new = ∫⟨R_g⟩_Y dR`, `(Jθ)_new = ∫R²⟨γΔv + vΔγ + ΔγΔv⟩_Y dR`, `(Jz)_new = ∫R⟨2γΔγ + (Δγ)²⟩_Y dR − ½∫R²⟨R_g⟩_Y dR` (8.27) |
-| c | under base coefficient bounds and `v, γ ∈ M_{0.9}`, `β ∈ M_{1.9}`, targets in `S_α` for `α ≥ 0.9`: `R_g ∈ M_{α+0.9−2κ_s}` and the three new defects in `S_{α+0.9−2κ_s}` |
-
-### 2. `R_g` is the definition, and (8.26) is derived
+### 2. The three defects are definitions, and they are the paper's integrals
 
 | Paper | Declaration | Statement |
 |---|---|---|
-| `R_g` | `actualRadialError o base m h W` (`:349`) | `gr o base (updated m h) W − gr o base m W − leadingRadial o base h` |
-| `(2V/R)Δv` | `MeanIncrementBounds.leadingRadial` (`:365`) | `o.invRadius * ((2 : ℝ) • (base.angular * h.angular))` |
-| (8.26) | `actualRadialError_eq_formula` (`:395`) | `Agree U (actualRadialError …) (radialRemainder o base m h)` |
+| `P = ∫⟨g_r⟩_Y dR` | `CorrectionState.pressureDefect c u` (`:229`) | `radialMoment 0 (u.gr c)` |
+| `Jθ` | `CorrectionState.thetaDefect c u` (`:232`) | `radialMoment 2 (thetaAxial c.base u.mean + u.covariance 2 1)` |
+| `Jz` | `CorrectionState.axialDefect c u` (`:236`) | `radialMoment 1 (axialAxial c.base u.mean + u.covariance 2 2) − ½ • radialMoment 2 (u.gr c)` |
+| `cρ` | `IntegratedMeanBalances.pressureCoefficient ρ` (`:713`) | `radialMoment 2 ρ / 2` |
+| the row order | `CorrectionState.debt` (`:242`) | `![pressureDefect, thetaDefect, axialDefect]`, docstring *"exactly `(P, Jθ, Jz)`, as in `MeanRankUpdate`"* |
 
-`radialRemainder` (`MeanIncrementBounds.lean:368–371`) is `−time(β) − radialDiv 1(δ_{rr}) − dz(δ_{zr}) + invRadius·radialAngularRemainder + viscosity 1(β)`. The three deltas are the paper's three groups: `δ_{rr}` carries `2bΔβ + 2βΔβ + (Δβ)²`, `δ_{zr}` the `bΔγ + GΔβ + βΔγ + γΔβ + ΔβΔγ`, and `radialAngularRemainder` the `(2vΔv + (Δv)²)/R`. The identity is not assumed: `gr_change` (`:683`) derives it by splitting `gr(updated) − gr` through `radialRadial_updated` and `radialAngular_updated` and expanding the products. So clause (a) is a theorem, and it is the paper's own derivation.
+`covariance 2 1` is `W_zθ` and `covariance 2 2` is `W_zz`, so the brackets are the paper's products with the curl remainders included, not only the base terms. `DefectIncrementBounds.defects` (`:330`) is the same triple on the abstract `Operators`/`Triple` layer, and `defects_eq_stateDebt` (`:701`) proves the two agree by `rfl`.
 
-### 3. (8.27) is an identity, before any estimate
+### 3. Both identities, stated about the residual
 
-`defects_update` (`:474`) is the exact split
-
-```
-defects(new) = defects(old) + linearRows(h) + remainders(m, h),
-```
-
-with `linearRows` (`:340`) the three rows of (8.25) — pressure `barMoment 0 (leadingRadial)`, angular `barMoment 2 (thetaLeading)`, axial `barMoment 1 (axialLeading) − ½ barMoment 2 (leadingRadial)`, i.e. the paper's minus sign and factor one half — and `remainders` (`:339`) the paper's right-hand side:
-
-| (8.27) | `remainders` component |
-|---|---|
-| `P_new = ∫⟨R_g⟩_Y dR` | `barMoment 0 (actualRadialError …)` |
-| `(Jθ)_new = ∫R²⟨γΔv + vΔγ + ΔγΔv⟩` | `barMoment 2 (thetaQuadratic m h)`, `thetaQuadratic = m.axial*h.angular + h.axial*m.angular + h.axial*h.angular` |
-| `(Jz)_new = ∫R⟨2γΔγ + (Δγ)²⟩ − ½∫R²⟨R_g⟩` | `barMoment 1 (axialQuadratic m h) − ½ barMoment 2 (actualRadialError …)`, `axialQuadratic = 2•(m.axial*h.axial) + h.axial*h.axial` |
-
-Then `defects_after_solved_rows` (`:504`) applies "Lemma 8.7 with these three defects as its targets" in the tree's form, `linearRows o base h = -defects o base m W`, and cancels: `defects o base (updated m h) W = remainders o base m h W`. The cancellation is what supplies the claim that the increments have zero angular momentum and zero axial flux: `fiveRows_mass_zero` (`:621`) proves `barMoment 2 h.angular = 0 ∧ barMoment 1 h.axial = 0` from the rows, and `fiveRows_preserve_masses` (`:635`) carries the two constraints through the update. That is `γ_d = Δγ` and the last three rows of (8.25) cancelling the old defects.
-
-### 4. The exponent, and every hypothesis
-
-The paper's gain is `α + 0.9 − 2κ_s`; the tree's is `H + 9/10 − 2 * κ`, and `H` is the increment's own class:
-
-| Paper | Lean |
-|---|---|
-| `v, γ ∈ M_{0.9}` | `IncrementBounds.angular`, `.axial : MeanClass s H` — at `H = 0.9` these are the paper's classes exactly, and stronger for `H > 0.9` |
-| `β ∈ M_{1.9}` | `IncrementBounds.radial : MeanClass s (H + 1)` |
-| `α ≥ 0.9` | `hH : 9 / 10 ≤ H` |
-| `R_g ∈ M_{α+0.9−2κ_s}` | `actualRadialError_mem` (`:440`), `MeanClass s (H + 9/10 − 2κ)` |
-| the three new defects in `S_{α+0.9−2κ_s}` | `remainders_mem` (`:556`) and `defects_after_rank_mem` (`:567`), `UnweightedClass (H + 9/10 − 2κ)` on the moment-integrated strip |
-
-The hypothesis structures are the paper's, one for one: `BaseBounds s base` is (8.24)'s coefficient bounds `C_I ε S^{B_I}_*`; `OperatorBounds s o κ` is the operator layer's `κ` loss; `CumulativeBounds s m` is the current correction's class `M_{0.9}`/`M_{1.9}`; `IncrementBounds s H h` is the paper's `v, γ ∈ M_{0.9}`, `β ∈ M_{1.9}` written at the target class. `RankGeometry` (`:735–800`) supplies the geometry and discharges "apply Lemma 8.7": `solved_rows` composes `fiveRows` with `linearRows_eq_neg_of_fiveRows`, and `debt_eq_remainders` (`:838`) instantiates `defects_after_solved_rows` on the actual constructed stage. `rankStage_defect_class` (`:855`) then states the debt of the actual `rankStage` at `H + 9/10 − 2κ`, and `rankStage_defectBounds` (`:870`) weakens it to `DefectBounds σ` whenever `1 + σ ≤ H + 9/10 − 2κ` — which is how the iteration consumes it.
-
-### 5. Three shape differences, recorded rather than smoothed
-
-* **Divergence-freeness is not a binder of this lemma.** The paper's `(β, v, γ)` is assumed smooth, divergence-free and supported in the shell; the tree's `ShellTriple` gives smoothness and support, and divergence lives one layer down in the mean-increment construction (`MeanIncrementBounds` / `StateMomentBalances`), as E141 recorded for the increment triple. Nothing in (8.26)–(8.27) uses divergence, so this is a locality of statement rather than a missing hypothesis.
-* **Local bounds become strip bounds.** The paper requires the base coefficients bounded "on the support of the azimuthal potential for this correction"; `BaseBounds` and `OperatorBounds` are stated on the whole logarithmic strip. Stronger, and it removes the need to re-establish the bound on each patch.
-* **The paper's `M`/`S` are the tree's `MeanClass`/`UnweightedClass`.** The `S` side is the moment-integrated strip `MeanMomentBounds.slowStripData`, so the "belongs to `S_α`" conclusion is a class of the actual radial moments, not of the pre-integration field. That is what (8.15) defines and what the five rows consume.
-
-No clause is matched only by a component. The one thing this entry does not claim is that the proof of `defects_after_rank_mem` is valid — it is statement-level reading, as every placed row is.
-
-### 6. The ledger move
-
-| Status | Before | After |
-|---|---|---|
-| placed | 26 | 27 |
-| partial | 2 | 1 |
-| unplaced | 45 | 45 |
-| **total** | **73** | **73** |
-
-*Evidence: `.setup/paper/ns.txt:5041–5099` (Lemma 8.8, (8.26)–(8.27)); `DefectIncrementBounds.lean:300–360` (`leadingRadial`, `thetaLeading`, `axialLeading`, `thetaQuadratic`, `axialQuadratic`, `actualRadialError`, `defects`, `linearRows`, `remainders`), `:380–460` (the splits, `actualRadialError_eq_formula`, the class bounds), `:470–515` (`defects_update`, `defects_after_solved_rows`), `:556,567` (`remainders_mem`, `defects_after_rank_mem`), `:621,635,650`; `:735–875` (`RankGeometry`, `solved_rows`, `debt_eq_remainders`, `rankStage_defect_class`, `rankStage_defectBounds`); `MeanIncrementBounds.lean:365–371,683,747`; `MeanLocalDefectBounds.lean:94`; E139; E140; E141. Reading only — nothing compiled; "placed" is statement-level.*
-
-## E152 — Proposition 8.3 is placed: the pressure residual, the bar derivative and the three stream classes are all declarations (2026-11-24)
-
-*Reading entry. The §8.3 reconstruction proposition splits into pressure and axial velocity, and every clause is a declaration rather than an assembly: (8.13) with both the bump mass and the cutoff alias displayed, the bar derivative, `P ∈ S_α`, `pm ∈ M_α`, the same-class difference, zero auxiliary mean, superflat alias; and for the stream, `r⁻¹Ic(rγd)`, `Δγ = γd − A₁γd`, exact divergence-freeness including the axis, the bar equality, the pointwise clause, and the classes at the paper's `α`, `α` and `α+1`. The row is placed; the ledger moves to 28 placed, 1 partial, 44 unplaced.*
-
-### 1. What the paper asks
-
-`Proposition 8.3` (pp. 92–93, `.setup/paper/ns.txt:4735–4780`), after fixing the radial operators of Lemma 8.2 and the bump `ρ` with `∫ρ dR = 1`:
-
-| Part | Clause |
-|---|---|
-| (i)a | `P = ∫⟨gr⟩_Y dR`, `pm = T0(gr − ρP)` |
-| (i)b | `Dr pm − gr = −ρP − A0(gr − ρP)`; `∂R⟨pm⟩_Y = ⟨gr⟩_Y − ρP` |
-| (i)c | `gr ∈ M_α ⟹ P ∈ S_α`, `pm ∈ M_α`; differences at the same class |
-| (i)d | the cutoff remainder has zero auxiliary mean and is flat at every fixed derivative order |
-| (ii)a | `Ψ = r⁻¹Ic(rγd,phys)`, `Ψ* = T1γd`, `Δβ = −ε∂ZΨ*`, `Δγ = (Dr + 1/R)Ψ* = γd − A1γd` |
-| (ii)b | `(Δβ, 0, Δγ)` divergence-free; `⟨Δγ⟩_Y = ⟨γd⟩_Y` |
-| (ii)c | `γd ∈ M_α ⟹ Ψ*, Δγ ∈ M_α` and `Δβ ∈ M_{α+1}` |
-| (ii)d | `γd` independent of `Y` and `∫R⟨γd⟩_Y dR = 0` ⟹ `Δγ = γd` pointwise |
-| (ii)e | compact support in the active shell; the source `(Z,T)`-projection retained |
-
-### 2. Part (i): every line of (8.13) is a theorem
+The point of the row is that (8.16) is not an algebraic identity about a balance expression someone chose; it is the paper's statement about the actual `E_θ, E_z`:
 
 | Paper | Declaration | Statement |
 |---|---|---|
-| `P` | `PressureStream.pressureMass f s` (`:121`) | `∫ r, torusAverage f (r, s)` |
-| `gr − ρP` | `pressureSource a b hab f` (`:154`) | `f p − rho a b hab p.1 * pressureMass f p.2.1` |
-| `T0` | `meanPressure d a b M hab v f` (`:383`) | `physicalCompact d a b M (0, v) (pressureSource a b hab f)` |
-| `A0` | `pressureAlias d a b M hab v f` (`:387`) | the same primitive's cutoff derivative |
+| `∫R²⟨Eθ⟩ = ε∂_Z Jθ` | `StateMomentBalances.state_angular_moment` (`:772`) | `radialMoment 2 (u.thetaResidual c) n s = ε n * fderiv (thetaDefect c u n) s z` |
+| `∫R⟨Ez⟩ = ε∂_Z(Jz + cρP)` | `StateMomentBalances.state_axial_moment` (`:846`) | the same identity with `axialDebtPotential r c u = axialDefect + pressureCoefficient r • pressureDefect` (`:815`) |
 
-`meanPressure_radial_residual_global` (`:796`) then states
+Both are composed, not assumed. `averaged_thetaResidual` (`:760`) proves the auxiliary average of the actual residual *is* `angularBalanceAlong` of the averaged fluxes; `state_radialMoment_eq` (`:740`) identifies the state moment with the integrated mean; and `integrated_angular_balance` / `integrated_axial_balance` (`IntegratedMeanBalances.lean:638,689`) do the four moves of the paper's proof as four rewrites:
 
-```
-graphDr (physicalSpeed d M) (0, v) (meanPressure … f) p − f p
-  = −rho a b hab p.1 * pressureMass f p.2.1 − pressureAlias d a b M hab v f p ,
-```
+* the endpoint terms: the folder's `SmoothShell a b F` is smoothness plus support in `Icc a b`, and `positive_radialMoment` (`:790`) converts `∫_{Ioi 0}` into the moment, so the boundary terms are gone before anything is estimated;
+* the divergence terms: `moment_angular_divergence` / `moment_axial_divergence` are the weighted endpoint identities, applied to the actual radial flux and to `c.virtualTheta` / `c.virtualAxial` (the residual stress tensor's own divergence);
+* the viscous terms: `moment_angular_viscosity` and `moment_axial_viscosity` are the paper's two integrations by parts, with the coefficients `2 − 1 − 1 = 0` and `−1 + 1 = 0` closed in the proof rather than quoted;
+* the time and axial terms: `zero_mass_parameterPartial` and `zero_mass_parameterPartial_twice` move the derivative onto the two zero moments (8.2) and kill them, which is the paper's "derivatives of the two zero integrals".
 
-which is (8.13) with `A0(gr − ρP)` written as `pressureAlias`. A second form, `meanPressure_radial_residual_cutoff` (`:809`), expands the alias as `deriv (physicalCutoff d a b) p.1 * physicalTotal d a M (0,v) (pressureSource …) p` — the paper's cutoff remainder named as a derivative of the bump times the primitive. `meanPressure_bar_hasDerivAt` (`:697`) states
+The pressure half is `flux_pressure_moment` (`:717`): `radialMoment 1 (axialFlux + pressure) = axialDefect axialFlux gr + pressureCoefficient ρ * pressureTotal gr`, i.e. the paper's `∫R⟨p_m⟩ = −½∫R²⟨g_r⟩ + cρP` with `pressureTotal = radialMoment 0 gr`. It is derived from `pressure_moment_reconstructed`, the integration-by-parts identity for a compactly supported primitive, and `integrated_axial_reconstructed` (`:783`) then differentiates the *sum* `axialDefect + cρ·P` in one `fderiv`. That is why the paper's remark about `cρ` is satisfied rather than dodged: no declaration ever asks `pressureCoefficient` to be differentiable by itself.
 
-```
-HasDerivAt (fun R => torusAverage (meanPressure … f) (R, s))
-  (torusAverage f (r, s) − rho a b hab r * pressureMass f s) r ,
-```
+On the constructed object, `constructed_pressure_moment` (`:866`) states the same moment for `PressureStream.meanPressure` fed by the actual `g_r`, using `meanPressure_bar_hasDerivAt` for the derivative — the E152 chain, reused rather than reproved.
 
-derived from `meanPressure_bar_eq_integral` (`:682`), not assumed: the integral representation is proved first, then differentiated by the fundamental theorem.
+### 4. Hypotheses, one for one
 
-The four class and remainder clauses:
-
-| Clause | Declaration | Statement |
-|---|---|---|
-| `P ∈ S_α` | `barMoment_mem` (`DefectIncrementBounds.lean:281`) | `MeanClass logStrip α f` + `Shell a b f` ⟹ `UnweightedClass (slowStripData) α (barMoment 0 f)` |
-| `pm ∈ M_α` | `meanClass_meanPressure` (`MeanIncrementBounds.lean:968`) | `MeanClass logStrip α f` ⟹ `MeanClass logStrip α (meanPressure … f)` |
-| differences | `meanClass_meanPressure_change` (`:985`) | `MeanClass α (f − g)` ⟹ `MeanClass α (meanPressure f − meanPressure g)`, linearity by `meanPressure_sub` (`:936`) |
-| zero mean | `pressureAlias_mean_zero` (`PressureStream.lean:616`) | `torusAverage (pressureAlias …) p = 0` |
-| superflat | `dividedAlias_superflat` (`TemporalMeanUpdate.lean:1157–1174`) | `∀ m N, ∃ C ≥ 0, ∀ᶠ n, ∀ j ≤ m, ∀ z, ‖iteratedFDeriv j (divideRadius (physicalAlias …)) z‖ ≤ C * ε n ^ N` |
-
-`barMoment 0` is `pressureMass`: `barMoment_apply` (`:295`) rewrites it as `IntegratedMeanBalances.radialMoment 0 (torusAverage f)`, which is the same integral. So `S_α` here is the moment-integrated strip, exactly as in E151, and the statement's hypotheses (`Shell a b`) are the paper's "smooth shell-supported source".
-
-### 3. Part (ii): the ε is in the direction, not added afterwards
-
-| Paper | Declaration | Statement |
-|---|---|---|
-| `Ψ = r⁻¹Ic(rγd)` | `streamPotential d a b M v γd` (`:438`) | `divideRadius (physicalCompact d a b M v (weightedSource γd))`, with `weightedSource γd p = p.1 * γd p` (`:423`) |
-| `Δβ = −∂ZΨ` | `streamBeta w Ψ` (`:310`) | `−graphDz w Ψ` |
-| `Δγ = (Dr + 1/R)Ψ` | `streamGamma k v Ψ` (`:313`) | `graphDr k v Ψ + divideRadius Ψ` |
-| `γd − A1γd` | `streamGamma_eq_desired_sub_alias_global` (`:759`) | `streamGamma … p = γd p − physicalAlias … p / p.1`, every `p`, axis included |
-
-The three class claims are three declarations, and the exponent on the third is the point of the row:
-
-| Paper | Declaration | Exponent |
-|---|---|---|
-| `Ψ* ∈ M_α` | `meanClass_streamPotential` (`TemporalMeanUpdate.lean:893–915`) | `α` |
-| `Δγ ∈ M_α` | `meanClass_streamGamma` (`PhysicalMeanDomain.lean:1616`) | `α` |
-| `Δβ ∈ M_{α+1}` | `meanClass_scaledRadialUpdate` (`TemporalMeanUpdate.lean:1097`) | `α + 1` |
-
-`meanClass_streamBeta` (`:916–930`) states the *unscaled* `streamBeta` at `α`: the tree does not claim that a bare axial derivative gains an exponent. The gain is stated for the scaled direction — `radialUpdate d a b (M n) (v n) (ε n • w) h n (f n)` lands in `MeanClass (α + 1)` because the band scale is a `BandBound 1 ε` and `band_smul` adds one. That is the object the construction actually builds: `CorrectionState.rankIncrement.radial` (`CorrectionState.lean:434`) is `streamBeta (c.operators.epsilon n • axial) (rankPotential …)`. So the paper's `Δβ = −ε∂ZΨ*` is not assembled in this proposition — the `ε` sits inside the vector the derivative is taken along, which is where the paper's own `Q^{1/2−D} = Q^h = ε` puts it.
-
-### 4. Divergence, bar and pointwise
-
-* `reconstructed_divergence_zero` (`:740`) proves `graphDivergence (physicalSpeed d M) v w Δβ Δγ p = 0` for every `p`, with an explicit axis branch: below `a` both fields and their derivatives vanish (`radial_zero_of_lt`, `radialSupport_fderiv`), so the `1/r` in `Δγ` never meets `r = 0`. The paper's commutation `(r + r⁻¹)(−∂zΨ) + ∂z((r + r⁻¹)Ψ) = 0` is `stream_divergence_zero` (`:321`), proved from `graphDr_graphDz_comm` (`:233`) — symmetry of the second derivative plus the vanishing cross derivative of the radial vector field.
-* `⟨Δγ⟩_Y = ⟨γd⟩_Y` is `streamGamma_bar_eq_desired` (`:843`). Its hypothesis is the paper's `∫ R⟨γd⟩_Y dR = 0` at every `(Z,T)` together with periodicity; `torusAverage_physicalAlias` (`:589`) makes the alias average vanish exactly, by the same `pressureSource_mass_zero` that part (i) uses.
-* The pointwise clause is `slow_streamGamma_eq_desired` (`MeanRankUpdate.lean:406`): for slow `f` with `∫ r f = 0`, `streamGamma (physicalSpeed d M) (0,v) (streamPotential … (slowLift f)) p = slowLift f p` at every `p`. That is the paper's "if `γd` is independent of `Y`". `rank_axial_eq_desired` (`CorrectionState.lean:478`) applies it to the actual rank stage under the five-row condition, so the constructed `Δγ` *is* `γd` there rather than merely matching its mean.
-
-Support is one lemma per object: `meanPressure_supported` (`:398`), `streamPotential_supported` (`:451`), `streamBeta_supported` (`:718`), `streamGamma_supported` (`:726`), plus `streamGamma_tsupport ⊆ tsupport Ψ` (`MeanLocalDefectBounds.lean:119`). The paper's `(Z,T)`-projection claim is the primitive's own support statement (`RadialPullback.physicalCompact_supported`) rather than a separate theorem about the pair.
+| Paper | Tree |
+|---|---|
+| corrections smooth, compactly supported, zero outside the active shell | `SmoothShell a b` on each of the three components and on the stress flux; `RadiallySupported` for the half-line form |
+| moments (8.2) vanish at every `(Z,T)` | `hmass : radialMoment 2 v = 0` (angular) and `radialMoment 1 γ = 0` (axial) |
+| `p_m` reconstructed by (8.12) | `hrecipe : u.pressure = pressureRecipe r c u`, the E152 recipe |
+| `E_θ, E_z` are the residual components of (8.3) | `u.thetaResidual c`, `u.axialResidual c` |
+| auxiliary averaging | `PressureStream.torusAverage` at every slow point |
 
 ### 5. Shape differences, recorded
 
-* **`D_r` is a graph derivative.** The paper writes `D_r`; the tree writes `graphDr (physicalSpeed d M) v` at the fixed direction `(1, physicalSpeed • v)`, with `graphDr_eq_physical` (`:373`) proving it equals the physical radial derivative. Same operator, chart form.
-* **`P` has two names.** `pressureMass` and `barMoment 0` are one integral; the class theorem is stated for `barMoment` because that is what the five rows consume, and `barMoment_apply` is the identification.
-* **Strip, not support.** Every class is stated on the whole logarithmic strip where the paper asks only on the azimuthal support. Stronger, as in E151.
-* **The `(Z,T)`-projection is inherited.** It is the support of `physicalCompact`, not a clause of the proposition. Nothing downstream asks for more.
-* **Smoothness and support are binders.** `Shell a b` and `RadiallySupported` carry what the paper states in prose; the proposition's hypotheses are therefore the paper's, one for one.
+* **The two `α`-side claims of (8.15) are not in this proposition.** The paper defines `Jθ, Jz` here and estimates them in Lemma 8.8; the tree's class bound on the same triple is `DefectBounds` / `defectBounds_components` (`StateMomentBalances.lean:1130`), already used by E151. No clause of 8.4 is weaker for that.
+* **`E_θ` is an averaged residual, not a component.** The identity is stated after `averaged_*`, because the paper's integral is against `⟨·⟩_Y`. The unaveraged equation is `u.thetaResidual c` itself, and `fluxResidual` is where it is built.
+* **`c_ρ` is a coefficient, not a field.** `pressureCoefficient r` is a real number fixed by the reconstruction data, whereas the paper's `cρ` is `(Z,T)`-dependent. The dependence is real and enters through `u.gr c n s`; the tree's `pressureCoefficient` on the abstract layer (`IntegratedMeanBalances.pressureCoefficient ρ : MeanParameter → ℝ`) is the parameter-dependent version, and `integrated_axial_reconstructed` is stated for that one. Both forms exist; the state theorem uses the fixed-data one because that is what `pressureRecipe` builds.
 
-No clause here is matched only by a component, and no clause is weaker than the paper's: the two class exponents that could have been (`Ψ*` and `Δγ`) are at `α`, and the one that gains (`Δβ`) gains at the direction the construction uses.
+No clause is matched only by a component. Unlike E150, nothing here is one line short: the two identities are the two theorems, and the hypotheses are the paper's.
 
 ### 6. The ledger move
 
 | Status | Before | After |
 |---|---|---|
-| placed | 27 | 28 |
-| partial | 1 | 1 |
-| unplaced | 45 | 44 |
+| placed | 28 | 29 |
+| partial | 1 | 2 |
+| unplaced | 44 | 42 |
 | **total** | **73** | **73** |
 
-*Evidence: `.setup/paper/ns.txt:4735–4780` (Proposition 8.3, (8.12)–(8.14)); `PressureStream.lean:121,154,310,313,321,383,387,398,423,438,451,589,616,682,697,718,726,740,759,796,809,843`; `DefectIncrementBounds.lean:281–296`; `MeanIncrementBounds.lean:936,968,985`; `TemporalMeanUpdate.lean:893–930,1097–1128,1157–1174`; `PhysicalMeanDomain.lean:1616–1630`; `MeanRankUpdate.lean:406–417`; `MeanLocalDefectBounds.lean:111–128`; `CorrectionState.lean:429,434,478`; E141; E145; E151. Reading only — nothing compiled; "placed" is statement-level.*
+*Evidence: `.setup/paper/ns.txt:4795–4828` (Proposition 8.4, (8.15)–(8.16)); `CorrectionState.lean:229–248`; `DefectIncrementBounds.lean:319–334,701–703`; `IntegratedMeanBalances.lean:613–760` (`angularBalance`, `axialBalance`, `integrated_angular_balance`, `integrated_axial_balance`), `:711–760` (`pressureTotal`, `pressureCoefficient`, `axialDefect`, `flux_pressure_moment`), `:779–800` (`integrated_axial_reconstructed`), `:855–895` (`constructed_pressure_moment`); `StateMomentBalances.lean:700–860` (fluxes, `state_radialMoment_eq`, `averaged_thetaResidual`, `state_angular_moment`, `pressureRecipe`, `axialDebtPotential`, `pressureRecipe_moment`, `state_axial_moment`), `:1088–1136` (`bump_class_from_actual_debt`, `defectBounds_components`); E152. Reading only — nothing compiled; "placed" is statement-level.*
+
+---
+
+## E154 — Corollary 7.3 stays partial: the uniformity is proved three times over, but no declaration is the solution operator it names (2026-11-24)
+
+*Reading entry. Working the first §7 row found the corollary's substance present in three separate uniformity statements and the corollary itself absent. The modal operator is the right matrix, the damping is never divided by, and the inverse's norm is bounded by a constant with no harmonic index in it — so "increasing the harmonic set or the derivative order changes only constants" is true and proved. What is missing is the object: the paper's operator maps a source to the pair `(t_m, π_m)` of the driven equation with `t_m(0) = 0`, and no declaration has that type; and `q*` appears nowhere as a threshold. The row moves from unplaced to partial, with three clauses named.*
+
+### 1. What the paper asks
+
+`Corollary 7.3` (p. 80, `.setup/paper/ns.txt:4114–4117`). The solution operators `f_m ↦ (t_m, π_m)` for the projected amplitude equation with `t_m(0) = 0` are defined at every finite correction stage on the same domain `0 < q < q*`. Increasing the finite harmonic set or the derivative order changes constants and polynomial degrees but does not require shrinking the domain.
+
+Its proof is three sentences, and each names a mechanism: the frame and damping comparisons need only the single finite choice in Lemma 7.1; the exact factor (7.18), `V_m(v,w) = exp(−(m²−1)∫_w^v d) V_1(v,w)`, makes every higher harmonic at least as damped; and in (7.20) the extra factors of `m` and of coefficient derivatives enlarge only constants and polynomial degrees. Proposition 7.2 states the sharper form: *"The threshold `q*` does not depend on `M`, `α`, or the correction stage."*
+
+### 2. What exists: the matrix, the damping, the uniformity
+
+| Paper | Declaration | Statement |
+|---|---|---|
+| (7.17) `A_m = diag(λ,−λ) + E − m²d I` | `GrowingMode.modalOperator lam damping e11 e12 e21 e22` (`:22`) | `![(λ − d + E11) z₀ + E12 z₁, E21 z₀ + (−λ − d + E22) z₁]` |
+| the cone and positivity for (7.17) | `growing_slot` (`:131`) | `0 < z t 0 ∧ |z t 1| ≤ r * z t 0` on a slot, from `|E_ij| ≤ ε` and a gap condition, with `hminus : z a 1 = 0` |
+| the `K/S` form | `scaled_growing_slot` (`:246`) | the same with `|E_ij| ≤ C/S` and cone constant `coneConstant lamMin C / S` |
+| the envelope | `hasDerivAt_weighted_scalar` (`:260`), `scaled_envelope_slot` (`:359`) | the integrating-factor comparison and the two-sided `P`-bounds per slot of length `≤ L*S` |
+
+`damping` enters as one scalar and is never divided by, never compared to `1`, and never appears in a denominator: substituting `damping = m²d` is a definitional step for the caller. The cone constant `coneConstant lamMin C / S` contains `λ_min`, `C` and `S` — not `m`, not `α`, not a stage. That is the corollary's "constants only" claim for the coefficient side, and it is stronger than the paper's because it holds for every real damping at once.
+
+The inverse side is where the harmonic set would have to shrink the domain, and it does not:
+
+* `TorusInverse.directionalInverse d a` (`:301`) is the solution operator for the auxiliary derivative, `series (inverseCoeff d a)`.
+* `norm_directionalInverse_le` (`:439`) bounds it by `(6 * ‖ω⁻¹‖) * coeffSeminorm 1 a` — one constant for the whole coefficient family, with no index set in the statement.
+* `inverse_derivativeWord_bound` (`:505`) costs `(6‖ω⁻¹‖) * ‖ω‖ ^ w.length * coeffSeminorm (w.length+1) a`: derivative order enters as an exponent and a seminorm index, exactly the paper's "polynomial degrees".
+* `SmoothFamilyTorusInverse.norm_jet_applyMultiplier_le` (`:726`) puts the jet order additively in the majorant (`n + l + 4`), on a parameter set `S` that is a hypothesis and is never enlarged or shrunk by the order.
+* `uniform_multiplierDerivative_bound` (`:459`) is uniform on a compact `K ⊆ P`, i.e. on the fixed parameter region, which is the analogue of `0 < q < q*`.
+
+### 3. Why it stays partial: three named clauses
+
+| Clause | Why it is unmatched |
+|---|---|
+| the operator `f_m ↦ (t_m, π_m)` | `GrowingMode` is the *homogeneous* modal estimate; `TorusInverse` inverts the auxiliary derivative. Neither has the paper's type, a map from a source to the amplitude–pressure pair of the driven equation (7.13). |
+| the initial condition `t_m(0) = 0` | the only initial data in `GrowingMode` is `hplus : 0 < z a 0`, `hminus : z a 1 = 0`, which is a cone initialization, not zero data for a driven equation. `TorusInverse.inverse_zero_mean` is a zero *mean*, a different normalisation. |
+| `q*` independent of `M` | no declaration names a threshold. The parameter region is supplied by the caller as `U`/`K`; that it does not depend on `M` is a consequence of `M` not appearing, not a stated theorem. |
+
+This is the Lemma 9.7 pattern — the content is there under other names and the statement is not — so the row goes to partial rather than placed. It is not a mathematical objection: nothing in §7's later use of the corollary asks for a `q*` that is named.
+
+### 4. What this changes for the §7 slice
+
+Five §7 rows remain unplaced after this entry (7.1, 7.2, 7.4, 7.5, 7.6, 7.8), and this reading says where to start: the driven amplitude equation is the object none of the §7 modules in the queue's candidate list declares. The natural next targets are `JointODE` / `WithinJointODE` / `ParametricODE` (the actual ODE solve) and `PrimaryPulseBounds.homogeneous_joint_jet_bound`, whose docstring says the solution is *"the constructed Volterra solution in `JointODE`, rather than an assumed smooth solution family"*. That is the operator Corollary 7.3 is about, and it was not in the queue's candidate list.
+
+### 5. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 29 | 29 |
+| partial | 1 | 2 |
+| unplaced | 42 | 42 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:4114–4117` (Corollary 7.3); `:4030` ((7.18)); `:3992` (Proposition 7.2's threshold sentence); `GrowingMode.lean:22–41`, `:131–140`, `:246–254`, `:260–262`, `:359–383`; `TorusInverse.lean:301,323,439,505,574`; `SmoothFamilyTorusInverse.lean:459,724–752,1074–1078`; `ParametricTorusInverse.lean:1–70`; `PrimaryPulseBounds.lean:155–159`; E143; E152. Reading only — nothing compiled.*
+
+---
+
+## E155 — (8.17) is not a statement in the tree: the normalisation is one weight and per-row exponents, so the six powers can be neither placed nor refuted (2026-11-24)
+
+*Reading entry. The third follow-up asked whether the tree's flux-defect normalisations match the paper's powers of `Q`. The answer is that the tree has no (8.17)-shaped declaration at all. Normalisation is carried by a single moving weight — `qLength = √(coordinateQ)`, and `chartScale = √Q` for the chart form — with one exponent per row, and no theorem states any of the six factor identities. Two things are nevertheless structural and worth recording: the `P`/`cρ` pair shares one radial weight, and the axial identity differentiates their product, which is exactly what the paper's table exists to guarantee. No ledger move: (8.17) is an equation inside §8.4, not a numbered result.*
+
+### 1. The table, and what would place it
+
+`(8.17)` (`.setup/paper/ns.txt:4820–4830`) gives `(Mθ)* = QA^{-3/2}(Mθ)_phys`, `(Mz)* = QA^{-1}(Mz)_phys`, `P* = Q²A P_phys`, `(cρ)* = Q^{-1}(cρ)_phys`, `(Jθ)* = Q²A^{-3/2}(Jθ)_phys`, `(Jz)* = Q²A^{-1}(Jz)_phys`, with the remark that each nonzero correction target uses the normalisation of its corresponding row. Placing it would need six declarations of the form `defect_normalized = (Q ^ a * A ^ b) * defect_physical`, or one structure with six fields.
+
+### 2. What the tree has instead
+
+* `VariableGaugeMean.qLength coord s = Real.sqrt (SimilarityCoordinates.coordinateQ coord s)` (`:172`), with `qLength_pos`, `qLength_contDiffOn`, `qLength_chart` (`:879`) and `qLength_reference_bounds` (`:1473`). The chart form is `chartScale n = (ChartScales.Q n)⁻¹ᐟ²`-shaped: `qLength_chart` proves `qLength (2h) (slowToChartTZ h n s) = chartScale n * qLength (2h) s`.
+* `meanClass_moving_localBandJets`, `movingStripData`, `logStripData` carry one exponent `α` per row and one growth per jet order. The class is the statement; the factor is in the weight.
+* `MeanRankUpdate`'s five-row map carries each row's exponent separately, which is the paper's "each target uses its own row".
+* A search for `A ^ (3/2)`, `A ^ (-3/2)`, `Q^2 * A`, `Q⁻¹` in the moment layer returns nothing. `CoordinateAlgebra.A` exists as a definition and is used in `ChartScales`-adjacent exponents, but it is not tied to the defect layer by any statement.
+
+So the six powers are *consistent with* the tree and are not *stated by* it. The consistent reading is that `qLength^(2α)` is the paper's `Q^α` on the row whose class is `α`, and the `A`-powers are absorbed into the same weight because the tree never separates the two chart factors at this layer.
+
+### 3. The part that is structural, and why it matters for (8.16)
+
+Two facts survive the failed search, and both are load-bearing:
+
+* `pressureDefect` and `pressureCoefficient` are both `radialMoment 2`-weighted (`CorrectionState.lean:229,713`), so `P` and `cρ` are normalised by the same weight. (8.17) gives them different factors (`Q²A` and `Q⁻¹`); the tree's uniform weight is only harmless because their *product* is what appears in (8.16).
+* `integrated_axial_reconstructed` differentiates `axialDefect + pressureCoefficient * pressureTotal` as one `fderiv`. The paper's remark that `cρ` may depend on `(T,Z)` and "its full product with `P` therefore remains inside `∂_Z`" is exactly this, and the tree's statement shape enforces it rather than assuming it.
+
+### 4. Recorded as a lead, not a finding
+
+This entry does not say the normalisation is wrong, and it does not say it is right: it says the comparison cannot be made at statement level because one side of it does not exist as a statement. If a later pass wants to close it, the place to look is `MeanRankUpdate`'s row data and `ChartScales`' exponent ledger, and the question to ask is whether any declaration's exponent *forces* a row's factor rather than permitting it. The nearest existing tool is `ExponentLedger.lean`, which tabulates exponents but not the physical/normalised ratios.
+
+*Evidence: `.setup/paper/ns.txt:4820–4830` ((8.17)); `VariableGaugeMean.lean:172,879,1473`; `ChartScales.lean:26,29,59`; `CorrectionState.lean:229,236,713`; `IntegratedMeanBalances.lean:779–800`; `ExponentLedger.lean`; E153. Reading only — nothing compiled.*
