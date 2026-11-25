@@ -23,11 +23,11 @@ The repo is written in **Lean 4**, on top of a big math library (**Mathlib**).
 
 Good news first, because it is real:
 
-- No **axioms** — no "just believe me" stones.
+- No **unauthorized axioms** — no "just believe me" stones. Lean's three standard axioms (`propext`, `Classical.choice`, `Quot.sound`) are used, and the official config allows exactly those; `#print axioms` found nothing else.
 - No **`sorry`** that anyone can reach — `sorry` is Lean for "trust me bro."
   - There is one file with `sorry` in it, but nobody imports it. The file's own header says so. Dead rock.
 - No **`native_decide`**, no **`unsafe`**, no **`partial`**, no **`implemented_by`** — these are all ways to sneak around the rock.
-- Repo says nine other checkers independently said yes. Paper did **not** re-run them. Paper could not — no Lean on the audit machine.
+- Repo says nine external checkers independently said yes. The audit re-ran **one** (Comparator) on both questions, plus nanoda as a second kernel; the other eight were not re-run (E75, E79, E88).
 
 So: the rock did its job. The question is not "did it compile." The question is **"what did the thing that compiled actually say?"**
 
@@ -482,7 +482,7 @@ Caveman respects a paper that lists its own weak spots.
 - **Nine external checkers were reported by the repo. One of them was run, on both questions the repo asks — the flood one (E75) and the Euler one (E79).** Comparator takes the question the repo poses (the `sorry`-holed challenge file) and the answer, exports both, checks they are the same question, and replays the answer in a fresh kernel. It said `Your solution is okay!` (E75). The other eight were still not re-run. And even a passing check verifies **terms against that question**, not that the question is Clay's own: the statement-level objections (zero datum, force-as-leftover, similarity in ν) are exactly what no checker can test. For the Euler question the caveat is smaller (E80): that question **is** the repo's own, because the repo's index file names those two declarations as its Euler theorems, and the words the challenge uses are proved to say the same thing as the words the builder uses. For the flood question the caveat still bites, because the repo's index points at the repo's own statement, not at Clay's paper. E81 now holds it there, and finds one soft spot: the paper says the **slope** runs away; the checked question says slope **plus speed** runs away, which is easier, because a sum can run off when only one of its parts does. The cave proves the harder thing anyway (`maximalGradientNorm_limsup`), but the question the checker accepted does not ask for it. So the Euler check is honest and two clauses soft — and the paper's own sentence is not what the kernel nodded at. E82 found the second: the paper's bad time is when its **fully smooth** river dies; the cave measures the bad time in a bigger pool of rivers that are only smooth in space, with a weaker kind of clock. Nobody proved the pools are the same size, so the formal bad time belongs to the bigger pool.
 - **Two identities in §5 are the auditors' own** — the measure scaling and the critical weight `b*`. Not in the repo. Labelled as derived.
 - **One early log entry (E36) is provisional.** Call site and estimates checked; exact binder not opened. Later entries walked the same estimate chain from the other end (E67–E71) and found no assumed field, but they did not reopen that binder.
-- **Since this file was first written, the audit got further.** The smooth-force question is answered (E65–E66), the estimate chain is walked to its floor (E67–E71), the ring-world is audited (E70), and the print that confirms its harmless stones was found in the source (E72) and then actually run on a rented machine (E73). Nothing is left unread, and nothing is left unrun: the second rock (nanoda) has now been walked on both questions — the flood one (E75) and the Euler one (E88), where it accepted in five and a half minutes.
+- **Since this file was first written, the audit got further.** The smooth-force question is answered (E65–E66), the estimate chain is walked to its floor (E67–E71), the ring-world is audited (E70), and the print that confirms its harmless stones was found in the source (E72) and then actually run on a rented machine (E73). Those questions are closed; the result-level ledger still has unplaced rows, and eight of the nine external checkers remain unrun. The second rock (nanoda) has been walked on both questions — the flood one (E75) and the Euler one (E88), where it accepted in five and a half minutes.
 - **The monotonicity argument in §4 is not machine-checked.** It is a human claim about the scripts.
 - **One erratum was not read at first hand.** The pressure-periodicity attribution rests on the repo's reference and secondary descriptions. Correctly attributed, not independently verified.
 
@@ -500,7 +500,7 @@ Caveman respects a paper that lists its own weak spots.
 | Compact support | All the action is inside a box |
 | Smooth / C^∞ | No corners, no kinks, forever |
 | L² / finite energy | Total wiggle stays finite |
-| L^∞ blows up | Top speed goes to infinity |
+| L^∞ blows up | In this theorem, top speed goes to infinity |
 | limsup | The highest it keeps coming back to |
 | Existential `∃` | "Some number exists, no I will not show you" |
 | `Classical.choose` | "Grab the thing the proof said exists" |
@@ -573,7 +573,7 @@ That is the whole Millennium Problem. Four terms and a constraint.
 
 ![The four terms of the Navier-Stokes equation and the one job each one does](equation_terms.svg)
 
-*One equation, four jobs. **(a)** the clock measures; **(b)** advection sharpens — the spinning tube thins and must spin faster, and nothing pushed it; **(c)** viscosity smooths, and the minus sign is the whole point, because it only ever removes energy; **(d)** pressure is not tracked, it is solved from the velocity everywhere at once. The band at the bottom is what the four terms are **not** allowed to break: `f` is the only door energy comes in through, and `∇·u = 0` is a rule none of them may violate.*
+*One equation, four jobs. **(a)** the clock measures; **(b)** advection sharpens — the spinning tube thins and spins faster, and nothing pushed it; **(c)** viscosity smooths, and the minus sign is the whole point, because it only ever removes energy; **(d)** pressure is not tracked, it is solved from the velocity everywhere at once. The band at the bottom is what the four terms are **not** allowed to break: `f` is the only external door energy passes through — in or out — and `∇·u = 0` is a rule none of them may violate.*
 
 ### The card
 
@@ -592,13 +592,13 @@ That is the whole Millennium Problem. Four terms and a constraint.
 Nothing physical yet. It just measures change. If you painted a dot on the wall and watched the fluid pass it, this is how the speed at that dot changes. Caveman: *the spot's mood, right now.*
 
 **`(u·∇)u` — the villain.**
-This is the only term that can make the fluid faster **on its own**, with no help. It says: the fluid is carried by the fluid. In Lean it is literally `spatialDerivative u t x (u (t, x))` — take the derivative of the velocity, then feed the velocity into it.
+This is the only term that can sharpen the flow **on its own**, with no help. It says: the fluid is carried by the fluid. In Lean it is literally `spatialDerivative u t x (u (t, x))` — take the derivative of the velocity, then feed the velocity into it. It moves energy between scales; it does not create it.
 
-Why it is dangerous, human version: a spinning tube of fluid gets stretched thinner by its own spin, and a thinner tube must spin faster to conserve angular momentum. Ice skater pulling her arms in. Nothing pushed her. She just got faster.
+Why it is dangerous, human version: a spinning tube of fluid gets stretched thinner by its own spin, and — in an inviscid swirl — a thinner tube spins faster to conserve angular momentum. Ice skater pulling her arms in. Nothing pushed her; she just spun faster. The analogy is about **spin**, not about the total speed of the fluid.
 
 Why it is dangerous, caveman: spinny goo gets skinny, skinny goo spins harder, harder spin makes skinnier. Goo does this to itself.
 
-This is called **vortex stretching**, and in three dimensions it is the entire reason the problem is unsolved.
+This is called **vortex stretching**, and in three dimensions it is the mechanism behind the open problem: it can make gradients grow without bound. The open question is whether that growth reaches a singularity, not whether the velocity itself is infinite.
 
 **`−νΔu` — the referee who is always late.**
 Viscosity smooths. It takes sharp differences in speed and blurs them out. Honey does this; water does it less. The minus sign matters: it *removes* energy, always, never adds.
@@ -638,7 +638,7 @@ What blows up is `‖u‖_∞` — the **fastest point** — while the **total**
 
 **Caveman:** pond have same amount of splash whole time. But one spot splash infinitely hard. So spot must get tiny. Same water, narrower jet.
 
-That is exactly why the theorem needs the **box** `K` and why §5's **cone** matters: the blow-up is a narrowing, not an inflation. The box catches the narrowing; the cone says how fast it narrows in each direction.
+This is the **repository's particular** blow-up: speed unbounded while energy is capped. The general 3D problem is stated as loss of smoothness, which can happen without an infinite speed. That is exactly why the theorem needs the **box** `K` and why §5's **cone** matters: the blow-up is a narrowing, not an inflation. The box catches the narrowing; the cone says how fast it narrows in each direction.
 
 ### And where the energy comes from
 
@@ -648,14 +648,14 @@ Multiply the equation by `u` and integrate. The pressure term dies (because `∇
 d/dt ( ½∫|u|² )  =  − ν∫|∇u|²  +  ∫ f·u
 ```
 
-**Human:** the energy can only change two ways — friction destroys it (always negative, always), or the outside force adds it. With `f = 0`, total energy can **never go up**. It can only fall.
+**Human:** the energy can only change two ways — friction destroys it (always negative, always), or the outside force does work on it. The force term `∫ f·u` can be **positive or negative**: a hand can push energy in or pull it out. With `f = 0`, total energy can **never go up**. It can only fall.
 
-**Caveman:** goo splash only go up if hand push. No hand, splash always go down. Always.
+**Caveman:** hand can push splash in or scoop it out. No hand, splash always go down. Always.
 
 That one line explains the whole shape of the field:
 
 - **Unforced (A):** energy cannot rise. Any blow-up has to come from the fluid *reorganising* fixed energy into a thinner and thinner jet. That is the unsolved case. Nobody knows if it can be done.
-- **Forced (the repo):** the hand can pump. Now blow-up is easy to get. The hard part is making the hand **smooth** while the fluid misbehaves, which is §3's expensive construction.
+- **Forced (the repo):** the hand can pump energy in (or drain it). Now blow-up is easy to get. The hard part is making the hand **smooth** while the fluid misbehaves, which is §3's expensive construction.
 - **The repo's own constraint:** it keeps the energy bounded anyway. So even its force is not flooding the pond — it is squeezing the same water harder.
 
 ---
@@ -672,7 +672,7 @@ Three things want different things:
 | **Advection** `(u·∇)u` | Sharper, thinner, faster | Moves energy from big slow swirls into small fast ones |
 | **Pressure** `∇p` | Enforce `∇·u = 0` and nothing else | Non-local; it can cancel advection *partly*, never fully |
 
-**Human:** viscosity smooths, advection sharpens, pressure referees. If viscosity wins, the fluid stays smooth forever. If advection wins, speed goes to infinity in finite time. The entire Millennium Problem is: **who wins?**
+**Human:** viscosity smooths, advection sharpens, pressure referees. If viscosity wins, the fluid stays smooth forever. If advection wins, the flow can lose smoothness in finite time — the velocity itself need not become infinite. The entire Millennium Problem is: **who wins?**
 
 **Caveman:** smooth goo fight rough goo. Referee goo in middle. If smooth win, no boom. If rough win, boom.
 
@@ -686,12 +686,12 @@ The reason is a conservation law that only exists in 2D: vorticity (the spin) is
 
 ### In three dimensions, nobody knows
 
-In 3D the stretching is available. So the fight is genuinely undecided, and that is the million dollars. There are two ways it could end:
+In 3D the stretching is available. So the fight is genuinely undecided, and that is the million dollars. The question is **loss of smoothness**, not necessarily an infinite speed: a solution can cease to be smooth while its velocity stays bounded. There are two ways it could end:
 
-- **Some smooth start blows up in finite time** → the equations are incomplete as a physical model; nature would have to pick a different rule at the singularity.
-- **No smooth start ever blows up** → the equations are complete, and every solution is smooth forever.
+- **Some smooth start loses smoothness in finite time** → the equations are incomplete as a physical model; nature would have to pick a different rule at the singularity.
+- **No smooth start ever loses smoothness** → the equations are complete, and every solution is smooth forever.
 
-Nobody has proved either. That is not a gap in effort; it is a known open problem with a prize on it.
+Nobody has proved either. That is not a gap in effort; it is a known open problem with a prize on it. The repository's theorem is a *particular* forced example with unbounded speed; that is stronger than merely losing smoothness, and it is not a statement about every unforced start.
 
 **Caveman:** in 3D, skinny goo maybe win. Nobody know. Smart rock people fight 90 years. Still no answer.
 
@@ -860,7 +860,7 @@ Caveman: **A** — no hand, all goo safe. **B** — same, ring-world. **C** — 
 
 ---
 
-## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E97)
+## 16. WHAT CHANGED AFTER CAVEMAN WROTE THIS (E65–E166)
 
 Caveman wrote this file first. Then the audit kept digging. Four things got better. Caveman writes them down so the two papers do not disagree.
 
@@ -955,10 +955,10 @@ So the score at that point was **12 placed, 1 partial, 2 named-only, 59 untouche
 - The denominator is **74**, not 73. E135 cut it to 73 by counting 37 lemmas; E165 found the thirty-eighth — `Lemma 6.3 (Number of relevant labels)` — a real statement whose parenthetical title the `Lemma 6.3.` pattern could not match. `6.4`, `6.5` and `9.4` really are section headings.
 - The little-time-vanishing row closed. E98 found `theorem_1_1_with_initial_rest`, which proves `u = p = 0` for `|t| ≤ 3/8` — stronger than the paper's "for sufficiently small `t ≥ 0`".
 
-As of E165 the ledger reads **33 exact, 1 weaker-but-sufficient, 6 partial (5 unread, 1 inexpressible), 0 cited-unchecked, 34 untouched, of 74**. The partial rows are Lemma 9.7 (its third clause is not a thing Lean can say — E159), Corollary 7.3 (the uniformity is proved three times over, but no declaration is the map `f_m ↦ (t_m, π_m)`), Proposition 7.2 (the driven solution and its jet bounds are there; the pressure half and the "one threshold for all `M, α, j`" sentence are not) and Proposition 7.6 (the class and the quadratic leftover are there; the map `Σ ↦ LΣ` and the exact identity `B(W₀, LΣ) = Σ` are not), Lemma 10.2 (the limit tensors still have no support statement — E150), and Lemma 6.2 (below). **§7 is finished.** **§6 has started.** E163 places Lemma 6.1: the slot system is one object with a radius field fixed before "for every label", a finite palette of 2250 colours, an explicit degree bound, an explicit Δmax, and (6.13) as a structure field — the paper's "if the two supports touch, the lifted rectangles are disjoint" is the `disjoint` field, reached from "supports touch" by `physicalSlowMask_tsupport_subset_physicalBox` plus closed `lineMask_tsupport` — not by `masks_force_adjacency`, which needs nonzero masks at a shared point (E166). E164 makes Lemma 6.2 **partial**: the 14^Δ disjoint lifts are counted (`card_liftedRectangles`), the Haar averages agree at every covering power, and the derivative factors are bounded with printed constants — but the fourth sentence of the lemma bundles four operations, the tree proves three of them separately, and the radial-integration half plus "no new band" are not stated anywhere. The tree has no name for "common-torus descent". E157 places Lemma 7.1: the normal-close estimate, the left inverse *as a formula* (`tangent_reconstruct`), the modal diagonal (true by definition) and the damping comparison (derived, not assumed — `damping_error_of_normal_close`) all have declarations. E160 places Lemma 7.4: `cP ≤ x ≤ CP` with printed exponentials for `c` and `C`, and the ratio to `h` at `4κ_c/S`. E161 places Proposition 7.5 as **weaker-but-sufficient**, not exact: Cramer weights, square roots, `H(a²) = T`, and a uniform floor from compactness plus a perturbation margin. E161 also records the first **weaker** line in §7: the tree's floor is `c√S·ζ`, the paper prints `c√(Sζ)`, and the weaker one is still enough for the `ζ^{-1/2}` the next estimate needs. Still statement-level: placed means the declaration exists, not that its proof was read or compiled.
+As of E166 the ledger reads **33 exact, 1 weaker-but-sufficient, 6 partial (5 unread, 1 inexpressible), 0 cited-unchecked, 34 untouched, of 74**. The partial rows are Lemma 9.7 (its third clause is not a thing Lean can say — E159), Corollary 7.3 (the uniformity is proved three times over, but no declaration is the map `f_m ↦ (t_m, π_m)`), Proposition 7.2 (the driven solution and its jet bounds are there; the pressure half and the "one threshold for all `M, α, j`" sentence are not) and Proposition 7.6 (the class and the quadratic leftover are there; the map `Σ ↦ LΣ` and the exact identity `B(W₀, LΣ) = Σ` are not), Lemma 10.2 (the limit tensors still have no support statement — E150), and Lemma 6.2 (below). **§7 is finished.** **§6 has started.** E163 places Lemma 6.1: the slot system is one object with a radius field fixed before "for every label", a finite palette of 2250 colours, an explicit degree bound, an explicit Δmax, and (6.13) as a structure field — the paper's "if the two supports touch, the lifted rectangles are disjoint" is the `disjoint` field, reached from "supports touch" by `physicalSlowMask_tsupport_subset_physicalBox` plus closed `lineMask_tsupport` — not by `masks_force_adjacency`, which needs nonzero masks at a shared point (E166). E164 makes Lemma 6.2 **partial**: the 14^Δ disjoint lifts are counted (`card_liftedRectangles`), the Haar averages agree at every covering power, and the derivative factors are bounded with printed constants — but the fourth sentence of the lemma bundles four operations, the tree proves three of them separately, and the radial-integration half plus "no new band" are not stated anywhere. The tree has no name for "common-torus descent". E157 places Lemma 7.1: the normal-close estimate, the left inverse *as a formula* (`tangent_reconstruct`), the modal diagonal (true by definition) and the damping comparison (derived, not assumed — `damping_error_of_normal_close`) all have declarations. E160 places Lemma 7.4: `cP ≤ x ≤ CP` with printed exponentials for `c` and `C`, and the ratio to `h` at `4κ_c/S`. E161 places Proposition 7.5 as **weaker-but-sufficient**, not exact: Cramer weights, square roots, `H(a²) = T`, and a uniform floor from compactness plus a perturbation margin. E161 also records the first **weaker** line in §7: the tree's floor is `c√S·ζ`, the paper prints `c√(Sζ)`, and the weaker one is still enough for the `ζ^{-1/2}` the next estimate needs. Still statement-level: placed means the declaration exists, not that its proof was read or compiled.
 
 One thing has not changed and caveman keeps saying it: **placed means a declaration exists whose statement is the paper's.** It does not mean caveman checked that the proof of it is valid. Nothing in this file was compiled.
 
-*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E97. If this file and the paper disagree, the paper is right and caveman is wrong.*
+*Source: `MANUSCRIPT.tex` and `PHASE2-FINDINGS.md`, at commit `f9e8bc5`, plus the audit log through E166. If this file and the paper disagree, the paper is right and caveman is wrong.*
 
 <!-- ledger: placed=33 weaker=1 partial_unread=5 partial_inexpressible=1 unplaced=34 total=74 -->
