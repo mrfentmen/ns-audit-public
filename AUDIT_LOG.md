@@ -8632,3 +8632,7 @@ The partials are the place where a real defect would hide, because the kernel ne
 | **total** | **74** | |
 
 *Evidence: `.setup/paper/ns.txt:670–700` (Theorem 3.1), `:6413–6470` (A.1–A.2), `:6752–6820` (A.5), `:6975–7040` (A.6), `:7019–7080` (A.7), `:7102–7160` (A.8), `:7179–7265` (A.9–A.10), `:7341–7400` (B.1), `:7522–7600` (B.3), `:7612–7700` (B.4–B.5), `:7753–7900` (B.6–B.8), `:7989–8050` (C.1), `:8233–8295` (C.3), `:1217–1270` (4.1), `:1323–1380` (4.2–4.3), `:1517–1570` (4.5), `:1706–1840` (4.8–4.10), `:2518–2580` (5.2), `:2988–3050` (5.4), `:3100–3160` (5.5), `:3507–3545` (6.3); Lean declarations as named. Reading only — nothing compiled.*
+
+## E171 — The E170 editions typeset green (2026-11-25)
+
+Run `45549941954` (`typeset`, public `main` at `f5b33dd`) completed success. The artifacts are `MANUSCRIPT.pdf` at 28 pages, `CAVEMAN.pdf` at 24, and `LAYMAN.pdf` at 17; the reader logs contain no missing-glyph lines. The three PDFs are committed at this entry. This is a build of the E170 prose, not a new Lean kernel run: the kernel evidence remains E73/E75 at upstream `f9e8bc5`.
