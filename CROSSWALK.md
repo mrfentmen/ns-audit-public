@@ -493,10 +493,10 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 30 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153), Corollary 7.8 (E156) |
-| partial — components exist, statement not matched | 2 | Lemma 9.7 (E133), Corollary 7.3 (E154) |
+| placed, statement read | 33 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153), Corollary 7.8 (E156), Lemma 7.1 (E157), Lemma 7.4 (E160), Proposition 7.5 (E161) |
+| partial — components exist, statement not matched | 4 | Lemma 9.7 (E133), Corollary 7.3 (E154), Proposition 7.2 (E158), Proposition 7.6 (E162) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 41 | the rest |
+| unplaced | 36 | the rest |
 | **total** | **73** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
@@ -522,6 +522,34 @@ breakdown that counted 38 lemmas; a full-text scan finds 73 names in 3/26/37/7, 
 "missing" numbers 6.3–6.5, 9.4 and B.9 are section numbering rather than results (9.4 is the
 §9.4 heading). The numerator never moved: 15 placed, 6 partial, 52 unplaced of 73.
 
+E157–E162 finish §7 as far as statement-level reading can reach, and they split cleanly
+into two groups that turn out to be the same finding twice. Lemma 7.1, Lemma 7.4 and
+Proposition 7.5 place: the phase normal's closeness to its reference, the homogeneous pulse
+with its two-sided envelope and `O(1/S*)` ratio, and the cone-to-amplitude solve all have
+declarations whose statements are the paper's. Two of the three are stronger than the paper —
+the left inverse in (7.10) is an explicit reconstruction formula rather than a bounded matrix,
+and the pulse constants are printed exponentials rather than anonymous `c, C`. Proposition 7.5
+carries the first *weaker* clause in §7: the paper's `y_σ ≥ c√(S*ζ)` is `c√S*·ζ` in the tree,
+smaller by `√ζ`, and `sqrt_S_lower` says in its own docstring that this is the weaker form the
+square-root jet theorem needs. The consumer (7.33) needs only `ζ^{-1/2}` after the numerator
+weights cancel, which the weaker floor supplies.
+
+Proposition 7.2 and Proposition 7.6 go to partial, and their unmatched clause is the same one
+Corollary 7.3 has: neither the driven pair `f_m ↦ (t_m, π_m)` nor the linearised amplitude map
+`Σ ↦ LΣ` is a declaration. The tree proves the bounds on those maps' outputs (7.14, `W_{α−1/2}`,
+`C(η_βLΣ) ∈ M_{2α−1}`), and it proves the identity the output satisfies by *subtracting* the
+target rather than constructing it from `δa`, so the right-inverse direction is never exhibited.
+E162 records the generalisation: the §7–§8 construction is written in terms of the fields it
+produces, not the maps it uses, which is why the rows that construct fields place and the rows
+that are maps do not.
+
+E159 settles Lemma 9.7's third clause as *inexpressible* rather than unread: the clause counts
+input derivatives through a derivation, and a derivation has no Lean type for a statement to
+quantify over. It stays partial — the paper's sentence is unmatched — but it leaves the queue.
+The ledger keeps one `partial` count and the entry recommends the split into `partial-unread`
+(Proposition 7.2(i), Corollary 7.3, Proposition 7.6) and `partial-inexpressible` (Lemma 9.7,
+Proposition 7.2(ii)) for the next revision of this table.
+
 ## Limits of this file
 
 1. **Section level.** A row saying §5 lives in `CorrectionStep` does not say the section's
@@ -536,4 +564,4 @@ breakdown that counted 38 lemmas; a full-text scan finds 73 names in 3/26/37/7, 
    weights, the Euler clause drift) are unchanged by the table, and the table does not
    support any claim that the paper's argument is wrong.
 
-<!-- ledger: placed=30 partial=2 unplaced=41 total=73 -->
+<!-- ledger: placed=33 partial=4 unplaced=36 total=73 -->

@@ -1,8 +1,8 @@
-# NEXT — the queue for the remaining 41 numbered results
+# NEXT — the queue for the remaining 36 numbered results
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
 returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which thirty are placed, two are partial, and **forty-one are unplaced**.
+extracted text, of which thirty-three are placed, four are partial, and **thirty-six are unplaced**.
 The ledger in `CROSSWALK.md` carries the same **73** as its denominator and the same three
 counts, so there is no discrepancy to record here.
 
@@ -11,10 +11,9 @@ carries any audit conclusion.
 
 ## The denominator, settled
 
-The ledger and this file now agree on **73** numbered results: 30 placed, 2 partial, 41
-unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
+The ledger and this file now agree on **73** numbered results: 33 placed, 4 partial, 36 unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
 lemmas, 7 corollaries); the text has 37 lemmas. The indices 6.3–6.5, 9.4 and B.9 are section
-numbering, not results — 9.4 is the §9.4 heading. See E135.The forty-one rows below are the whole remaining queue, and none of them was ever a phantom.
+numbering, not results — 9.4 is the §9.4 heading. See E135.The thirty-six rows below are the whole remaining queue, and none of them was ever a phantom.
 
 ## How to use it
 
@@ -39,11 +38,9 @@ supporting machinery.
 | Result | Page | Statement | Candidate modules |
 |---|---|---|---|
 | Lemma 8.8 | 98 | `ns.txt:5041` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
-| Lemma 7.1 | 75 | `ns.txt:3873` | `TorusInverse`, `CurlClassBounds`, `PrimaryPulseBounds`, `PhysicalParticularWave`, `WeightedClasses` |
-| Lemma 7.4 | 80 | `ns.txt:4127` | `TorusInverse`, `CurlClassBounds`, `PrimaryPulseBounds`, `PhysicalParticularWave`, `WeightedClasses` |
-| Proposition 7.2 | 77 | `ns.txt:3992` | `TorusInverse`, `CurlClassBounds`, `PrimaryPulseBounds`, `PhysicalParticularWave`, `WeightedClasses` |
-| Proposition 7.5 | 82 | `ns.txt:4210` | `TorusInverse`, `CurlClassBounds`, `PrimaryPulseBounds`, `PhysicalParticularWave`, `WeightedClasses` |
-| Proposition 7.6 | 84 | `ns.txt:4317` | `TorusInverse`, `CurlClassBounds`, `PrimaryPulseBounds`, `PhysicalParticularWave`, `WeightedClasses` |
+
+
+
 | Lemma 6.1 | 65 | `ns.txt:3392` | `LabelSumBounds`, `PhysicalGraphBounds`, `SlotColoring`, `TorusCoverDegree` |
 | Lemma 6.2 | 67 | `ns.txt:3462` | `LabelSumBounds`, `PhysicalGraphBounds`, `SlotColoring`, `TorusCoverDegree` |
 | Lemma 5.1 | 47 | `ns.txt:2364` | `CorrectionStep`, `BaseResidual`, `ActualBaseResidual`, the 21 `Axis*` modules |
@@ -90,15 +87,21 @@ both radial divergence identities are `SignedStressPrimitive.angular_divergence`
 `axial_divergence`, at the paper's own `2/R` and `1/R` weights. Proposition 9.3 was placed by
 E149, Lemma 10.2 was re-read and narrowed but not moved by E150, Lemma 8.8 was placed by E151,
 Proposition 8.3 by E152, Proposition 8.4 by E153, Corollary 7.3 was moved to partial by E154,
-and Corollary 7.8 was placed by E156.*
+Corollary 7.8 was placed by E156, and §7 was finished by E157–E162: Lemma 7.1, Lemma 7.4 and Proposition 7.5 placed, Proposition 7.2 and Proposition 7.6 moved to partial with their unmatched clause named, and Lemma 9.7 ruled permanently out of the queue (E159).*
 
-1. **Lemma 7.1** (p. 75, `ns.txt:3873`) — the single finite choice that Corollary 7.3's proof names.
-   E156 places Corollary 7.8 in `CorrectionStep`'s covariance layer, not in `JointODE`, so E154's
-   module lead applies to Corollary 7.3 alone and not to the §7 rows generally.
-2. **Lemma 9.7** (p. 111) — still partial, and it is structural: its third clause describes how the
-   construction is written and has no proposition to be true of.
-3. **Proposition 7.2** (p. 77, `ns.txt:3992`) — the driven amplitude theorem whose threshold sentence
-   Corollary 7.3 quotes, and the statement the `JointODE` layer should be measured against.
+1. **Lemma 6.1** (p. 65, `ns.txt:3392`) — the first §6 row, and §6 is now the front of the
+   queue: §7 is finished as far as statement-level reading goes (E157–E162), §8 has no unplaced
+   row, and §9 and §10 are closed except for Lemma 10.2's partial. Candidates:
+   `LabelSumBounds`, `PhysicalGraphBounds`, `SlotColoring`, `TorusCoverDegree`.
+2. **Lemma 6.2** (p. 67, `ns.txt:3462`) — same module family, and the row that fixes the bounded
+   level difference `i − i0` that §6 and §7 both quote.
+3. **Lemma 5.1** (p. 47, `ns.txt:2364`) — first of the four §5 rows, the largest remaining block
+   after §4 and the appendices.
+
+Two partials are open and neither is an ordinary queue row: Proposition 7.2(i) needs one read of
+`PressureRecovery`/`LinearWaveResidual` for the pressure formula (7.13), and Proposition 7.6 needs
+a declaration of the map `Σ ↦ LΣ` that E162 says does not exist. Lemma 9.7 has left the queue
+permanently: E159 shows its third clause has no Lean counterpart.
 
 ## Standing limits
 
@@ -109,4 +112,4 @@ and Corollary 7.8 was placed by E156.*
 - The four partials are where the algebra is stated and the bounds are assembled. That is
   the most likely place for a real defect, because the kernel never weighs the bounds.
 
-<!-- ledger: placed=30 partial=2 unplaced=41 total=73 -->
+<!-- ledger: placed=33 partial=4 unplaced=36 total=73 -->

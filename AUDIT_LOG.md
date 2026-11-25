@@ -7845,3 +7845,295 @@ No clause is unmatched. The one statement the entry does not make is that the pr
 E154 §4 recorded that the §7 queue should be read against `JointODE` / `WithinJointODE` first, because the driven amplitude operator is there. That remains the right lead for **Corollary 7.3**, which needs the operator `f_m ↦ (t_m, π_m)`. It is the wrong lead for **Corollary 7.8**, which needs no ODE solve at all: it is pure covariance algebra and is fully declared in `CorrectionStep`. The §7 queue splits accordingly — 7.8 is done here, 7.3 waits on the ODE layer, and 7.1, 7.2, 7.4, 7.5, 7.6 should be read against `TorusInverse` and `SignedWaveUpdate` before either.
 
 *Evidence: `.setup/paper/ns.txt:4455–4488` (Corollary 7.8, (7.41)–(7.42)); `CorrectionStep.lean:471–485` (`covariance_add`, `covarianceIncrement`), `:2304–2322` (`symmetricCovariance`, `signedTensorRemainder`, `signedTensorRemainder_exact`), `:2324–2410` (`subBlock`, `symmetricCovariance_mem`, `signedTensorRemainder_mem`), `:2412–2443` (`signedTensorRemainder_divergence_mem`), `:3242–3252` (assembled state identity); `HarmonicCovariance.lean:60–140`; `ExponentLedger.lean:30–40`; E154. Reading only — nothing compiled; "placed" is statement-level.*
+
+## E157 — Lemma 7.1 is placed: the normal estimate, the left inverse, the modal diagonal and the damping comparison are all derived (2026-11-24)
+
+Lemma 7.1 is the load-bearing threshold of §7 — it is the one place the paper spends `q*`, and Corollary 7.3's uniformity sentence quotes it. Read clause by clause, all five clauses have declarations, and the *shape* of the last two is different in a way worth recording rather than smoothing.
+
+### 1. Single-valuedness and the nonzero angular frequency
+
+The paper gets this from `k_p m ∈ ℤ \ {0}`. The tree's descent is not asserted but *is* descent: `TorusInverse.series_eq_torusSeries` proves the plane series equals the `(ℝ/ℤ)²` series pointwise, and `series_periodic` (`:579`) reads `directionalInverse d a (x.1 + m, x.2 + n) = directionalInverse d a x` off `AddCircle.coe_add` and `circle_int_eq_zero`. Nonzero angular frequency is the `harmonic ≠ 0` binder carried by every forced-solution bound — `PrimaryODE.primary` fixes `1`, `ParticularWaveBounds.forced_modal_family_envelope_jets` takes `hharmonic : harmonic ≠ 0`, and `CorrectionStep.meanUpdate_residualBlock_mem` carries `hkp : ∀ n, a.angularFrequency n ≠ 0`. The symbol's nonvanishing is `TorusInverse.symbol_ne_zero` (`:216`), with `|1/symbol d k| ≤ 6 * weight k` at `:235`.
+
+So the clause is not merely "the tree is periodic"; it is the same mechanism — integer frequency in, single-valuedness out, and the multiplicative constant `6` explicit.
+
+### 2. (7.9): `|nΦ − Bs| + |n′Φ| ≤ C/S*` and `Eik = O(εSC*)`
+
+`BasePhaseGeometry.phase_estimates` (`:880–901`) is this estimate. It concludes
+
+```
+|d.viscosity − referenceViscosity (a.lam i) u (a.length i) v| ≤ dampingConstant M / D.scale i
+```
+
+by composing `ChartScales.carrier_viscosity_bounds` (viscosity is bounded in the carrier), `a.phase_estimates … .1` (the normal is close to the reference), `a.slope_bound` and `a.phase_error_small`, and feeding all of it to `damping_error_of_normal_close`. The last step is the paper's arithmetic: the damping is `viscosity × |nΦ|²`, and `|nΦ|²` is close to the reference squared iff the normal is close. `a.B_bounds` supplies the reference side.
+
+`Eik` — the phase transport — is the same bound: `MovingFrameODE.scalar_coefficients_close` (`:538`) takes `|ρ|, |s|, |F₀|, |g₀| ≤ M`, `⟪B₀ 0, g₀⟫ = 0`, `|F − F₀|, ‖g − g₀‖, |ρ − s|, |ρ′|, |rot| ≤ η`, and returns the coefficient errors `errorA/B/C` at `16 M²(1+M) η` — and the docstring is explicit that no coefficient or propagator estimate is among the assumptions. The `ε S C*` form is that, with `η = C S⁻¹` and the chart factor carried separately.
+
+### 3. Fixed-derivative polynomial bounds
+
+`PhaseJetBounds.PolynomialJets` is the class, and `primaryWave_waveClass` / `phaseWave_waveClass` (`PrimaryPulseBounds:1536`, `:1681`) consume it: they require `PolynomialJets (phaseDomain s) (chartCovariance …)`, i.e. every fixed mixed derivative of the covariance — hence of the phase normal — grows polynomially in the band. `ChartScales` supplies the dyadic decay, and `BasePhaseGeometry.construction_frame` proves the frame the construction uses *is* `a.frame` (`rfl`), so no separate frame is chosen later.
+
+### 4. (7.10): the basis, the left inverse, and the modal diagonal
+
+This is the clause whose shape changes, and it changes in the tree's favour.
+
+The paper writes `Bℓ(AΦB − B′) = diag(λ, −λ) + E` and needs `Bℓ` uniformly bounded. The tree never forms `Bℓ` as a matrix. It proves the reconstruction identity directly: `MovingFrameODE.tangent_reconstruct` (`:786`),
+
+```
+⟪normal β ρ B, t⟫ = 0  →  tangent ρ B (t 0) ⟪B 1, tail t⟫ = t
+```
+
+which is the left inverse *as a formula*: read off the two coordinates and rebuild. That is stronger than "a bounded left inverse exists" — it is an explicit one, and `tangent` is `x • B 0 + y • B 1` after the `(e_r − ρK, N)` shear (`MovingFrameODE:94`), so boundedness is `|x| ≤ ‖t‖` and `|y| ≤ ‖t‖`.
+
+The diagonal is then true *by definition*: `FrameData.coefficient` (`PrimaryODE:73`) is
+
+```
+GrowingMode.modalOperator (d.eigenvalue z) (d.damping j z) (d.error11 z) … (d.error22 z)
+```
+
+and `GrowingMode.modalOperator` is `diag(λ, −λ) + errors` as a term (`modalOperator_eq_coefficient` at `MovingFrameODE:799`). So `Bℓ(AΦB − B′) − diag(λ,−λ)` *is* the `error11..22` block, and the estimate `|E| ≤ C/S*` is `modal_errors_le` (`:376`): from `|F − F₀|, ‖g − g₀‖ ≤ η`, `|ρ − s|, |ρ′|, |rot| ≤ η`, `|h| ≤ H`, `|1/h| ≤ H`, `|h′| ≤ κ`, it returns the four entries at `(16 M²(1+M)) η`.
+
+The paper's `λ(v) = λ₀√(1+s(v)²)` is `referenceEigenvalue` (`ViscousPropagator:427` is its rate split; the eigenvalue itself is `lam/√(1 + slotMagnitude²)`, `BasePhaseGeometry:960`).
+
+### 5. (7.11): `|d − dref| ≤ C/S*` — derived, not assumed
+
+This is the clause I expected to be a hypothesis, because `PrimaryODE.primary_bounds` *takes* `hν : |viscosity − referenceDamping| ≤ D/S`. It is not a hypothesis at the top. `BasePhaseGeometry:892–900` derives it: `href` rewrites `referenceViscosity` at the slot magnitude (`signedSlot_sq`), `dampingDenominator` is unfolded, and `hout` — `damping_error_of_normal_close` — is `convert`ed with `dampingConstant`, closing the numerical identity by `ring`. So the dependency runs *down* to the normal-close estimate of §2, exactly as the paper's proof says (`"the error in p_F R + p_Z G is O(S*⁻³ + ε² + k⁻¹)"`), and `primary_bounds`' hypothesis is discharged by that theorem.
+
+`referenceViscosity` (`ViscousPropagator:423`) is the paper's `dref = εk²B² s(1+s²)` up to the chart factor: `lam*(1 + slotMagnitude²)/((1+u²)*√(1+u²))`.
+
+### 6. Shape differences, recorded
+
+* **`q*` has no name.** The threshold is a number, `ActualCandidateConstruction.qbig` / `ChartScales`' dyadic floor, chosen once and carried by `LocalScheduleWitness`. The paper's "there exists `q*`, common to all labels and fixed derivative orders" is exactly the *absence* of a parameter in those definitions — which is how E66 recorded it — not a theorem that says so.
+* **`Bℓ` is a formula, not a matrix.** Recorded above; it makes clause 4 stronger, not weaker.
+* **`E` is not an independent matrix.** `error11..22` are *defined* by subtracting the diagonal from the moving-frame coefficients, so `Bℓ(AΦB − B′) = diag + E` cannot fail; only the size of `E` is a theorem, and it is one.
+* **`Eik` has no name.** It is the `phase_error_small` bound, not a field.
+
+No clause is unmatched, and one clause (the left inverse) is strictly stronger than the paper's. Statement-level as always: `modal_errors_le`'s proof was not read line by line, and nothing was compiled.
+
+### 7. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 30 | 31 |
+| partial | 2 | 2 |
+| unplaced | 41 | 40 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:3873–3907` (Lemma 7.1, (7.9)–(7.11)); `TorusInverse.lean:216,235,275,324,369–381,579`; `MovingFrameODE.lean:94,538,786–798,799`; `PrimaryODE.lean:73,376,423,960`; `BasePhaseGeometry.lean:880–901,1062`; `ViscousPropagator.lean:423–433`; `PhaseJetBounds`/`PrimaryPulseBounds.lean:1536,1681`. Reading only — nothing compiled; "placed" is statement-level.*
+
+## E158 — Proposition 7.2 stays partial: the driven solution and its jets are declared, the pressure formula and the one-threshold sentence are not (2026-11-24)
+
+The paper's Proposition 7.2 is a *compound* statement: unique `t_m` with `nΦ·t_m = 0` and zero data, pressure `π_m` from (7.13), bounds (7.14)–(7.15), and the sentence "the threshold `q*` does not depend on `M`, `α`, or the correction stage". Three of those five are declarations. Two are not, and the two are the ones Corollary 7.3's partial status already turns on.
+
+### 1. The driven solution, and the projection
+
+`JointODE.solution` is the Volterra solution of the driven modal equation, and `WithinJointODE` gives its joint regularity in the parameter; `PrimaryODE.solution` (`:181`) instantiates it with `(x₀, f)` and `solution_hasDerivAt` (`:199`) proves it solves the equation rather than merely being named one. Uniqueness is the Volterra fixed point's.
+
+The projection `proj_{n⊥Φ} f` is not a separate operator in the tree — it is *built into* the forcing. `FrameData.forcing` (`PrimaryODE:89`):
+
+```
+forceX = -(f 0 - ρ ⟪B 0, tail f⟫) / (1 + ρ²)
+forceY = -⟪B 1, tail f⟫
+forcing = ![(forceX + forceY/h)/2, (forceX - forceY/h)/2]
+```
+
+The two brackets are exactly `⟪B_i, tail(proj f)⟫` for the normalized frame; dividing by `h = eigenvector` is the change to `(z+, z−)` coordinates. So the paper's `f − nΦ(nΦ·f)/|nΦ|²` is `forcing`, and `forcing_zero` proves it vanishes on zero source.
+
+### 2. (7.14) is `forced_modal_family_envelope_jets`
+
+`ParticularWaveBounds.forced_modal_family_envelope_jets` (`:1009`) takes `harmonica ≠ 0`, an envelope `W` with `rate = eigenvalue − referenceDamping`, `|viscosity − referenceDamping| ≤ E/S`, the four `error` bounds at `C/S`, a slot `L ≤ K·S`, and a source with envelope jets `w·W`; it concludes `EnvelopeJets` of the solution at the same `w·W`. That is (7.14) with `C′_I` and `B′_I` carried by the jet structure rather than printed. `forced_modal_jet_bound` (`:1068`) is the ambient-coordinate twin.
+
+The paper's `ε^α S^{b_I} √ζ δ^{−a_I} P(v)` is the *instantiation*: `w = ε^α √ζ δ^{−a_I}` and `W = S^{b_I} P`. `PrimaryPulseBounds.primaryWave_waveClass` is that instantiation for the primary; the forced case is the same wrapper.
+
+### 3. What is not there
+
+**(i) No declaration is the pair `(t_m, π_m)`.** The amplitude half is placed; the pressure half (7.13),
+
+```
+π_m = (i k m nΦ·K t_m − n′Φ·t_m + nΦ·f_m) / |nΦ|²
+```
+
+is in the pressure reconstruction layer, and I did not read a declaration that carries *both* with the paper's exact numerator. `PressureRecovery` and `LinearWaveResidual` are where it must be, and neither was opened in this pass. I am not calling it absent — I am recording that I did not check it, which is the honest state.
+
+**(ii) The threshold sentence has no proposition.** "`q*` does not depend on `M`, `α`, or the correction stage" quantifies over three parameters *and* asserts a single witness serves all of them. The tree's `qbig` is a *number* with no stage argument (E133's finding, reused here) and `LocalScheduleWitness` carries one `qbig` across `∀ j` — so the fact is true by the shape of the definitions. But no theorem states it, because in Lean the way to state "this definition ignores these three arguments" is to *define it without them*, and then there is nothing left to prove. That is a shape difference, not a gap, and it is the same shape difference E133 recorded for Lemma 9.7.
+
+### 4. Why this is partial rather than placed
+
+Clause (ii) is permanent and structural; clause (i) is pending a read I did not do. A row with one unread clause and one inexpressible clause is partial, and it stays partial until the pressure read closes (i) — at which point the row's remaining defect is the same *kind* as Lemma 9.7's, and the ledger's convention for "matched except for a meta-sentence" should be settled once, for both.
+
+Nothing here weakens the audit: the bounds the next stage consumes are declared, and the threshold's independence is visible in the definitions' arities.
+
+*Evidence: `.setup/paper/ns.txt:3992–4025` (Proposition 7.2, (7.13)–(7.15)); `PrimaryODE.lean:89–92,181–244,495–560`; `ParticularWaveBounds.lean:1009–1096`; `JointODE.lean:1–233`; `WithinJointODE.lean:1–106`; `LocalScheduleWitness.lean`; E133. Reading only — `PressureRecovery`/`LinearWaveResidual` not read.*
+
+## E159 — Lemma 9.7's third clause is settled as inexpressible, not as outstanding work (2026-11-24)
+
+E133 made Lemma 9.7 partial and said its third clause "describes the construction's syntax and so has no proposition in the object language to be true of." That was right, but it left the row looking like work. It is not work. This entry closes the question and states the reason precisely, because the difference matters for the ledger's denominator.
+
+The clause reads: *"For every fixed stage and output amplitude derivative, its construction and estimate require finitely many input amplitude derivatives."* The paper proves it by counting a directed acyclic graph of sums, products, derivatives and proved inverses, with `D_{v,a}(m) = max_{w→v} D_{w,a}(m + d_{v,w})`. The object being quantified over is a **derivation**, not a field. Lean has no term of that type: a proof is not a first-class value the statement can range over, and a definition's term structure is not a proposition.
+
+There are exactly two Lean-level shadows, and both are present:
+
+* **Record finiteness.** `StageEstimates` (`ActualStageEstimates:1–424`) is a structure with finitely many fields, each a bound on a named quantity. `GluedStageEstimates.actualStageEstimates` builds it from actual iteration data, so the number of obligations at stage `j` is the field count — a `Fintype` fact, not a theorem about derivative counts.
+* **Closed-form loss.** `physicalLoss h m = 2*A h + (m+1)*(1+3h/2)` (E134) is stage-free, so the *loss* per derivative order is an explicit number and the per-stage choice the paper worries about cannot occur — which is the substantive content the third clause is protecting.
+
+So the clause's mathematical content is discharged by the arities and the closed form, and its *syntactic* content has no Lean counterpart. Lemma 9.7 therefore stays `partial` in the ledger — the paper's sentence is not matched — but it must stop appearing in the work queue: no amount of reading will place it, and listing it as the next row has cost two entries of attention already.
+
+Recommendation, recorded once: the ledger's `partial` category should carry two sub-kinds, `partial-unread` (Proposition 7.2 (i), Corollary 7.3, Proposition 7.6) and `partial-inexpressible` (Lemma 9.7, Proposition 7.2 (ii)). Only the first is a queue item. This entry does not change the count.
+
+*Evidence: `.setup/paper/ns.txt:5669–5700` (Lemma 9.7 and its DAG count); `ActualStageEstimates.lean:1–424`; `GluedStageEstimates.lean:1–748`; `ActualCandidateConstruction.qbig`; `GermEndpointInputs`; `WholeDomainPhysicalStageTheorem.physicalLoss`; E133, E134. Reading only.*
+
+## E160 — Lemma 7.4 is placed: `primary_bounds` gives `cP ≤ x ≤ CP` and the `O(1/S*)` ratio, and the jet bounds are the jet machinery (2026-11-24)
+
+Lemma 7.4 constructs the homogeneous `m = 1` pulse and asserts (7.21). Both halves are one theorem, `PrimaryODE.primary_bounds` (`:432–452`), and the statement is the paper's line for line.
+
+### 1. The initial data
+
+`primary` (`:404`) is `solution hab d 1 (primarySeed a P) (fun _ => 0) p` — harmonic `1`, zero forcing, seed `!₂[P(p,a), 0]`. `primary_initial` (`:416`) proves `primary … a = ![P(p,a), 0]`, which is the paper's `z+(0) = P(0)`, `z−(0) = 0` in the `(z+, z−)` coordinates of `B`.
+
+### 2. (7.21), left inequality
+
+`primary_bounds` concludes, for every `v ∈ Icc a b`,
+
+```
+0 < radialPrimary … v
+exp(-(D + 2C)L)/2 · P(p,v)  ≤  radialPrimary … v
+radialPrimary … v  ≤  3·exp((D + 2C)L)/2 · P(p,v)
+```
+
+That is `cP(v) ≤ x(v) ≤ CP(v)` with `c = exp(−(D+2C)L)/2` and `C = 3exp((D+2C)L)/2`, explicit in the coefficient errors `C, D` and the slot length `L`. `radialPrimary` (`:408`) is `primary v 0 + primary v 1` — the paper's `x`, since `B`'s first column is `e_r − s_a K_a` and both `z±` multiply it with the same sign.
+
+### 3. (7.21), the ratio
+
+```
+|transversePrimary / radialPrimary − d.eigenvector| ≤ 4·|d.eigenvector|·(coneConstant/S)
+```
+
+`transversePrimary` is `h·(z+ − z−)` (`:412`), i.e. the paper's `y`, and `d.eigenvector` is the paper's `h(v) = c₀√(1+s(v)²)`. The bound is `|y/x − h| ≤ 4|h|·κ_c/S` — the paper's `O(S*⁻¹)` with `4κ_c` as the constant. The reference form of `h` is imposed one layer down: `FrameData.errorB` and `errorC` (`:52–58`) subtract `λ/h` and `λh` from the frame coefficients, and `modal_errors_le` takes `hpair₁, hpair₂` — the eigenpair identities at the reference point — so `h` is `c₀√(1+s²)` up to the `C/S` error the same theorem bounds.
+
+The ratio mechanism is `GrowingMode.scaled_growing_mode_bounds` + `scaled_cone_conditions` (`z−/z+` inside a `K/S` cone) + `original_coordinate_bounds` (cone in `(z+, z−)` → bounds in `(x, y)`), all composed inside `primary_bounds`. None of the three conclusions is assumed by another.
+
+### 4. The derivative tower and the pressure factor
+
+Every fixed derivative bound is the jet machinery: `WeightedODEJets.jet_solution_eq_solution` (`:337`) identifies the jet of the solution family with the solution of the jetted initial value, and `jet_solution_hasDerivWithinAt` (`:392`) makes the extension differentiable — so differentiating in the parameter or in `v` costs only polynomial powers, which is `C_I S^{B_I} P(v)`. `PrimaryODE.solution_forward_bound` (`:495`) is the scalar envelope form, and `PrimaryPulseBounds.fundamental`/`referenceP` (`:600`) are the `P(v)` and its Gaussian envelope.
+
+The pressure's extra `ε^{1/2}` is not a separate estimate: the pressure is `ε` times the amplitude in the physical chart (`q^{1/2}` at fixed `q`, which is `ChartScales.epsilon`), so `ε^{1/2}` relative to `t_h` is the chart factor. `LocalizedWaveBounds`/`CurlClassBounds` carry it as `Q^{1/2}`; the paper's `ε^{1/2}` is that, and no theorem states the ratio as a standalone display.
+
+### 5. Shape differences
+
+* **`B(z+, z−)^T` is `(x, y)`.** `primary` solves in `(z+, z−)`, and `radialPrimary`/`transversePrimary` are the paper's `B`-coordinates. The matrix is never formed.
+* **`c, C` are explicit.** `exp(∓(D+2C)L)` rather than named constants — better than the paper, in the same way Lemma 7.1's left inverse is.
+* **The eigenvector carries the reference form.** `c₀√(1+s²)` is not a definition named `h`; it is the exact eigenpair identity imposed at the reference point and transported by `modal_errors_le`.
+* **The pressure factor is a chart factor.** Recorded above; it is `Q^{1/2}` in the wave classes, not `ε^{1/2}` in a display.
+
+No clause is unmatched. Statement-level: `primary_bounds`' proof is read at the composition points only, and nothing was compiled.
+
+### 6. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 31 | 32 |
+| partial | 2 | 2 |
+| unplaced | 40 | 39 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:4127–4160` (Lemma 7.4, (7.21)); `PrimaryODE.lean:404–420,432–490,495–560,792–823`; `GrowingMode.lean:332–420`; `WeightedODEJets.lean:337,392,661`; `PrimaryPulseBounds.lean:600`; `ChartScales.epsilon`. Reading only — nothing compiled; "placed" is statement-level.*
+
+## E161 — Proposition 7.5 is placed: Cramer weights, square-root amplitudes and a uniform positive floor are all theorems, and one displayed inequality is weaker in the tree (2026-11-24)
+
+Proposition 7.5 is the cone-to-amplitude construction: form `H = [C(b+)|C(b−)]`, show `H⁻¹T₀,*` is componentwise positive, take square roots, and get `W₀` in `W_{1/2}` with `C(W₀) = εT₀,*`. The abstract half is a single module, and it is exact.
+
+### 1. The linear algebra is `SmoothCovariance`
+
+* `weights H T = cramerNumerator H T / det` (`:41`), with `cramerNumerator` the oriented areas (`:33`).
+* `amplitudes H T i = Real.sqrt (weights H T i)` (`:53`) — the paper's `a_σ = √y_σ`, componentwise.
+* `reconstruct_amplitudes` (`:101`): `H.mulVec (fun i => amplitudes … i ^ 2) = T`. That is `H(a²) = T`, i.e. `C(W₀) = εT₀,*` once `T = εT₀,*` and the `ε` is in `W₀ = √ε Σ a_σ b_σ`.
+* `StrictCone H T` (`:49`) is `0 < (cramerNumerator i)·det` for both `i` — the paper's "the components of `H⁻¹T` are positive", stated as polynomial inequalities; `weights_pos_iff` (`:60`) proves the equivalence in both directions, so no sign convention is smuggled in.
+* `StrictCone.amplitudes_pos` (`:97`), `contDiffOn_amplitude_vector` (`:171`), `strictConeRegion` open (`:294`), `contDiffOn_universal_amplitudes` (`:323`).
+
+### 2. The uniform floor is `compact_uniform_amplitudes`
+
+```
+IsCompact K → (∀ x ∈ K, StrictCone (H x) (T x)) →
+  ∃ δ > 0, ∀ x ∈ K, δ ≤ |det| ∧ δ ≤ weights … ∧ δ ≤ amplitudes …
+```
+
+That is the paper's uniform positivity, on amplitudes as well as weights — the paper needs it only for `weights`, and the tree proves the stronger four-way statement. `compact_family_perturbation_stability` (`:346`) is the paper's "after a further single decrease of `q*`, `H` is invertible throughout each enlarged slow neighborhood": a uniform `ρ` such that every competing pair within `ρ` of the family stays in the cone. That is a *perturbation* statement, not a compactness statement, and it is exactly what "one further decrease" means.
+
+### 3. The actual target, on the actual annulus
+
+`FinalSlowBase.covarianceTarget` (`:211`) defines `T` from the real leading stress pair and the chart factor, and `covarianceTarget_cones` (`:222`) proves `ReferenceCone` and `TargetCone` for it at every `q > 0`, `N`, and label. `TargetCone` (`PrimaryRepresentatives:557`) is `⟪T, normalDirection g⟫ < 0` and `targetRatio F g T < 1` — the paper's cone condition in slope form, derived from the profile's `FullTrueCone` by `AlignedProfileSpectralCone.modulated_chartTarget_cones`.
+
+The lower bound is `PrimaryCovarianceBounds.ZeroOrderBounds.weight_lower` (`:342`):
+
+```
+inverseLower * R * ζ ≤ weights H T j
+```
+
+and `sqrt_S_lower` (`:371`) instantiates `R = √S` (using `sqrt_S_eq`, `√(n²) = n`) *without losing the flat target factor*, in the module's own words. `primaryWave_waveClass` (`:1536`) then gives `WaveClass s P (1/2)` of the √-amplitude times the curl potential — the paper's `W_{1/2}` membership.
+
+### 4. The one displayed inequality that is weaker here
+
+The paper prints `y_σ ≥ c√(S*ζ)`. The tree proves `inverseLower·√S*·ζ`. Since `0 < ζ ≤ 1`, `ζ ≤ √ζ`, so
+
+```
+c√S*·ζ  ≤  c√S*·√ζ  =  c√(S*ζ)
+```
+
+— the tree's floor is **smaller** than the paper's. It is still enough for what the paper uses it for: (7.33) needs `y_σ^{−k−1/2}` to leave only `ζ^{−1/2}` after `k` numerator weights cancel, and `y_σ ≥ c√S*·ζ` gives `y_σ^{−1/2} ≤ c^{−1/2}S^{−1/4}ζ^{−1/2}`, which is the needed form with `S^{−1/4}` extra to absorb.
+
+So this is a weakening of a printed inequality that does not break its only consumer, and the module says so deliberately (`sqrt_S_lower`'s docstring: "The weaker inverse bound required by the square-root jet theorem"). It is the first such weakening in §7, and it is recorded rather than smoothed because a reader checking (7.25) against the tree will find the exponents differ by `1/2` in `ζ` and deserve to be told why it does not matter.
+
+### 5. Shape differences
+
+* **`W₀` is per-label.** `primaryWave`/`uncutPrimaryWave` assemble it label by label; there is no global `W₀` field. The paper's `W₀ = √ε Σ a_σ b_σ` is the same sum, taken inside one label.
+* **`C(W₀) = εT₀,*` is `reconstruct_amplitudes` plus the chart factor.** No theorem is named for the covariance identity itself; the identity *is* the square-root reconstruction, which is why it holds exactly rather than up to an error.
+* **`ε` lives in the chart.** `W₀ = √ε Σ …` is `Q^{1/2}·…` at fixed `q`; the `√ε` is never a scalar in the field definition.
+
+No clause is unmatched; one is weaker. Statement-level throughout.
+
+### 6. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 32 | 33 |
+| partial | 2 | 2 |
+| unplaced | 39 | 38 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:4210–4245` (Proposition 7.5, (7.24)–(7.27)); `SmoothCovariance.lean:33–124,171,268–292,294–370`; `FinalSlowBase.lean:211–232`; `PrimaryRepresentatives.lean:200–208,557–560`; `PrimaryCovarianceBounds.lean:107–137,340–381`; `PrimaryPulseBounds.lean:968–975,1536–1540`. Reading only — nothing compiled; "placed" is statement-level.*
+
+## E162 — Proposition 7.6 stays partial, and for the same reason as Corollary 7.3: no declaration is the map `Σ ↦ LΣ` (2026-11-24)
+
+Proposition 7.6 asserts three things about `LΣ = √ε Σ δa_σ b_σ` with `δa_σ = (H⁻¹(Σ/ε))_σ/(2a_σ)`: the class `W_{α−1/2}`, the exact right-inverse identity `B(W₀, LΣ) = Σ`, and `C(η_β LΣ) ∈ M_{2α−1}`. The class and the quadratic remainder are declared. The map is not.
+
+### 1. What is declared
+
+* **`C(η_β LΣ) ∈ M_{2α−1}`.** `CorrectionStep.symmetricCovariance_mem` (`:2296`) gives `TensorClass s (α+β)` for `symmetricCovariance a b` from `WaveBounds α`, `WaveBounds β`; at `α = β = α−1/2` this is `2α−1`. `signedTensorRemainder_mem`'s third hypothesis `hγs : γ ≤ 2β` is the same product rule, and the paper's `C(V)` in (7.41) is that term.
+* **The class `W_{α−1/2}`.** `PrimaryPulseBounds.covariance_amplitudes_class` (`:968`) and `primaryWave_waveClass` (`:1536`) close the class of a √-amplitude times a curl potential; the `α−1/2` is the exponent the amplitude carries once the `ε^α` source is divided by `a_σ`, and `LocalizedWaveBounds` carries the multiplication by `η_β`.
+* **The quadratic remainder is retained, not dropped.** `signedTensorRemainder_exact` (`CorrectionStep:2313`) expands the covariance change into `B(E, Σ) + B(U, R) + C(V)` with `C(V) = bilinearCovariance (tangent+curl) (tangent+curl)`; the paper's `C(LΣ)` is that, and it is *present* rather than assumed small. That is the clause a reader would expect to be missing, and it is the strongest part of the match.
+
+### 2. What is not declared
+
+`B(W₀, LΣ) = Σ` is an *identity about a constructed map*. The paper proves it by `B(W₀, LΣ) = εH(2a ⊙ δa) = εH dΣ = Σ`, where the factor `2` is the real-cosine normalization and the `1/(2a_σ)` is chosen to cancel it. The tree never forms `δa`, never forms `dΣ`, and never defines `LΣ`:
+
+* `signedTensorRemainder` *subtracts* `Σ` (`symmetricCovariance primary tangent`) instead of producing it from `δa`, so the right-inverse property is true of the stored covariance difference — `(u.addIncrement …).covariance − u.covariance − Σ = signedTensorRemainder …` at `CorrectionStep:3242` — but the *inverse direction* is not exhibited.
+* No declaration has type `Σ ↦ LΣ`, and none has the `1/(2a_σ)` normalization. `SignedWaveUpdate` carries no `bilinearCovariance`, `two_mul` or `deltaAmplitude` (searched: 0 matches), and `PartitionedCovariance` carries no `2 * a`, `linearCoefficient` or `crossTerm` (searched: 0 matches).
+* `FrameData.forcing` *is* a projection, but it is the projection of a **source onto `n⊥Φ`**, not the inverse of the covariance map.
+
+### 3. Why this is the same finding as E154
+
+Corollary 7.3 needs `f_m ↦ (t_m, π_m)` and is partial because no declaration is that operator. Proposition 7.6 needs `Σ ↦ LΣ` and is partial for the identical reason: the tree proves the *statements about* the operator's output — its class, its quadratic remainder, and the identity its output satisfies — while the operator itself is only ever applied implicitly, inside `assemble`/`actualStageEstimates`. E154 called this "uniformity proved three times over, operator not declared"; this entry adds the second instance, and together they say something about the development worth stating once:
+
+**The §7–§8 construction is stated in terms of the *fields it produces*, not in terms of the *maps it uses*.** That is why 7.1, 7.4, 7.5 place cleanly (they produce fields) and 7.2, 7.3, 7.6 do not (they are maps). It is not an error and it is not a gap in the mathematics; it is a difference in what the formalization chose to name, and it is exactly the kind of difference the kernel cannot see.
+
+### 4. What would close it
+
+One declaration of the form
+
+```
+linearizedAmplitude (H a Σ) (hcone : StrictCone …) : HarmonicBlock
+theorem linearizedAmplitude_spec : B(W₀, linearizedAmplitude …) = Σ
+```
+
+with the `1/(2a_σ)`. `SmoothCovariance.inverse_formula` already gives `H⁻¹T = weights H T`, so `dΣ` is one line; the missing piece is the block-level `B` and the `2a ⊙` cancellation, which `signedTensorRemainder_exact`'s `C` term shows the machinery can express.
+
+*Evidence: `.setup/paper/ns.txt:4317–4345` (Proposition 7.6, (7.31)–(7.34)); `CorrectionStep.lean:2296–2322,2366–2410,3242–3252`; `SmoothCovariance.lean:75–95`; `SignedWaveUpdate.lean` (0 matches for `bilinearCovariance|two_mul|crossCovariance|deltaAmplitude|linearized`); `PartitionedCovariance.lean` (0 matches); `PrimaryPulseBounds.lean:968,1536`; E154, E157. Reading only — nothing compiled.*
