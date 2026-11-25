@@ -21,3 +21,6 @@ jobs:
 
       - name: Check the ledger counts against every document
         run: python3 tools/ledger_check.py
+
+      - name: Check the proof-step companion's structure and citations
+        run: python3 tools/step_check.py

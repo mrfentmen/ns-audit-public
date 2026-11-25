@@ -1,6 +1,6 @@
 # CROSSWALK — the paper against the Lean development
 
-**Status: first pass complete, second pass under way.** Section level throughout, plus two
+**Status: first pass complete, second pass complete at statement level (E170).** Section level throughout, plus two
 slices of result-level mapping. Read the limits at the bottom before quoting anything here.
 
 ## What this file is for
@@ -493,12 +493,12 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 33 | Proposition A.4, Proposition B.2, Corollary B.10, Proposition C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153), Corollary 7.8 (E156), Lemma 7.1 (E157), Lemma 7.4 (E160), Lemma 6.1 (E163) |
+| placed, statement read | 40 | Proposition A.4, Proposition B.2, Corollary B.10, Proposition C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153), Corollary 7.8 (E156), Lemma 7.1 (E157), Lemma 7.4 (E160), Lemma 6.1 (E163), Theorem 1.1 (E167), Lemma A.1 (E170), Lemma A.2 (E170), Lemma A.9 (E170), Lemma C.1 (E170), Lemma 4.11 (E170), Theorem 3.1 (E170) |
 | placed, weaker but sufficient | 1 | Proposition 7.5 (E161) |
-| partial, unread | 5 | Corollary 7.3 (E154), Proposition 7.2 (E158), Proposition 7.6 (E162), Lemma 10.2 (E136, E150), Lemma 6.2 (E164) |
+| partial, unread | 32 | Lemma 5.1 (E169), Corollary 7.3 (E154), Proposition 7.2 (E158), Proposition 7.6 (E162), Lemma 10.2 (E136, E150), Lemma 6.2 (E164), Lemma A.3 (E170), Lemma A.5 (E170), Lemma A.6 (E170), Proposition A.7 (E170), Lemma A.8 (E170), Proposition A.10 (E170), Lemma B.1 (E170), Proposition B.3 (E170), Lemma B.4 (E170), Proposition B.5 (E170), Corollary B.6 (E170), Lemma B.7 (E170), Proposition B.8 (E170), Proposition C.3 (E170), Lemma 4.1 (E170), Proposition 4.2 (E170), Lemma 4.3 (E170), Lemma 4.4 (E170), Lemma 4.5 (E170), Lemma 4.8 (E170), Lemma 4.9 (E170), Proposition 4.10 (E170), Lemma 5.2 (E170), Lemma 5.4 (E170), Proposition 5.5 (E170), Lemma 6.3 (E170) |
 | partial, inexpressible | 1 | Lemma 9.7 (E133, E159) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 34 | Theorem 1.1, Theorem 3.1, Proposition 4.2, Lemma 4.1, Lemma 4.3, Lemma 4.4, Lemma 4.5, Lemma 4.8, Lemma 4.9, Proposition 4.10, Lemma 4.11, Lemma 5.1, Lemma 5.2, Lemma 5.4, Proposition 5.5, Lemma 6.3, Corollary A.3, Lemma A.1, Lemma A.2, Lemma A.5, Lemma A.6, Proposition A.7, Lemma A.8, Lemma A.9, Proposition A.10, Lemma B.1, Proposition B.3, Lemma B.4, Proposition B.5, Corollary B.6, Lemma B.7, Proposition B.8, Lemma C.1, Proposition C.3 |
+| unplaced | 0 | — |
 | **total** | **74** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
@@ -530,8 +530,8 @@ is a statement with a displayed bound and a proof, not a heading. It is the thir
 so E91's 3/26/**38**/7 = 74 was right. The 73 ledger had also stopped listing Lemma 10.2, which
 E150 left partial and later summaries dropped, and it counted Proposition 7.5 as an exact match
 although E161 records a weaker inequality. E165 restores the denominator to **74** and splits the
-statuses: 33 exact placements, 1 weaker-but-sufficient, 5 partial-unread, 1 partial-inexpressible,
-34 unplaced.
+statuses: 34 exact placements, 1 weaker-but-sufficient, 6 partial-unread, 1 partial-inexpressible,
+32 unplaced. E170 closes the queue: 40 exact, 1 weaker, 32 partial-unread, 1 inexpressible, 0 unplaced.
 
 E157–E162 finish §7 as far as statement-level reading can reach, and they split cleanly
 into two groups that turn out to be the same finding twice. Lemma 7.1, Lemma 7.4 and
@@ -582,13 +582,13 @@ impossibilities.
 E163 and E164 open §6, and they split the same way §7 did. Lemma 6.1 is placed and is one of
 the cleanest structure-level matches in the paper: `SlotSystem` carries `radius` as a field
 before `∀ L`, so "one radius for every label and band" is quantifier order rather than a
-claim, `injective` is (6.10)'s parametrization clause, and `disjoint` is (6.13). The bridge from
-the paper's support-intersection hypothesis to the tree's combinatorial `Adj` is a composition,
-not a declaration, and it is provisional: E166 corrects E163's first version, which cited
-`masks_force_adjacency` although that theorem needs both masks nonzero at a common point, and a
-point of a closed support need not satisfy that. The valid route is
-`physicalSlowMask_tsupport_subset_physicalBox` for the box overlap plus the closed
-`lineMask_tsupport` for the level gap. The palette is 2250 colours
+claim, `injective` is (6.10)'s parametrization clause, and `disjoint` is (6.13). The bridge is a declaration after all:
+`SlotSystem.cross_product_zero` (`PartitionedCovariance.lean:323`) proves the product of two
+label-supported fields is zero by applying `masks_force_adjacency` only at a point where both
+masks are nonzero. E163's first prose inferred nonzero masks from a point of `K_γ ∩ K_γ′`;
+that inference is invalid for a closed support, and E166 replaced it with a `tsupport` route
+that is not needed. E168 records the correction: start from a nonzero product, not from
+closed-support intersection. The row is exact, not provisional. The palette is 2250 colours
 (`SlotColoring.palette_card`) where the paper prints no number, and `Δmax` is `nativeGap h`,
 obtained through `log 5` instead of `8/ℓ0`; both remain band-independent, which is all (6.13)
 needs.
@@ -602,4 +602,21 @@ integration at fixed `(z,t)` implicit. No declaration names the property the sen
 so "no new dyadic band" has nothing to be true of. That is E162's field-versus-map distinction
 reappearing as a name-versus-property distinction, and it is recorded rather than smoothed.
 
-<!-- ledger: placed=33 weaker=1 partial_unread=5 partial_inexpressible=1 unplaced=34 total=74 -->
+E169 moves Lemma 5.1 to partial-unread. `PositiveAxisExistence.exists_positive_order_solution`
+proves existence for each `n` with `IsPositiveOrderSolution` carrying smooth profiles, zero axis
+values, axis jets, parity and the positive-order equations;
+`positive_order_solution_unique` proves uniqueness in the holomorphic path class. The paper's
+cone-margin interval is a separate choice from Theorem 4.6, not a field of the solve statement,
+and "every positive order" is a per-`n` theorem rather than one quantified statement. The paper's
+step is not in doubt; the row is partial on the composition and the packaging.
+
+E170 closes the queue at the statement level. Six rows place exactly — Lemma A.1 (power and
+exponential moment-matrix invertibility plus the smooth inverse), Lemma A.2 (the
+closed-interval quadratic branch), Lemma A.9 (the flat primitive), Lemma C.1 and Lemma 4.11
+(the true-cone loop with its boundary collar), and Theorem 3.1
+(`LocalPaperTheorem.local_theorem`). The other twenty-six — the supporting bundles of
+Appendices A–C and §§4–5 — are partial-unread: each names the declaration that supplies part
+of the paper's statement and the bundle that has no single declaration. That is category 2,
+not a defect. No result is unplaced.
+
+<!-- ledger: placed=40 weaker=1 partial_unread=32 partial_inexpressible=1 unplaced=0 total=74 -->

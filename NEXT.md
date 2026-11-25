@@ -1,117 +1,67 @@
-# NEXT — the queue for the remaining 34 numbered results
+# NEXT — the queue is closed at E170
 
-Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
-returns 85 lines; deduplicating by result name gives **74** distinct numbered statements in the
-extracted text, of which thirty-three are exact placements, one more is weaker-but-sufficient,
-five are partial-unread, one is partial-inexpressible, and **thirty-four are unplaced**. The ledger
-in `CROSSWALK.md` carries the same **74** as its denominator and the same six counts, and
-`tools/ledger_check.py` now fails if this queue names a result the ledger has already placed
-(E165).
+The work order that used to live here had **32 unplaced** numbered results. E170 read all
+thirty-two at statement level. Six place exactly and twenty-six are now `partial-unread`,
+each with the declaration that supplies part of the paper's statement and the bundle that has
+no single declaration named in `AUDIT_LOG.md`.
 
-This file is a work order, not a finding. Nothing here has been read yet, and no row below
-carries any audit conclusion.
+The ledger is now:
 
-## The denominator, settled
+| Status | Count |
+|---|---|
+| placed, statement read | 40 |
+| placed, weaker but sufficient | 1 |
+| partial, unread | 32 |
+| partial, inexpressible | 1 |
+| unplaced | 0 |
+| **total** | **74** |
 
-The ledger and this file now agree on **74** numbered results: 33 exact placements, 1
-weaker-but-sufficient, 5 partial-unread, 1 partial-inexpressible, 34 unplaced. E135 cut the
-denominator to 73 by counting 37 lemmas, but the paper has 38: `Lemma 6.3 (Number of relevant
-labels)` (`.setup/paper/ns.txt:3507`) is a titled statement, and the `Lemma N.M.` pattern behind
-the census cannot match a title between the number and the period. The indices 6.4, 6.5, 9.4 and
-B.9 are section numbering, not results; 6.3 is a section number *and* a lemma number, which is why
-it was read as a phantom. E165 restores 74 and reconciles this queue: Lemma 8.8 left it when E151
-placed it, Lemma 6.3 entered it, and Lemma 10.2 is an open partial rather than a queue row.
+The denominator is still **74**, and it is the paper's, not a count of what the audit found
+easy. E135's 73 was wrong because the census could not match `Lemma 6.3 (Number of relevant
+labels)`, a titled statement; E165 restored 74.
 
-## How to use it
+## The six exact placements
 
-Each row names the result, its page, the line where its statement begins in the extracted
-text, and the module family that the section map says should realise it. Working a row means:
-read the paper's statement clause by clause, locate a declaration whose *statement* is that
-clause (not whose docstring names it — E90, E94 and E127 are three separate lessons), then
-record the result in `AUDIT_LOG.md` and move the ledger row. A row that only half-matches
-goes to partial with the unmatched clauses named, as E129, E131 and E132 did.
+Lemma A.1, Lemma A.2, Lemma A.9, Lemma C.1, Lemma 4.11 and Theorem 3.1. The first three are
+Appendix A's rank, quadratic-branch and flat-primitive results; C.1 and 4.11 are the same
+true-cone loop at the appendix's and the main text's coordinates; Theorem 3.1 is
+`LocalPaperTheorem.local_theorem`.
 
-## The order, and why
+## The twenty-six partials
 
-The order follows what Theorem 1.1 consumes, not the paper's own numbering: the residual
-chain (§9), then the forcing and comparison (§10), then the corrections that build the
-residual (§8), the waves (§7), the chart algebra (§6), the base flow (§5), the leading order
-(§4), and the two headline statements (§1, §3). The appendices come last because their
-headline results — A.4, B.2, B.10, C.2 — are already placed; what is left there is the
-supporting machinery.
+These are the supporting bundles of Appendices A–C and §§4–5. Each has a declared fragment;
+each is missing a single statement that composes the paper's clauses. They are category 2 —
+formalization limits, not false steps.
 
-## Queue
+| Group | Results |
+|---|---|
+| Appendix A | Lemma A.3, Lemma A.5, Lemma A.6, Proposition A.7, Lemma A.8, Proposition A.10 |
+| Appendix B | Lemma B.1, Proposition B.3, Lemma B.4, Proposition B.5, Corollary B.6, Lemma B.7, Proposition B.8 |
+| Appendix C | Proposition C.3 |
+| §4 | Lemma 4.1, Proposition 4.2, Lemma 4.3, Lemma 4.4, Lemma 4.5, Lemma 4.8, Lemma 4.9, Proposition 4.10 |
+| §5 | Lemma 5.2, Lemma 5.4, Proposition 5.5 |
+| §6 | Lemma 6.3 |
 
-| Result | Page | Statement | Candidate modules |
-|---|---|---|---|
-| Lemma 6.3 | 68 | `ns.txt:3507` | `LabelSumBounds`, `SlotColoring`, `PartitionedCovariance` |
+The six older partials — Lemma 5.1, Corollary 7.3, Proposition 7.2, Proposition 7.6,
+Lemma 10.2 and Lemma 6.2 — are unchanged. Lemma 9.7 remains `partial-inexpressible`.
 
-| Lemma 5.1 | 47 | `ns.txt:2364` | `CorrectionStep`, `BaseResidual`, `ActualBaseResidual`, the 21 `Axis*` modules |
-| Lemma 5.2 | 50 | `ns.txt:2518` | `CorrectionStep`, `BaseResidual`, `ActualBaseResidual`, the 21 `Axis*` modules |
-| Lemma 5.4 | 57 | `ns.txt:2988` | `CorrectionStep`, `BaseResidual`, `ActualBaseResidual`, the 21 `Axis*` modules |
-| Proposition 5.5 | 60 | `ns.txt:3100` | `CorrectionStep`, `BaseResidual`, `ActualBaseResidual`, the 21 `Axis*` modules |
-| Lemma 4.1 | 25 | `ns.txt:1217` | `NominalProfile`, `LeadingStress`, `RadialSchedule`, `FlatCutoff`, `InitialPhysicalData` |
-| Lemma 4.11 | 38 | `ns.txt:1891` | `NominalProfile`, `LeadingStress`, `RadialSchedule`, `FlatCutoff`, `InitialPhysicalData` |
-| Lemma 4.3 | 28 | `ns.txt:1369` | `NominalProfile`, `LeadingStress`, `RadialSchedule`, `FlatCutoff`, `InitialPhysicalData` |
-| Lemma 4.4 | 28 | `ns.txt:1389` | `NominalProfile`, `LeadingStress`, `RadialSchedule`, `FlatCutoff`, `InitialPhysicalData` |
-| Lemma 4.5 | 31 | `ns.txt:1517` | `NominalProfile`, `LeadingStress`, `RadialSchedule`, `FlatCutoff`, `InitialPhysicalData` |
-| Lemma 4.8 | 35 | `ns.txt:1706` | `NominalProfile`, `LeadingStress`, `RadialSchedule`, `FlatCutoff`, `InitialPhysicalData` |
-| Lemma 4.9 | 36 | `ns.txt:1763` | `NominalProfile`, `LeadingStress`, `RadialSchedule`, `FlatCutoff`, `InitialPhysicalData` |
-| Proposition 4.10 | 36 | `ns.txt:1787` | `NominalProfile`, `LeadingStress`, `RadialSchedule`, `FlatCutoff`, `InitialPhysicalData` |
-| Proposition 4.2 | 27 | `ns.txt:1323` | `NominalProfile`, `LeadingStress`, `RadialSchedule`, `FlatCutoff`, `InitialPhysicalData` |
-| Theorem 3.1 | 15 | `ns.txt:670` | `NominalConeAssembly`, `ExponentLedger`, `SeedConePaper` |
-| Theorem 1.1 | 1 | `ns.txt:29` | `R3/ProblemStatement`, `R3/Theorem`, `ComparatorBridge` |
-| Corollary A.3 | 128 | `ns.txt:6491` | `AppendixHeatResults`, `LocalHeatExterior`, `BaseExterior`, `TailGaugePotential` |
-| Lemma A.1 | 126 | `ns.txt:6413` | `AppendixHeatResults`, `LocalHeatExterior`, `BaseExterior`, `TailGaugePotential` |
-| Lemma A.2 | 127 | `ns.txt:6459` | `AppendixHeatResults`, `LocalHeatExterior`, `BaseExterior`, `TailGaugePotential` |
-| Lemma A.5 | 133 | `ns.txt:6752` | `AppendixHeatResults`, `LocalHeatExterior`, `BaseExterior`, `TailGaugePotential` |
-| Lemma A.6 | 138 | `ns.txt:6975` | `AppendixHeatResults`, `LocalHeatExterior`, `BaseExterior`, `TailGaugePotential` |
-| Lemma A.8 | 140 | `ns.txt:7102` | `AppendixHeatResults`, `LocalHeatExterior`, `BaseExterior`, `TailGaugePotential` |
-| Lemma A.9 | 141 | `ns.txt:7179` | `AppendixHeatResults`, `LocalHeatExterior`, `BaseExterior`, `TailGaugePotential` |
-| Proposition A.10 | 142 | `ns.txt:7206` | `AppendixHeatResults`, `LocalHeatExterior`, `BaseExterior`, `TailGaugePotential` |
-| Proposition A.7 | 139 | `ns.txt:7019` | `AppendixHeatResults`, `LocalHeatExterior`, `BaseExterior`, `TailGaugePotential` |
-| Corollary B.6 | 153 | `ns.txt:7753` | `AxisProfile`, `AxisSeries`, `AxisHolomorphic`, `AxisAnalyticCoefficients` |
-| Lemma B.1 | 145 | `ns.txt:7341` | `AxisProfile`, `AxisSeries`, `AxisHolomorphic`, `AxisAnalyticCoefficients` |
-| Lemma B.4 | 150 | `ns.txt:7612` | `AxisProfile`, `AxisSeries`, `AxisHolomorphic`, `AxisAnalyticCoefficients` |
-| Lemma B.7 | 154 | `ns.txt:7784` | `AxisProfile`, `AxisSeries`, `AxisHolomorphic`, `AxisAnalyticCoefficients` |
-| Proposition B.3 | 148 | `ns.txt:7522` | `AxisProfile`, `AxisSeries`, `AxisHolomorphic`, `AxisAnalyticCoefficients` |
-| Proposition B.5 | 151 | `ns.txt:7671` | `AxisProfile`, `AxisSeries`, `AxisHolomorphic`, `AxisAnalyticCoefficients` |
-| Proposition B.8 | 155 | `ns.txt:7837` | `AxisProfile`, `AxisSeries`, `AxisHolomorphic`, `AxisAnalyticCoefficients` |
-| Lemma C.1 | 158 | `ns.txt:7989` | `ActivationCone`, `OutgoingNegativeSlopeCone`, `MatchingConeBounds` |
-| Proposition C.3 | 163 | `ns.txt:8233` | `ActivationCone`, `OutgoingNegativeSlopeCone`, `MatchingConeBounds` |
+## What “partial-unread” means here
 
-## The next three, concretely
+The named fragment was read. The rest of the bundle was not matched to one declaration. It
+does **not** mean the paper's full statement was placed, and it does not mean the missing
+bundle is false. The distinction is the one the whole audit keeps:
 
-*Worked from this queue: Lemma 9.7 partial (E133), Lemma 9.8 placed (E134), Lemma 10.2 partial
-(E136), Lemma 10.3 placed (E137), Lemma 10.4 and Lemma 10.5 placed (E142, E143). Both §10
-placements came from modules already in the assembly; the two partials are partial on statement
-shape, not on content, and §10 now has no unplaced row left. Corollary 8.5 was placed by E145:
-both radial divergence identities are `SignedStressPrimitive.angular_divergence` and
-`axial_divergence`, at the paper's own `2/R` and `1/R` weights. Proposition 9.3 was placed by
-E149, Lemma 10.2 was re-read and narrowed but not moved by E150, Lemma 8.8 was placed by E151,
-Proposition 8.3 by E152, Proposition 8.4 by E153, Corollary 7.3 was moved to partial by E154,
-Corollary 7.8 was placed by E156, and §7 was finished by E157–E162: Lemma 7.1, Lemma 7.4 and Proposition 7.5 placed, Proposition 7.2 and Proposition 7.6 moved to partial with their unmatched clause named, and Lemma 9.7 ruled permanently out of the queue (E159). §6 has opened: Lemma 6.1 placed and Lemma 6.2 partial (E163, E164). E165 then reconciled this queue with the ledger: Lemma 8.8 came off it (placed in E151) and Lemma 6.3 went on.*
-
-1. **Lemma 5.1** (p. 47, `ns.txt:2364`) — the first §5 row, and §5 is now the front of the
-   queue: §6 opens with Lemma 6.1 placed (E163) and Lemma 6.2 partial (E164), §7 is finished
-   as far as statement-level reading goes (E157–E162), and §8–§10 have no unplaced row.
-2. **Lemma 5.2** (p. 50, `ns.txt:2518`) — the second §5 row, same module family.
-3. **Lemma 5.4** (p. 57, `ns.txt:2988`) — the third §5 row; Proposition 5.5 follows at p. 60.
-
-Five partial-unread rows are open and none is an ordinary queue row: Corollary 7.3 needs the map
-`f_m ↦ (t_m, π_m)`, Proposition 7.6 needs `Σ ↦ LΣ`, Proposition 7.2(i) needs one read of
-`PressureRecovery`/`LinearWaveResidual` for the pressure formula (7.13), Lemma 10.2 needs the
-support statement for the limit tensors (E150), and Lemma 6.2 needs the radial-integration half of
-its preservation sentence (E164). Lemma 9.7 is partial-inexpressible and has left the queue
-permanently: E159's argument, corrected in E165, shows its third clause has no Lean counterpart.
+1. a code fact — a declaration with this statement exists;
+2. a formalization limit — the paper's clause is not one statement;
+3. a mathematical error — none has been established.
 
 ## Standing limits
 
-- Reading only. Nothing in this queue can be compiled on this machine; any new kernel
-  evidence has to go through `kernel-check.yml` on Actions.
-- "Placed" is statement-level. It says a declaration exists whose statement is the paper's,
+- Reading only. Nothing in this queue was compiled on this machine; any new kernel evidence
+  has to go through `kernel-check.yml` on Actions.
+- “Placed” is statement-level. It says a declaration exists whose statement is the paper's,
   not that the proof of that declaration is valid.
-- The partials are where the algebra is stated and the bounds are assembled. That is
-  the most likely place for a real defect, because the kernel never weighs the bounds.
+- The partials are where the algebra is stated and the bounds are assembled. That is the most
+  likely place for a real defect, because the kernel never weighs the bounds.
 
-<!-- ledger: placed=33 weaker=1 partial_unread=5 partial_inexpressible=1 unplaced=34 total=74 -->
+<!-- ledger: placed=40 weaker=1 partial_unread=32 partial_inexpressible=1 unplaced=0 total=74 -->

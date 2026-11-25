@@ -6,8 +6,8 @@ a count and the result names behind it. `NEXT.md`'s queue table is the work
 order for the unplaced rows. Every document that quotes the counts carries one
 sentinel line
 
-    <!-- ledger: placed=33 weaker=1 partial_unread=5 partial_inexpressible=1 unplaced=34 total=74 -->   (Markdown)
-    % ledger: placed=33 weaker=1 partial_unread=5 partial_inexpressible=1 unplaced=34 total=74         (TeX)
+    <!-- ledger: placed=34 weaker=1 partial_unread=6 partial_inexpressible=1 unplaced=32 total=74 -->   (Markdown)
+    % ledger: placed=34 weaker=1 partial_unread=6 partial_inexpressible=1 unplaced=32 total=74         (TeX)
 
 This script fails if
 

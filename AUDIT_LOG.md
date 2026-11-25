@@ -8382,3 +8382,253 @@ A search for `Adj` together with `tsupport` returns only `masks_force_adjacency`
 Lemma 6.1 stays in the placed column, provisionally on this clause: the implication is established on paper by §3, using declarations that exist, but it is a composition rather than one declaration, and the modelling identification in §4.1 is the auditor's, not the tree's. If the standard for "placed" required a single declaration whose statement is (6.13), this row would be `partial-unread`. The count is unchanged at 33 exact, 1 weaker, 5 partial-unread, 1 partial-inexpressible, 34 unplaced, 74 total.
 
 *Evidence: `.setup/paper/ns.txt:3392–3430` (Lemma 6.1, (6.10)–(6.14)); `SlotColoring.lean:112–122`; `PartitionedCovariance.lean:294–321`; `SquaredPartition.lean:132–134,617–683`; E163. Reading only — nothing compiled.*
+
+## E167 — Theorem 1.1 is placed: five clauses, not just the headline (2026-11-24)
+
+`Theorem 1.1` (`.setup/paper/ns.txt:29–40`) is now in the placed column. This is a
+statement-level placement, not a new proof. The declaration is `NavierStokesR3.theorem_1_1`
+(`R3/Theorem.lean:46`), whose type is `ProblemStatement.breakdownStatement`
+(`R3/ProblemStatement.lean:150`).
+
+### 1. The clause map
+
+| Paper clause | Lean field |
+|---|---|
+| `f ∈ C_c^∞(ℝ³ × (0,∞); ℝ³)` | `force_smooth : ContDiff ℝ ∞ f` and `force_support : HasCompactSupport f ∧ tsupport f ⊆ Ioi 0 ×ˢ univ` |
+| `K ⊂ ℝ³` compact | `support_compact : IsCompact K` |
+| `u, p` smooth on `ℝ³ × [0,1)` | `velocity_smooth`, `pressure_smooth : ContDiffOn ℝ ∞ _ (Ico 0 1 ×ˢ univ)` |
+| PDE, divergence, zero datum | `navier_stokes` on `Ioo 0 1`, `divergence_free` on `Ico 0 1`, `zero_initial_velocity` |
+| `supp u(·,t) ∪ supp p(·,t) ⊂ K` | `velocity_support`, `pressure_support : ∀ t ∈ Ico 0 1, tsupport (slice) ⊆ K` |
+| `sup_{0≤t<1} ‖u(t)‖_{L²} < ∞` | `energy_bounded : ∃ E ≥ 0, ∀ t ∈ Ico 0 1, SquareIntegrableAtTime ∧ kineticEnergy ≤ E` |
+| `limsup_{t↑1} ‖u(t)‖_{L∞} = ∞` | `speed_unbounded : SpeedUnboundedAtOne u` |
+| no global finite-energy solution | `¬ Nonempty (GlobalFiniteEnergySolution ν f)` |
+
+### 2. Two closure notes, not two gaps
+
+The paper writes the PDE at `t = 0`; the Lean field imposes it on `0 < t < 1`. The residual is
+continuous on the closed half-domain because `u, p` are `C^∞` there and `f` is smooth, so the
+identity at `t > 0` extends to `t = 0` by continuity. This is the same convention the
+development already documents in `ProblemStatement.lean`.
+
+The paper writes a `limsup` of the spatial `L∞` norm; `SpeedUnboundedAtOne` is pointwise
+unbounded in every left neighbourhood. The structure carries `velocity_smooth` and
+`velocity_support`, so each slice is continuous and supported in compact `K`; its spatial
+supremum is therefore finite at each `t < 1`, and pointwise unboundedness in every left
+neighbourhood is exactly `limsup = ∞`. No compactness or growth hypothesis is added.
+
+The periodic sentence at the end of the paper's Theorem 1.1 is Corollary 10.6, already placed
+separately; it is not a sixth clause of the theorem.
+
+### 3. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 33 | 34 |
+| weaker | 1 | 1 |
+| partial-unread | 5 | 5 |
+| partial-inexpressible | 1 | 1 |
+| unplaced | 34 | 33 |
+| **total** | **74** | **74** |
+
+`NEXT.md` loses the `Theorem 1.1` row; `CROSSWALK.md`, the sentinels and the reader editions
+carry the new counts. `PROOF_STEPS.md` Step 1 is the full clause walk.
+
+*Evidence: `.setup/paper/ns.txt:29–40`; `R3/ProblemStatement.lean:103–150`;
+`R3/Theorem.lean:24–49`; `R3/ViscosityScaling.lean:178–192`;
+`R3/CandidateBreakdown.lean:43–49`. Statement-level reading only; no new compilation.*
+
+## E168 — Lemma 6.1's bridge is `cross_product_zero`; the closed-support step was the error (2026-11-24)
+
+E163's first version and E166's repair both treated the bridge from (6.13) to the product-zero
+use as a missing composition. It is not missing. `SlotSystem.cross_product_zero`
+(`PartitionedCovariance.lean:323–340`) is the declaration, and it uses the correct hypothesis.
+
+### 1. What the paper actually says
+
+(6.13) is
+
+```
+γ ≠ γ′,  K_γ ∩ K_γ′ ≠ ∅  ⇒  R^{abs,+}_γ ∩ R^{abs,+}_γ′ = ∅.
+```
+
+The product-zero use comes after it: if `F_γ` is supported in `K_γ × R^{abs,+}_γ` and `F_γ′` in
+`K_γ′ × R^{abs,+}_γ′`, and the two slow supports meet, then (6.13) says the lifted rectangles are
+disjoint, so `F_γ F_γ′ = 0`. The paper never infers a nonzero cutoff value from a point of a
+closed support. That inference was the audit's, not the paper's.
+
+### 2. The declaration that does the work
+
+`masks_force_adjacency` (`PartitionedCovariance.lean:297–321`) has hypotheses
+`physicalMask D L q x ≠ 0` and `physicalMask D M q x ≠ 0`; it concludes `SlotColoring.Adj D L M`.
+`SlotSystem.disjoint` turns `Adj` into disjoint lifted supports. `cross_product_zero` composes
+them:
+
+```
+by_cases hmL : physicalMask D L q x = 0   -- product is zero
+by_cases hmM : physicalMask D M q x = 0   -- product is zero
+-- otherwise both masks are nonzero, so Adj holds and the lifted supports are disjoint;
+-- if both covered fields were nonzero, the point would lie in both supports. Contradiction.
+```
+
+This is the paper's argument, and it starts from a **nonzero product**, never from a point of
+`K_γ ∩ K_γ′`. A smooth cutoff may vanish on the boundary of its closed support, so E163's
+"both masks are nonzero there" step is invalid. E166 replaced it with
+`physicalSlowMask_tsupport_subset_physicalBox` plus closed `lineMask_tsupport`; those prove the
+box overlap and the level gap, but they do not supply the nonzero-mask hypothesis, and they are
+not needed once the argument starts from the product.
+
+### 3. Consequence
+
+Lemma 6.1 stays in the placed column, no longer provisionally. The paper's (6.13) is the
+`disjoint` field; the product-zero use is `cross_product_zero`; the only modelling
+identification is the paper's `F_γ` versus the tree's `covered` field, which E163 already named.
+No Lean declaration is added or changed. Counts are unchanged after E167: 34 exact, 1 weaker,
+5 partial-unread, 1 partial-inexpressible, 33 unplaced, 74 total.
+
+*Evidence: `.setup/paper/ns.txt:3392–3448`; `PartitionedCovariance.lean:294–340`;
+`SquaredPartition.lean:132–141,669–683`; E163, E166. Reading only; nothing compiled.*
+
+
+## E169 — Lemma 5.1 is partial: the solve is declared, the cone-margin interval is a separate choice (2026-11-24)
+
+`Lemma 5.1` (`.setup/paper/ns.txt:2364–2440`) moves from unplaced to `partial-unread`. The
+axis modules prove more of it than the queue suggested, but not the whole statement.
+
+### 1. What the paper asks for
+
+There is an interval `0 ≤ ξ ≤ a`, `ξ = √X`, extending from the axis into the inner collar of
+Theorem 4.6(i), where the stress cone inequalities hold with a uniform positive margin, on
+which every positive order `n` has a unique solution of (5.2)–(5.6) with
+`φ_n(0,η) = U_n(0,η) = Π_n(0,η) = 0`. The profiles are smooth in `X` and holomorphic in `η` on
+a neighborhood of `[-1,1]`; the neighborhood and bounds may depend on `n` and the radial
+derivative, but `a` does not. Uniqueness holds in the holomorphic class with bounds uniform on
+`0 ≤ ξ ≤ a`. The zero axis values leave the leading traces unchanged.
+
+### 2. What the tree declares
+
+`PositiveAxisExistence.exists_positive_order_solution` (`:864–886`) proves, for `R > 0`,
+`T > R`, an open parameter set `U`, `n > 0`, and lower-history data with
+`LowerInputRegularity T U`, that there is a field `W` with
+`IsPositiveOrderSolution R U h C n ... W`. The structure (`:838–859`) carries:
+
+| Paper clause | Lean field |
+|---|---|
+| solution of the positive-order system | `integral`, `equation`, `positive_order` |
+| smooth profiles in `X` | `profiles_smooth` on `Ico 0 (R^2) × realParameterDomain U` |
+| zero axis values | `profiles_zero` (all six profiles at `X = 0`) |
+| axis jets / leading traces | `profiles_axis_jets`; lower orders are preserved by `Function.update` |
+| parameter holomorphy | `LowerInputRegularity.holomorphic` and the `AxisFunction` class |
+| uniqueness | `positive_order_solution_unique` (`:890–903`) in the holomorphic `SidePathSolution` class |
+
+`exists_positive_order_solution` has `R` as a parameter before `n`, so one radius can be chosen
+and reused for every order. That is the paper's “`a` does not depend on the order” at the level
+of a meta-level choice.
+
+### 3. The unmatched clauses
+
+1. **The cone-margin interval.** `R` is an arbitrary positive radius inside the input-regularity
+   radius `T`; the theorem does not assert that the stress cone inequalities hold on `[0,R]`.
+   That property is supplied by Theorem 4.6 (placed), and choosing `R` inside its collar is a
+   composition, not a field of `IsPositiveOrderSolution`. The paper bundles the choice into
+   Lemma 5.1; the tree separates it.
+2. **“Every positive order” as one statement.** The tree proves the solve for each `n`
+   separately with the same `R`; it does not state `∀ n > 0, ∃ W_n` in one theorem. This is a
+   packaging difference, not a missing estimate.
+3. **The printed system (5.2)–(5.6).** `IsPositiveOrderSolution.positive_order` uses
+   `PositiveOrderEquations`; the transfer from `ProfileSystem` is
+   `positiveSolution_extends_order`. The algebra of that system against the printed equations
+   was not line-by-line checked in this pass. The declaration is the right kind of object, but
+   the clause match is not claimed.
+
+The paper's step is not in doubt. The row is partial on the composition and the packaging, not
+on a false inference.
+
+### 4. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 34 | 34 |
+| weaker | 1 | 1 |
+| partial-unread | 5 | 6 |
+| partial-inexpressible | 1 | 1 |
+| unplaced | 33 | 32 |
+| **total** | **74** | **74** |
+
+`NEXT.md` loses the Lemma 5.1 queue row and adds it to the open-partial list; the reader editions
+carry the new counts. No Lean declaration is added or changed.
+
+*Evidence: `.setup/paper/ns.txt:2364–2440`; `PositiveAxisExistence.lean:333–339,838–903`;
+`SlowRecursion.lean:19–24,306–323`; `PositiveAxisExistence.lean:721–886`. Reading only; nothing
+compiled.*
+
+
+## E170 — The queue closes: six exact placements, twenty-six partials, no unplaced result (2026-11-24)
+
+The thirty-two rows in `NEXT.md` were read at statement level. Six place exactly. Twenty-six do not, and each is recorded as `partial-unread` with the declared fragment and the missing bundle named. The queue is now empty. This entry is a classification pass, not a new kernel run: nothing was compiled, and `placed` still means a declaration exists whose statement is the paper's.
+
+### 1. The six exact placements
+
+| Paper result | Paper line | Lean declaration | Why it is exact |
+|---|---|---|---|
+| Lemma A.1 | `ns.txt:6413` | `PowerMomentMatrix.bumpMomentMatrix_det_ne_zero`; `ExponentialMomentMatrix.expBumpMomentMatrix_det_ne_zero`; `SmoothPowerMomentMatrix.matrix_inverse_contDiffOn`; `SmoothExponentialMomentMatrix.matrix_inverse_contDiffOn` | distinct real exponents and separated nonzero bumps give a nonzero determinant; the exponential/log-coordinate case is the second theorem; the inverse and its fixed parameter jets are smooth and compactly bounded by the two `matrix_inverse_contDiffOn` results. The paper's three sentences are covered as a composition. |
+| Lemma A.2 | `ns.txt:6459` | `ClosedIntervalMomentRepair.Data.exists_smooth_same_branch` | `D.Small 0` is exactly `8 * inverseNorm^2 * quadraticNorm * debtNorm ≤ 1`; the theorem gives one smooth branch, the `2 β₀ d₀` ball, uniqueness among continuous functions in that ball, the iteration from zero, and the `2 β_k d_k` bound for every `k` with `D.Small k`. |
+| Lemma A.9 | `ns.txt:7179` | `FlatPrimitivePaper.exists_factor_on_rectangle` | the factorization has the paper's explicit `1/2`, `e^{-c/δ²}`, `δ^{3-j}`, the endpoint value `b(0,η)/c`, smoothness, and a bound on every fixed mixed jet on the compact parameter rectangle. |
+| Lemma C.1 | `ns.txt:7989` | `TrueConeLoopPaper.exists_local_family_with_margin`; `uniform_boundary_collar` | one period-one family with the prescribed mean, every loop in the admissible cone with a common positive margin, and the boundary collar where the loop equals the input. |
+| Lemma 4.11 | `ns.txt:1891` | the same two declarations | the main-text loop lemma is the same statement at the paper's `I × [−1,1]`; the paper's `µ_L` is the theorem's `ε`, and the endpoint independence is `uniform_boundary_collar`. |
+| Theorem 3.1 | `ns.txt:670` | `LocalPaperTheorem.local_theorem` | `Properties` carries (i) the curl-plus-azimuthal decomposition and divergence-freeness, (ii) uniform jets on compact scale strips up to the one-sided boundary, (iii) the flat residual tower and the exact heat exterior, and (iv) the angular ray growth. The Lean statement is stronger on the domain: smoothness on all `t < 1` and jets on compact sets avoiding the singular point. |
+
+### 2. The twenty-six partials
+
+Each row below has at least one declared fragment and at least one clause that is not a single declaration. `partial-unread` is deliberate: the fragment was read, the rest of the bundle was not matched, and no row is being upgraded on a name.
+
+| Paper result | Declared fragment | Missing clause or bundle |
+|---|---|---|
+| Lemma A.3 | `FiveProfileMoments.momentMatrix_det_ne_zero`, `matrixEquiv_apply` (rank and the five-moment map) | the printed normalizers `(ρ, ρ^{3/2}, ρ^{3/2}, ρ, 1)` and the `U₀ = 0` statement that three `E` corrections prescribe `(I,S,Cₚ)` while preserving `M,J`, as one theorem |
+| Lemma A.5 | `PressureDatum.manuscript_prefix_bound`, `deriv_pressure_neg`, `deriv_pressure_zero` | analyticity on a complex neighborhood, evenness, `Π₀` independence of `X_R`, and the `Π′₀` sign as one statement |
+| Lemma A.6 | `AppendixHeatResults.endpoint_derivatives`, `derivative_bound_rising`, `small_argument_remainder` | the heat equation `∂_tK = (∂_rr + r^{-1}∂_r - r^{-2})K`, `K_r < 0`, and the closed-interval profile smoothness as one bundle |
+| Proposition A.7 | `TerminalEdgeFactor` carrier and edge factorization; `FlatPrimitivePaper` | the three-bump compensation that preserves `M, J, S(∞), Cₚ(∞)` and the renormalized angular moment, with the cone maintained through `y = .5` |
+| Lemma A.8 | `TerminalEdgeFactor` backward-stress primitives | the support statement for the limit tensors and the exact moment hypotheses as one declaration |
+| Proposition A.10 | `TerminalEdgePaper.profileStress_lower_bound` | the upper bound `|∂_I T₀| ≤ C_I e^{-4/δ²} δ^{-N_I}`, the ratio `T₀,z/T₀,θ → 0`, and the cone margin as one bundle |
+| Lemma B.1 | `AxisSeries` profile/Bessel estimates; `AxisInverseFactors` | the full `B_ρ` algebra (multiplication, averaging, `Y`, `I`, `∂_η I`) and the mixed bound (B.6) as one statement |
+| Proposition B.3 | `AxisModelBounds.profile_bounds`, `model_bounds` | `Φ ≥ c₀`, `S_q ≥ 2.5 + .95ΛLχ`, the `p₁`, `n_s` bounds, and the endpoint inequality (B.19) as one bundle |
+| Lemma B.4 | `NaturalExitBounds` and `ReferenceEndpointRate` setup bounds | the three inequalities (B.23) uniformly in the reference width, and the `C`-independent parameter norms, as one statement |
+| Proposition B.5 | `NaturalExitBounds.exists_exit` | the factorization `T₀ = e_a B₀` with `B₀(0,η) ≠ 0`, the cone on the first collar, and the endpoint values `a = .8`, `D_XU = 0`, `p₁ > 2` |
+| Corollary B.6 | `NaturalAxisJointAnalytic.exists_common_joint_analytic_profiles` | the cone/factorization on `X₀ < X ≤ X₀e^{t_c}` and the reserve rectangle as one statement |
+| Lemma B.7 | `NaturalExitBounds.ideal_prefix_exit`, `Estimates.regular_lag_bounds` | the explicit `B_k` and `C^nat_k/Λ + C^join_k(Λ)(t₁+κ₀+ω_fin)` bounds (B.32), independent of `C` and the transition widths |
+| Proposition B.8 | `ParameterizedMomentRepair.exists_smooth_uniform_branch`; `ClosedIntervalMomentRepair` | exact agreement of all five radial moments with (A.7), the pressure datum, and the subsequent `Q_s, N_s` values, as one theorem |
+| Proposition C.3 | `SeedConePaper.admissible_iff`; `TrueConeLoopPaper` | all four conclusions of Theorem 4.6 for the final profiles, including the weighted `ζ` bounds (C.19) and the edge directions |
+| Lemma 4.1 | `AxisymmetricResidual.partialT`, `partialS`, `partialZ` | the two identities `∂_t(q^b f) = q^{b-1}T_b f` and `∂_z(q^b f) = q^{b-D}Z_b f` with the printed `T_b`, `Z_b` |
+| Proposition 4.2 | `TerminalStress.regular_leading_residual`; `LeadingStress` | the exact statement that the residuals are minus `(∂_r + 2/r)` and `(∂_r + 1/r)` of `q^{-A-1/2}T₀`, as one declaration |
+| Lemma 4.3 | `FiveRowRank.FiveRows`; `StateMomentBalances` | the printed `Q_s`, `N_s` formulas (4.16) as one statement |
+| Lemma 4.4 | `FiveProfileMoments.momentMatrix`, `matrixEquiv_apply` | the exact restoration of `Π, V₀, Q_s, N_s, p_s, a, b_s, T₀` from equality of the five moments, and the (4.17) stability estimate |
+| Lemma 4.5 | `SeedConePaper.admissible_iff` (the (4.22) equivalence) | the compact-set threshold `P_K` and the relaxed-cone conclusion for every `p_{s,1} ≥ P_K` |
+| Lemma 4.8 | `NominalProfile` outer-profile construction | the full (4.31) bundle: the four intervals, the moment identities, the cone on both rectangles, and the heat tail, as one statement |
+| Lemma 4.9 | `TerminalEdgePaper` stress primitives | the backward stress formulas, the cone on `e^{1/2}X_tail ≤ X < X_b`, and the factorization (4.32) as one bundle |
+| Proposition 4.10 | `NominalProfile`, `NaturalExitBounds` axis construction | the full (4.33) bundle: smoothness through `X = 0`, analyticity on the common rectangle, the cone/factorization, and the three matching conditions at `X_h` |
+| Lemma 5.2 | `PositiveAxisExistence.exists_positive_order_solution` | the common radii `X_a < X_- < X_+ < X_b`, the zero moments `m_n = 0`, the support of `P_n`, and the weighted stress bound (5.13), as one statement |
+| Lemma 5.4 | `SlowExpansionResidual`, `SlowBorelBase` locally finite sum | the explicit `2^{-J} q^{g_{J+1}/2 - ℓ'_m}` tail (5.35) and the residual flatness (5.36) as one bundle |
+| Proposition 5.5 | `FinalSlowBase` base fields and residual | the full (5.41)–(5.44) bundle: the stress-divergence decomposition, the flat `E_B`, the normalized asymptotics, and the mean-patch agreement |
+| Lemma 6.3 | `LabelCountingFinite.ncard_le_of_index_bounds` | the `C S_ℓ^9` chart count and `C I_R S_ℓ^3` radial-line count as one statement, including fixed-factor enlargements |
+
+### 3. Why these are partial rather than defects
+
+Every missing clause above is a bundle the paper proves in prose and the tree states in pieces, or a count/normalization that has no single declaration. None is a false inequality, a wrong exponent, or a consumer using a bound its producer does not supply. The distinction remains:
+
+1. a code fact — a declaration with this statement exists (the six placements);
+2. a formalization limit — the paper's clause is not one statement (the twenty-six partials);
+3. a mathematical error — none has been established.
+
+The partials are the place where a real defect would hide, because the kernel never weighs the bounds. But naming a missing bundle is not evidence that the bundle is false.
+
+### 4. The ledger after this entry
+
+| Status | Count | Which |
+|---|---|---|
+| placed, statement read | 40 | the previous 34 plus Lemma A.1, Lemma A.2, Lemma A.9, Lemma C.1, Lemma 4.11, Theorem 3.1 |
+| placed, weaker but sufficient | 1 | Proposition 7.5 (E161) |
+| partial, unread | 32 | the previous 6 plus the 26 rows above |
+| partial, inexpressible | 1 | Lemma 9.7 |
+| unplaced | 0 | — |
+| **total** | **74** | |
+
+*Evidence: `.setup/paper/ns.txt:670–700` (Theorem 3.1), `:6413–6470` (A.1–A.2), `:6752–6820` (A.5), `:6975–7040` (A.6), `:7019–7080` (A.7), `:7102–7160` (A.8), `:7179–7265` (A.9–A.10), `:7341–7400` (B.1), `:7522–7600` (B.3), `:7612–7700` (B.4–B.5), `:7753–7900` (B.6–B.8), `:7989–8050` (C.1), `:8233–8295` (C.3), `:1217–1270` (4.1), `:1323–1380` (4.2–4.3), `:1517–1570` (4.5), `:1706–1840` (4.8–4.10), `:2518–2580` (5.2), `:2988–3050` (5.4), `:3100–3160` (5.5), `:3507–3545` (6.3); Lean declarations as named. Reading only — nothing compiled.*
