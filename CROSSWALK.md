@@ -447,6 +447,21 @@ form), with one exponent per row. Two things survive the failed search and both 
 share one `radialMoment 2` weight, and `integrated_axial_reconstructed` differentiates their product.
 So the table is consistent with the tree and not stated by it — recorded as a lead, not a finding.
 
+E156 places **Corollary 7.8**, the §7.6 covariance expansion, and it is a definition plus one theorem:
+`signedTensorRemainder primary old tangent curl` (`CorrectionStep.lean:2309`) *is*
+`covarianceIncrement old (tangent + curl) − symmetricCovariance primary tangent`, i.e.
+`C(U+V) − C(U) − Σ`; `signedTensorRemainder_exact` (`:2313`) rewrites it as
+`symmetricCovariance (old − primary) tangent + symmetricCovariance old curl +
+bilinearCovariance (tangent + curl) (tangent + curl)`, which is (7.41) term for term; and
+`signedTensorRemainder_mem` (`:2366`) is (7.42) with the hypotheses `γ ≤ δ + β`, `γ ≤ α + η`,
+`γ ≤ 2β` — the paper's `ρ+α−1/2`, `α+1/2−κ_s`, `2α−1` under `δ = ρ`, `β = α−1/2`, `α = 1/2`,
+`η = α−κ_s`. The divergence clause is `signedTensorRemainder_divergence_mem` (`:2414`), three
+`…CovarianceChange` rows at `meanExponent σ + 17/100`, with the `κ` spent by `OperatorBounds`.
+The state-level form at `:3242–3252` states it about the covariance the iteration stores. Two shape
+differences: `Σ` is constructed from `primary` and `tangent` rather than supplied, and `E` is
+`subBlock old primary`. The entry also corrects E154's lead — this corollary needs no ODE solve and
+lives in `CorrectionStep`, not `JointODE`. 30 placed, 2 partial.
+
 ### Unplaced (the rest)
 
 Fifty-nine, and slice three moved five of them (below). They are sections 4–10 and the
@@ -478,10 +493,10 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 29 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153) |
+| placed, statement read | 30 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153), Corollary 7.8 (E156) |
 | partial — components exist, statement not matched | 2 | Lemma 9.7 (E133), Corollary 7.3 (E154) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 42 | the rest |
+| unplaced | 41 | the rest |
 | **total** | **73** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
@@ -521,4 +536,4 @@ breakdown that counted 38 lemmas; a full-text scan finds 73 names in 3/26/37/7, 
    weights, the Euler clause drift) are unchanged by the table, and the table does not
    support any claim that the paper's argument is wrong.
 
-<!-- ledger: placed=29 partial=2 unplaced=42 total=73 -->
+<!-- ledger: placed=30 partial=2 unplaced=41 total=73 -->

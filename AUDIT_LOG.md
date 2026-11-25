@@ -7760,3 +7760,88 @@ Two facts survive the failed search, and both are load-bearing:
 This entry does not say the normalisation is wrong, and it does not say it is right: it says the comparison cannot be made at statement level because one side of it does not exist as a statement. If a later pass wants to close it, the place to look is `MeanRankUpdate`'s row data and `ChartScales`' exponent ledger, and the question to ask is whether any declaration's exponent *forces* a row's factor rather than permitting it. The nearest existing tool is `ExponentLedger.lean`, which tabulates exponents but not the physical/normalised ratios.
 
 *Evidence: `.setup/paper/ns.txt:4820–4830` ((8.17)); `VariableGaugeMean.lean:172,879,1473`; `ChartScales.lean:26,29,59`; `CorrectionState.lean:229,236,713`; `IntegratedMeanBalances.lean:779–800`; `ExponentLedger.lean`; E153. Reading only — nothing compiled.*
+
+---
+
+## E156 — Corollary 7.8 is placed: `signedTensorRemainder` is `C(U+V)−C(U)−Σ` by definition, and the three exponents are the paper's (2026-11-25)
+
+*Reading entry. The §7.6 covariance corollary is the closest statement-level match in the §7 column: the expansion (7.41) is a definition plus a theorem, not an assembly, and (7.42) is one `mono_exponent` chain at exactly `δ+β`, `α+η` and `2β`. The paper's three powers `ρ+α−1/2`, `α+1/2−κ_s` and `2α−1` are the same three under the substitutions the paper's own hypotheses make. Two shape differences are recorded rather than smoothed: `Σ` is constructed from the primary block instead of supplied as data, and the divergence clause is stated through the three `…CovarianceChange` rows. This entry also corrects E154's module lead for this row: Corollary 7.8 lives in `CorrectionStep`'s covariance layer, not in `JointODE`.*
+
+### 1. What the paper asks
+
+`Corollary 7.8` (p. 87, `.setup/paper/ns.txt:4455–4488`). Fix `α, ρ`, let `U = Was₀ + E` be a real divergence-free wave field including its curl remainders with `U ∈ W_{1/2}` and `E ∈ W_ρ`, and let `Σ(R,Z,T) ∈ M_α` be a real two-vector independent of the angular and auxiliary variables. Apply Lemma 7.7 to the signed amplitudes `LasΣ`, obtaining `V = LasΣ + R` with `R ∈ W_{α−κ_s}`. Then
+
+`C(U+V) − C(U) = Σ + B(E, LasΣ) + B(U, R) + C(V)` (7.41),
+
+with `B(E, LasΣ) ∈ M_{ρ+α−1/2}`, `B(U,R) ∈ M_{α+1/2−κ_s}`, `C(V) ∈ M_{2α−1}` (7.42), and "taking the radial divergence of each remainder term decreases the ε exponent by at most a further `κ_s`". The proof is three lines: expand the quadratic map, use `B(Was₀, LasΣ) = Σ`, and note that `V ∈ W_{α−1/2}` because `κ_s < 1/2`, so `C(V) ∈ M_{2α−1}`.
+
+### 2. The left-hand side is a definition
+
+| Paper | Declaration | Statement |
+|---|---|---|
+| `B(u,v)` | `CorrectionStep.symmetricCovariance u v` (`:2304`) | `bilinearCovariance u v + bilinearCovariance v u` |
+| `C(v)` | the third term of `covarianceIncrement` (`:478`) | `bilinearCovariance u v + bilinearCovariance v u + bilinearCovariance v v` |
+| `C(U+V) − C(U) − Σ` | `CorrectionStep.signedTensorRemainder primary old tangent curl` (`:2309`) | `covarianceIncrement old (tangent + curl) − symmetricCovariance primary tangent` |
+
+`primary` is `Was₀`, `old` is `U`, `tangent` is `LasΣ` and `curl` is `R`, so the tree's left-hand side *is* the paper's is once `(tangent + curl)` plays `V`. The `Σ` that gets subtracted is `symmetricCovariance primary tangent` — the target, built from the same two blocks rather than handed in.
+
+### 3. (7.41) is `signedTensorRemainder_exact`, and it is derived
+
+`signedTensorRemainder_exact` (`:2313`) states, from angular continuity alone,
+
+```
+signedTensorRemainder primary old tangent curl
+  = symmetricCovariance (old − primary) tangent
+  + symmetricCovariance old curl
+  + bilinearCovariance (tangent + curl) (tangent + curl)
+```
+
+which is (7.41) term for term: `B(E, LasΣ)` with `E = old − primary`, `B(U,R)`, and `C(V)`. It is proved by rewriting `covarianceIncrement`, the two `bilinearCovariance_add` lemmas and the two `…_sub` lemmas, then `abel` — the paper's "we expand the quadratic map and use `B(Was₀, LasΣ) = Σ`", with the cancellation that makes `Σ` disappear done by subtraction rather than by a hypothesis.
+
+The state-level form is `AssembledSignedTensor` (`:3242–3252`): for the actual `u.addIncrement m p (tangent + curl) q e`,
+
+```
+(u.addIncrement m p (tangent + curl) q e).covariance − u.covariance − symmetricCovariance primary tangent
+  = signedTensorRemainder primary.oscillation old.oscillation tangent.oscillation curl.oscillation,
+```
+
+and the conclusion is `TensorClass s γ` of that difference. So (7.41) is stated about the covariance the iteration actually stores, not about an abstract map.
+
+### 4. (7.42) is one chain, and the paper's exponents are the substitutions
+
+`signedTensorRemainder_mem` (`:2366`) concludes `TensorClass s γ` from four exponent hypotheses:
+
+| Paper term | Tree hypothesis | Paper's value |
+|---|---|---|
+| `B(E, LasΣ) ∈ M_{ρ+α−1/2}` | `hγd : γ ≤ δ + β` with `(subBlock old primary).WaveBounds δ` | `δ = ρ`, `β = α − 1/2` |
+| `B(U,R) ∈ M_{α+1/2−κ_s}` | `hγc : γ ≤ α + η` with `old.WaveBounds α`, `curl.WaveBounds η` | `α = 1/2`, `η = α − κ_s` |
+| `C(V) ∈ M_{2α−1}` | `hγs : γ ≤ 2 * β` with `(tangent + curl).WaveBounds β` | `β = α − 1/2` |
+
+The instantiated use is `signedTensorRemainder_divergence_mem` (`:2414`), which fixes `ho : old.WaveBounds (1/2)`, `hd : (subBlock old primary).WaveBounds (17/25)` and `ht : tangent.WaveBounds (waveExponent σ − κ)`, then concludes the three `MeanClass (meanExponent σ + 17/100)` rows for `thetaCovarianceChange`, `axialCovarianceChange` and `radialCovarianceChange`. That is the divergence clause: the `…Change_mem hops he` step spends `κ` from `OperatorBounds`, exactly the paper's "at most a further `κ_s`", and the `.17` is the paper's own printed improvement.
+
+One thing is stronger than the paper: `hβη : β ≤ η` is required, and the docstring says why — the stronger bound on the old-minus-primary field is used only for the first term. The paper does not need it, but it does not contradict it either.
+
+### 5. Shape differences, recorded
+
+* **`Σ` is constructed, not supplied.** The paper takes `Σ ∈ M_α` as data and produces `V` from it; the tree takes `primary` and `tangent` and defines the target as `symmetricCovariance primary tangent`. That removes the question of whether a stress field with the right class exists, and replaces it with hypotheses on the two blocks — `SameCarrier` for all three pairs, band limits, and the zero zeroth harmonic.
+* **`E` is a sub-block, not a field.** `subBlock old primary` is the literal difference, and `subBlock_oscillation` proves the oscillation agrees; the paper's `E = U − Was₀` is the same object.
+* **`V` is a sum of two blocks.** `tangent + curl` is `addBlock`, with `addBlock_oscillation`; the paper's `LasΣ + R` is that sum.
+* **The divergence clause is three rows.** The paper says "each remainder term"; the tree states the three covariance rows that the mean machinery consumes, at one common exponent. Same content, and it is the form the next step uses.
+* **The 2 × 2 target is not in this corollary.** `SmoothCovariance` and `Covariance.signedMatrix` handle the two-slot solve; Corollary 7.8 is the tensor algebra before that solve, exactly as in the paper's order.
+
+No clause is unmatched. The one statement the entry does not make is that the proof of `signedTensorRemainder_mem` is valid — it is statement-level reading, as every placed row is.
+
+### 6. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 29 | 30 |
+| partial | 2 | 2 |
+| unplaced | 42 | 41 |
+| **total** | **73** | **73** |
+
+### 7. Correction to E154's module lead
+
+E154 §4 recorded that the §7 queue should be read against `JointODE` / `WithinJointODE` first, because the driven amplitude operator is there. That remains the right lead for **Corollary 7.3**, which needs the operator `f_m ↦ (t_m, π_m)`. It is the wrong lead for **Corollary 7.8**, which needs no ODE solve at all: it is pure covariance algebra and is fully declared in `CorrectionStep`. The §7 queue splits accordingly — 7.8 is done here, 7.3 waits on the ODE layer, and 7.1, 7.2, 7.4, 7.5, 7.6 should be read against `TorusInverse` and `SignedWaveUpdate` before either.
+
+*Evidence: `.setup/paper/ns.txt:4455–4488` (Corollary 7.8, (7.41)–(7.42)); `CorrectionStep.lean:471–485` (`covariance_add`, `covarianceIncrement`), `:2304–2322` (`symmetricCovariance`, `signedTensorRemainder`, `signedTensorRemainder_exact`), `:2324–2410` (`subBlock`, `symmetricCovariance_mem`, `signedTensorRemainder_mem`), `:2412–2443` (`signedTensorRemainder_divergence_mem`), `:3242–3252` (assembled state identity); `HarmonicCovariance.lean:60–140`; `ExponentLedger.lean:30–40`; E154. Reading only — nothing compiled; "placed" is statement-level.*
