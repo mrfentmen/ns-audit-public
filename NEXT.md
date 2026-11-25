@@ -64,4 +64,16 @@ bundle is false. The distinction is the one the whole audit keeps:
 - The partials are where the algebra is stated and the bounds are assembled. That is the most
   likely place for a real defect, because the kernel never weighs the bounds.
 
+## Deferred until the outside review closes
+
+- **Send the two reviewer messages.** The Lean-reader and PDE-reader notes are written and
+  pinned to public `f01568e`; neither has been sent to a named person yet. The 25 November
+  review was AI-assisted and is not an outside human read.
+- **Status tag at checkpoint 3.** Add "named, not replayed" to the front door and to the
+  harmonic box in `PRESSURE_RECOVERY_MAP.md`. Deferred so the pinned text stays byte-identical
+  while reviewers read it; both documents already state the limitation in their status lines.
+- **Evidence labels in `LAYMAN.md`.** Tag findings as read, built, or checked by Comparator, so
+  kernel and build results are not read as statement-level findings. Polish, not a claim change.
+- **Reviewer log.** Recipients, dates, versions sent, and replies. Empty until a person replies.
+
 <!-- ledger: placed=40 weaker=1 partial_unread=32 partial_inexpressible=1 unplaced=0 total=74 -->
