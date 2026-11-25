@@ -28,7 +28,7 @@ Take two smooth divergence-free flows on `ℝ³ × [0,T]` with the same force, t
 
 ## What is not assumed
 
-- **Pressure.** `PressureRecovery.Hypotheses` (`R3/PressureRecovery.lean:33`) contains only `smooth_p` and `smooth_q`. There is no pressure `L^p` bound, no decay at infinity, no growth condition, and no pressure normalization. The only pressure input to the flux estimate is the canonical tensor pairing produced by `gradient_recovery`.
+- **Pressure.** `PressureRecovery.Hypotheses` (`R3/PressureRecovery.lean:33`) has exactly two pressure fields, `smooth_p` and `smooth_q`; the remaining fields are the comparison hypotheses. There is no pressure `L^p` bound, no decay at infinity, no growth condition, and no pressure normalization. The only pressure input to the flux estimate is the canonical tensor pairing produced by `gradient_recovery`.
 - **Competitor.** `GlobalFiniteEnergySolution` (`R3/ProblemStatement.lean:125`) contains smoothness, zero datum, divergence-freeness, the same residual, and a uniform finite-energy bound on all nonnegative times. It contains no support, periodicity, decay, derivative-growth, or pressure condition.
 - **Reference energy.** The reference `u` has compact spatial support in `K`. Its finite energy and its gradient bound are *derived* by `uniformFiniteEnergy_of_compact_slab` and `exists_gradient_bound`; neither is assumed.
 - **Time.** `classical_uniqueness_on_Icc` holds for every `T > 0`. The candidate application uses `T < 1`, because the candidate is only smooth before the singular time.

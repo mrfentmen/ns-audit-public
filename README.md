@@ -23,8 +23,8 @@ The audit's two findings:
 | `AUDIT_LOG.md` | The working log: entries E0–E170, every `path:line` citation behind the paper. |
 | `CROSSWALK.md` | The published paper against the Lean tree: sections labelled `cited`, `object` or `family` (E89), the twenty paper labels the source cites verbatim (E90), and the per-result ledger — 74 numbered results, 40 exact placements, 1 weaker-but-sufficient, 32 partial-unread, 1 partial-inexpressible, 0 cited-unchecked, 0 unplaced (E91–E170). |
 | `PROOF_STEPS.md` | The paper's inference chain, step by step: paper claim, plain reading, hypotheses, derivation, Lean consumer and verdict, for the sixteen steps that carry Theorem 1.1 and every partial. |
-| `UNIQUENESS_PROOF_MAP_SHORT.md` | The 1–2 page front door: seven checkpoints, the Gronwall numerator visible, and links to the detailed maps. |
-| `UNIQUENESS_PROOF_MAP_SHORT.pdf` | The front-door PDF, built by `typeset.yml`. |
+| `UNIQUENESS_PROOF_MAP_SHORT.md` | The 2-page front door: seven checkpoints, the Gronwall numerator visible, and links to the detailed maps. |
+| `UNIQUENESS_PROOF_MAP_SHORT.pdf` | The 2-page front-door PDF, built by `typeset.yml`. |
 | `UNIQUENESS_PROOF_MAP.md` | The detailed nine-step map: each row has its Lean declaration, hypotheses, and constant status. |
 | `UNIQUENESS_PROOF_MAP.pdf` | The detailed map as a 5-page landscape appendix PDF, built by `typeset.yml`, 0 missing glyphs. |
 | `ENERGY_PROOF_MAP.md` | Lemma 10.4 from the exact energy identity to finite total dissipation: seven steps, exact coefficients, and no hidden multiplicative constant. |

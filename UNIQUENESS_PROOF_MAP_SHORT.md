@@ -31,7 +31,7 @@ Suppose two smooth divergence-free flows on `ℝ³ × [0,T]` have the same force
 
 ## What is not assumed
 
-- **Pressure.** `PressureRecovery.Hypotheses` (`NavierStokes/R3/PressureRecovery.lean:33`) contains only smoothness of `p` and `q`. There is no pressure `L^p` bound, decay, growth, or normalization.
+- **Pressure.** In `PressureRecovery.Hypotheses` (`NavierStokes/R3/PressureRecovery.lean:33`), the only pressure fields are `smooth_p` and `smooth_q`. There is no pressure `L^p` bound, decay, growth, or normalization.
 - **Competitor.** `GlobalFiniteEnergySolution` (`NavierStokes/R3/ProblemStatement.lean:125`) contains smoothness, zero datum, divergence-freeness, the same residual, and uniform finite energy. It contains no support, periodicity, decay, derivative-growth, or pressure condition.
 - **Reference energy.** The reference flow's compact support is separate; its finite energy and gradient bound are derived, not assumed.
 

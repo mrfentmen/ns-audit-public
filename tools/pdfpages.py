@@ -20,7 +20,13 @@ def inflated(blob: bytes) -> list[bytes]:
         try:
             chunks.append(zlib.decompress(match.group(1)))
         except zlib.error:
-            continue
+            # Some writers leave a trailing newline or padding after the
+            # zlib stream. decompressobj stops at the stream end, while
+            # decompress rejects the trailing bytes.
+            try:
+                chunks.append(zlib.decompressobj().decompress(match.group(1)))
+            except zlib.error:
+                continue
     return chunks
 
 
