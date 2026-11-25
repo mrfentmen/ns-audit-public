@@ -3,7 +3,7 @@
 **Theorem.** `NavierStokesR3.PressureRecovery.gradient_recovery`
 **Source.** `NavierStokes/R3/PressureRecovery.lean:407`
 **Upstream.** `openai/NavierStokesAndEuler@f9e8bc5`
-**Role.** This is the internal chain behind step 4 of `UNIQUENESS_PROOF_MAP.md`. It is the largest remaining unexpanded step in the uniqueness chain.
+**Role.** This is the internal chain behind step 4 of the nine-row `UNIQUENESS_PROOF_MAP.md`, which is checkpoint 3 of the front door `UNIQUENESS_PROOF_MAP_SHORT.md`. The two maps number it differently; it is the same declaration. It is the largest remaining unexpanded step in the uniqueness chain.
 
 **Status.** Statement-and-consumer reading, not a recompilation. I read the declarations and the named proof steps; I did not replay the harmonic-functional proof term.
 
