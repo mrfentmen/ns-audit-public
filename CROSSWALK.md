@@ -493,15 +493,16 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 34 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153), Corollary 7.8 (E156), Lemma 7.1 (E157), Lemma 7.4 (E160), Proposition 7.5 (E161), Lemma 6.1 (E163) |
-| partial — components exist, statement not matched | 5 | Lemma 9.7 (E133), Corollary 7.3 (E154), Proposition 7.2 (E158), Proposition 7.6 (E162), Lemma 6.2 (E164) |
+| placed, statement read | 33 | Proposition A.4, Proposition B.2, Corollary B.10, Proposition C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153), Corollary 7.8 (E156), Lemma 7.1 (E157), Lemma 7.4 (E160), Lemma 6.1 (E163) |
+| placed, weaker but sufficient | 1 | Proposition 7.5 (E161) |
+| partial, unread | 5 | Corollary 7.3 (E154), Proposition 7.2 (E158), Proposition 7.6 (E162), Lemma 10.2 (E136, E150), Lemma 6.2 (E164) |
+| partial, inexpressible | 1 | Lemma 9.7 (E133, E159) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 34 | the rest |
-| **total** | **73** | |
+| unplaced | 34 | Theorem 1.1, Theorem 3.1, Proposition 4.2, Lemma 4.1, Lemma 4.3, Lemma 4.4, Lemma 4.5, Lemma 4.8, Lemma 4.9, Proposition 4.10, Lemma 4.11, Lemma 5.1, Lemma 5.2, Lemma 5.4, Proposition 5.5, Lemma 6.3, Corollary A.3, Lemma A.1, Lemma A.2, Lemma A.5, Lemma A.6, Proposition A.7, Lemma A.8, Lemma A.9, Proposition A.10, Lemma B.1, Proposition B.3, Lemma B.4, Proposition B.5, Corollary B.6, Lemma B.7, Proposition B.8, Lemma C.1, Proposition C.3 |
+| **total** | **74** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
-result; it leaves the numerator. That and the 74 are the corrections this slice makes to
-the previous two entries.
+result; it leaves the numerator. The denominator itself is 74 (E165).
 
 E133 adds the §9.4 threshold row, and it is the first partial here whose unmatched clause is
 unmatched for a structural reason rather than a search failure. Lemma 9.7's first two clauses
@@ -517,10 +518,20 @@ no definition between `physicalLoss` and `paperJetLoss` accepts a stage index. T
 stronger than the paper here: the displayed `+ E_{j,m}` flat error is absent because all flat
 remainders are absorbed.
 
-E135 then corrects the denominator itself. The ledger has said 74 since E91, from a kind
-breakdown that counted 38 lemmas; a full-text scan finds 73 names in 3/26/37/7, and the
-"missing" numbers 6.3–6.5, 9.4 and B.9 are section numbering rather than results (9.4 is the
-§9.4 heading). The numerator never moved: 15 placed, 6 partial, 52 unplaced of 73.
+E135 then *reduced* the denominator from 74 to 73, on a full-text scan that found 3/26/37/7 and
+treated the labels 6.3–6.5 as section headings. E165 reverses that reduction. The scan's pattern
+ended at `Lemma N.M.`; the paper also numbers a lemma with a title between the number and the
+period, and
+
+> **Lemma 6.3 (Number of relevant labels).** There is a constant `C`, independent of the band and
+> point, such that `sup #{γ ∈ Γ : (r,z,t) ∈ K_γ} ≤ C` (`.setup/paper/ns.txt:3507–3514`)
+
+is a statement with a displayed bound and a proof, not a heading. It is the thirty-eighth lemma,
+so E91's 3/26/**38**/7 = 74 was right. The 73 ledger had also stopped listing Lemma 10.2, which
+E150 left partial and later summaries dropped, and it counted Proposition 7.5 as an exact match
+although E161 records a weaker inequality. E165 restores the denominator to **74** and splits the
+statuses: 33 exact placements, 1 weaker-but-sufficient, 5 partial-unread, 1 partial-inexpressible,
+34 unplaced.
 
 E157–E162 finish §7 as far as statement-level reading can reach, and they split cleanly
 into two groups that turn out to be the same finding twice. Lemma 7.1, Lemma 7.4 and
@@ -532,7 +543,8 @@ and the pulse constants are printed exponentials rather than anonymous `c, C`. P
 carries the first *weaker* clause in §7: the paper's `y_σ ≥ c√(S*ζ)` is `c√S*·ζ` in the tree,
 smaller by `√ζ`, and `sqrt_S_lower` says in its own docstring that this is the weaker form the
 square-root jet theorem needs. The consumer (7.33) needs only `ζ^{-1/2}` after the numerator
-weights cancel, which the weaker floor supplies.
+weights cancel, which the weaker floor supplies. E165 therefore records the row as
+`placed, weaker but sufficient`; the count of exact placements is 33, not 34.
 
 Proposition 7.2 and Proposition 7.6 go to partial, and their unmatched clause is the same one
 Corollary 7.3 has: neither the driven pair `f_m ↦ (t_m, π_m)` nor the linearised amplitude map
@@ -544,11 +556,14 @@ produces, not the maps it uses, which is why the rows that construct fields plac
 that are maps do not.
 
 E159 settles Lemma 9.7's third clause as *inexpressible* rather than unread: the clause counts
-input derivatives through a derivation, and a derivation has no Lean type for a statement to
-quantify over. It stays partial — the paper's sentence is unmatched — but it leaves the queue.
-The ledger keeps one `partial` count and the entry recommends the split into `partial-unread`
-(Proposition 7.2(i), Corollary 7.3, Proposition 7.6) and `partial-inexpressible` (Lemma 9.7,
-Proposition 7.2(ii)) for the next revision of this table.
+input derivatives through a derivation, and the tree has no syntax representation of a derivation
+for a proposition to quantify over. (E159's original wording said a proof is not a first-class
+value; E165 corrects that — Lean does quantify over proof terms.) It stays partial — the paper's
+sentence is unmatched — but it leaves the queue. E165 adopts the split E159 recommended, with a
+fixed test: `partial-inexpressible` requires an argued reason that no Lean statement can carry the
+clause, and only Lemma 9.7 passes it. Corollary 7.3, Proposition 7.2, Proposition 7.6, Lemma 10.2
+and Lemma 6.2 are `partial-unread`: missing declarations or unread modules, not proven
+impossibilities.
 
 ## Limits of this file
 
@@ -582,4 +597,4 @@ integration at fixed `(z,t)` implicit. No declaration names the property the sen
 so "no new dyadic band" has nothing to be true of. That is E162's field-versus-map distinction
 reappearing as a name-versus-property distinction, and it is recorded rather than smoothed.
 
-<!-- ledger: placed=34 partial=5 unplaced=34 total=73 -->
+<!-- ledger: placed=33 weaker=1 partial_unread=5 partial_inexpressible=1 unplaced=34 total=74 -->

@@ -7968,7 +7968,7 @@ Nothing here weakens the audit: the bounds the next stage consumes are declared,
 
 E133 made Lemma 9.7 partial and said its third clause "describes the construction's syntax and so has no proposition in the object language to be true of." That was right, but it left the row looking like work. It is not work. This entry closes the question and states the reason precisely, because the difference matters for the ledger's denominator.
 
-The clause reads: *"For every fixed stage and output amplitude derivative, its construction and estimate require finitely many input amplitude derivatives."* The paper proves it by counting a directed acyclic graph of sums, products, derivatives and proved inverses, with `D_{v,a}(m) = max_{w→v} D_{w,a}(m + d_{v,w})`. The object being quantified over is a **derivation**, not a field. Lean has no term of that type: a proof is not a first-class value the statement can range over, and a definition's term structure is not a proposition.
+The clause reads: *"For every fixed stage and output amplitude derivative, its construction and estimate require finitely many input amplitude derivatives."* The paper proves it by counting a directed acyclic graph of sums, products, derivatives and proved inverses, with `D_{v,a}(m) = max_{w→v} D_{w,a}(m + d_{v,w})`. The object being quantified over is a **derivation**, not a field. Lean has no *proposition* of that type. Proofs themselves are first-class values and a statement can quantify over them; what is missing is a syntax representation of the derivation — the DAG of sums, products, derivatives and inverses — for a count to be true of. (E165 corrects the earlier wording here, which said a proof is not a first-class value; that is false in Lean. Lemma 9.7's classification is unchanged.)
 
 There are exactly two Lean-level shadows, and both are present:
 
@@ -8292,3 +8292,46 @@ and the three existing closure lemmas restated against the predicate. The mathem
 | **total** | **73** | **73** |
 
 *Evidence: `.setup/paper/ns.txt:3450–3520` (Lemma 6.2, (6.17)–(6.20)); `TorusAverages.lean:39,103–133,156,317`; `TorusCoverDegree.lean:221,247–274,296–302`; `ActualSignedGeometry.lean:437–453,516–545`; `CommonCoverClass.lean:171–181,354–356`; `SmoothFourierData.lean:565–571`; `TorusInverse.lean:574–581`; `ParametricTorusInverse.lean:504–521`; `CommonCoverWithin.lean:102–107`; `MeanChartCompatibility.lean:461`. Reading only — nothing compiled.*
+
+## E165 — The ledger's denominator is 74, not 73; Lemma 10.2 returns; Proposition 7.5 becomes weaker-but-sufficient (2026-11-24)
+
+Four bookkeeping defects came out of one reconciliation, and none of them is a new reading of the upstream tree. They are recorded because a count is a claim.
+
+### 1. E135's 73 was wrong, and E91's 74 was right
+
+E135 reduced the denominator from 74 to 73 on a full-text scan that found 3 theorems, 26 propositions, **37** lemmas and 7 corollaries, and treated the labels `6.3`–`6.5` as section headings. That scan's statement pattern ends in `Lemma N.M.`; the paper also numbers a lemma with a title between the number and the period:
+
+> **Lemma 6.3 (Number of relevant labels).** There is a constant `C`, independent of the band and point, such that `sup #\{γ ∈ Γ : (r,z,t) ∈ K_γ\} ≤ C` (`.setup/paper/ns.txt:3507–3514`)
+
+That is a statement with a displayed bound and a proof, not a heading, and it is the thirty-eighth lemma. The kind breakdown is therefore 3/26/38/7 = **74**, exactly E91's original count. `6.4`, `6.5` and `9.4` are section numbers, as E135 said; `6.3` is both a section number and a lemma number, and that coincidence is why it was read as a phantom. The segment bound itself (`C·S_ref³` on a compact chart, `C·S_ref⁹` for the box count) is *not* audited here: this entry only restores the row.
+
+### 2. Lemma 10.2 was left partial and then dropped
+
+E136 made Lemma 10.2 partial; E150 re-read it, narrowed the gap to one missing support statement, and kept it partial. It is in neither the placed nor the partial row of the ledger as it stood before this entry, and the later §7 entries describe "the four partials" without it. It is restored to the partial column as `partial-unread`: the missing object is a declaration of support for the limit tensors, not a clause that cannot be stated.
+
+### 3. Proposition 7.5 is not an exact statement match
+
+E161 records that the paper's floor `y_σ ≥ c√(S*ζ)` is `c√S*·ζ` in the tree, smaller by `√ζ`. The next estimate needs only `ζ^{-1/2}`, so the row is sufficient — but sufficient is not the same as the paper's statement. It moves to a separate status, `placed, weaker but sufficient`, and the exact-placement count drops from 34 to 33.
+
+### 4. The partials split, and the queue is reconciled
+
+E159 recommended two sub-kinds. This entry adopts them with a fixed test: `partial-inexpressible` requires an argued reason that no Lean statement can carry the clause; everything else is `partial-unread`. Only Lemma 9.7 passes that test. Corollary 7.3, Proposition 7.2, Proposition 7.6, Lemma 10.2 and Lemma 6.2 are unread — each is a missing declaration or an unread module, not a proven impossibility.
+
+The queue in `NEXT.md` had 34 rows with `Lemma 8.8` still on it (placed by E151) and `Lemma 6.3` absent. It is now 34 rows: 8.8 out, 6.3 in, and Lemma 10.2 appears in the open-partial list rather than the unplaced queue, where E150 left it.
+
+### 5. The checker now checks identities, not only arithmetic
+
+`tools/ledger_check.py` used to verify that the ledger's arithmetic and named-row counts agreed, and that every document quoted the same four numbers. That is exactly the check that passes while a queue row is stale. It now also fails if a queue row names a result the ledger lists as placed, weaker or partial, if the queue repeats a result, or if its set of names differs from the unplaced row. The `weaker` and partial sub-kinds are first-class fields in the sentinels.
+
+### 6. The ledger after this entry
+
+| Status | Count | Which |
+|---|---|---|
+| placed, statement read | 33 | the pre-E165 placed row (34) minus Proposition 7.5 |
+| placed, weaker but sufficient | 1 | Proposition 7.5 (E161) |
+| partial, unread | 5 | Corollary 7.3, Proposition 7.2, Proposition 7.6, Lemma 10.2, Lemma 6.2 |
+| partial, inexpressible | 1 | Lemma 9.7 |
+| unplaced | 34 | the queue in `NEXT.md` |
+| **total** | **74** | |
+
+*Evidence: `.setup/paper/ns.txt:3507–3521` (Lemma 6.3 and its proof), `:5997–6030` (Lemma 10.2); E91, E135, E136, E150, E151, E159, E161, E164. Bookkeeping and statement-level counting only; nothing compiled.*

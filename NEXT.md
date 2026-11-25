@@ -1,19 +1,24 @@
-# NEXT — the queue for the remaining 36 numbered results
+# NEXT — the queue for the remaining 34 numbered results
 
 Generated from the paper's own text at `.setup/paper/ns.txt`. A grep of numbered statements
-returns 85 lines; deduplicating by result name gives **73** distinct numbered statements in the
-extracted text, of which thirty-four are placed, five are partial, and **thirty-four are unplaced**.
-The ledger in `CROSSWALK.md` carries the same **73** as its denominator and the same three
-counts, so there is no discrepancy to record here.
+returns 85 lines; deduplicating by result name gives **74** distinct numbered statements in the
+extracted text, of which thirty-three are exact placements, one more is weaker-but-sufficient,
+five are partial-unread, one is partial-inexpressible, and **thirty-four are unplaced**. The ledger
+in `CROSSWALK.md` carries the same **74** as its denominator and the same six counts, and
+`tools/ledger_check.py` now fails if this queue names a result the ledger has already placed
+(E165).
 
 This file is a work order, not a finding. Nothing here has been read yet, and no row below
 carries any audit conclusion.
 
-## The denominator, settled
-
-The ledger and this file now agree on **73** numbered results: 34 placed, 5 partial, 34 unplaced. The earlier 74 came from E91's kind breakdown (3 theorems, 26 propositions, 38
-lemmas, 7 corollaries); the text has 37 lemmas. The indices 6.3–6.5, 9.4 and B.9 are section
-numbering, not results — 9.4 is the §9.4 heading. See E135.The thirty-four rows below are the whole remaining queue, and none of them was ever a phantom.
+## The denominator, settledThe ledger and this file now agree on **74** numbered results: 33 exact placements, 1
+weaker-but-sufficient, 5 partial-unread, 1 partial-inexpressible, 34 unplaced. E135 cut the
+denominator to 73 by counting 37 lemmas, but the paper has 38: `Lemma 6.3 (Number of relevant
+labels)` (`.setup/paper/ns.txt:3507`) is a titled statement, and the `Lemma N.M.` pattern behind
+the census cannot match a title between the number and the period. The indices 6.4, 6.5, 9.4 and
+B.9 are section numbering, not results; 6.3 is a section number *and* a lemma number, which is why
+it was read as a phantom. E165 restores 74 and reconciles this queue: Lemma 8.8 left it when E151
+placed it, Lemma 6.3 entered it, and Lemma 10.2 is an open partial rather than a queue row.
 
 ## How to use it
 
@@ -37,9 +42,7 @@ supporting machinery.
 
 | Result | Page | Statement | Candidate modules |
 |---|---|---|---|
-| Lemma 8.8 | 98 | `ns.txt:5041` | `TemporalMeanUpdate`, `FiveRowRank`, `DefectIncrementBounds`, `StateMomentBalances`, `MeanRankUpdate` |
-
-
+| Lemma 6.3 | 68 | `ns.txt:3507` | `LabelSumBounds`, `SlotColoring`, `PartitionedCovariance` |
 
 | Lemma 5.1 | 47 | `ns.txt:2364` | `CorrectionStep`, `BaseResidual`, `ActualBaseResidual`, the 21 `Axis*` modules |
 | Lemma 5.2 | 50 | `ns.txt:2518` | `CorrectionStep`, `BaseResidual`, `ActualBaseResidual`, the 21 `Axis*` modules |
@@ -85,7 +88,7 @@ both radial divergence identities are `SignedStressPrimitive.angular_divergence`
 `axial_divergence`, at the paper's own `2/R` and `1/R` weights. Proposition 9.3 was placed by
 E149, Lemma 10.2 was re-read and narrowed but not moved by E150, Lemma 8.8 was placed by E151,
 Proposition 8.3 by E152, Proposition 8.4 by E153, Corollary 7.3 was moved to partial by E154,
-Corollary 7.8 was placed by E156, and §7 was finished by E157–E162: Lemma 7.1, Lemma 7.4 and Proposition 7.5 placed, Proposition 7.2 and Proposition 7.6 moved to partial with their unmatched clause named, and Lemma 9.7 ruled permanently out of the queue (E159). §6 has opened: Lemma 6.1 placed and Lemma 6.2 partial (E163, E164).*
+Corollary 7.8 was placed by E156, and §7 was finished by E157–E162: Lemma 7.1, Lemma 7.4 and Proposition 7.5 placed, Proposition 7.2 and Proposition 7.6 moved to partial with their unmatched clause named, and Lemma 9.7 ruled permanently out of the queue (E159). §6 has opened: Lemma 6.1 placed and Lemma 6.2 partial (E163, E164). E165 then reconciled this queue with the ledger: Lemma 8.8 came off it (placed in E151) and Lemma 6.3 went on.*
 
 1. **Lemma 5.1** (p. 47, `ns.txt:2364`) — the first §5 row, and §5 is now the front of the
    queue: §6 opens with Lemma 6.1 placed (E163) and Lemma 6.2 partial (E164), §7 is finished
@@ -93,10 +96,12 @@ Corollary 7.8 was placed by E156, and §7 was finished by E157–E162: Lemma 7.1
 2. **Lemma 5.2** (p. 50, `ns.txt:2518`) — the second §5 row, same module family.
 3. **Lemma 5.4** (p. 57, `ns.txt:2988`) — the third §5 row; Proposition 5.5 follows at p. 60.
 
-Three partials are open and none is an ordinary queue row: Proposition 7.2(i) needs one read of
-`PressureRecovery`/`LinearWaveResidual` for the pressure formula (7.13), and Proposition 7.6 needs
-a declaration of the map `Σ ↦ LΣ` that E162 says does not exist. Lemma 6.2 needs the radial-integration half of its preservation sentence and a name for common-torus descent (E164). Lemma 9.7 has left the queue
-permanently: E159 shows its third clause has no Lean counterpart.
+Five partial-unread rows are open and none is an ordinary queue row: Corollary 7.3 needs the map
+`f_m ↦ (t_m, π_m)`, Proposition 7.6 needs `Σ ↦ LΣ`, Proposition 7.2(i) needs one read of
+`PressureRecovery`/`LinearWaveResidual` for the pressure formula (7.13), Lemma 10.2 needs the
+support statement for the limit tensors (E150), and Lemma 6.2 needs the radial-integration half of
+its preservation sentence (E164). Lemma 9.7 is partial-inexpressible and has left the queue
+permanently: E159's argument, corrected in E165, shows its third clause has no Lean counterpart.
 
 ## Standing limits
 
@@ -104,7 +109,7 @@ permanently: E159 shows its third clause has no Lean counterpart.
   evidence has to go through `kernel-check.yml` on Actions.
 - "Placed" is statement-level. It says a declaration exists whose statement is the paper's,
   not that the proof of that declaration is valid.
-- The four partials are where the algebra is stated and the bounds are assembled. That is
+- The partials are where the algebra is stated and the bounds are assembled. That is
   the most likely place for a real defect, because the kernel never weighs the bounds.
 
-<!-- ledger: placed=34 partial=5 unplaced=34 total=73 -->
+<!-- ledger: placed=33 weaker=1 partial_unread=5 partial_inexpressible=1 unplaced=34 total=74 -->
