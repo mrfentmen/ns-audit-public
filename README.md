@@ -23,7 +23,8 @@ The audit's two findings:
 | `AUDIT_LOG.md` | The working log: entries E0–E170, every `path:line` citation behind the paper. |
 | `CROSSWALK.md` | The published paper against the Lean tree: sections labelled `cited`, `object` or `family` (E89), the twenty paper labels the source cites verbatim (E90), and the per-result ledger — 74 numbered results, 40 exact placements, 1 weaker-but-sufficient, 32 partial-unread, 1 partial-inexpressible, 0 cited-unchecked, 0 unplaced (E91–E170). |
 | `PROOF_STEPS.md` | The paper's inference chain, step by step: paper claim, plain reading, hypotheses, derivation, Lean consumer and verdict, for the sixteen steps that carry Theorem 1.1 and every partial. |
-| `UNIQUENESS_PROOF_MAP.md` | The uniqueness half of Theorem 1.1 as a section-level proof map: nine steps, each with its Lean declaration, hypotheses, and whether any constant's size matters (it does not). Its PDF is built by `typeset.yml`. |
+| `UNIQUENESS_PROOF_MAP.md` | The uniqueness half of Theorem 1.1 as a section-level proof map: nine steps, each with its Lean declaration, hypotheses, and whether any constant's size matters (it does not). |
+| `UNIQUENESS_PROOF_MAP.pdf` | The same map as a 5-page landscape PDF, built by `typeset.yml`, 0 missing glyphs. |
 | `ENERGY_PROOF_MAP.md` | Lemma 10.4 from the exact energy identity to finite total dissipation: seven steps, exact coefficients, and no hidden multiplicative constant. |
 | `PRESSURE_RECOVERY_MAP.md` | The internal chain behind `gradient_recovery`: compact weak identity, differentiated Poisson identity, time average, harmonicity, harmonic-functional vanishing, and un-averaging. |
 | `NEXT.md` | The closed work order: the queue is empty at E170, and the 26 supporting results that remain partial are listed with their declared fragment and missing bundle. |
