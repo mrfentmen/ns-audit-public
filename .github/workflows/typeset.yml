@@ -97,16 +97,44 @@ jobs:
             ls -l "$doc.pdf"
           done
 
+      - name: Build the uniqueness proof map
+        run: |
+          set -euo pipefail
+          docker run --rm -v /usr/share/fonts:/usr/share/fonts:ro pandoc/extra:latest \
+            fc-cache -f || echo "fc-cache unavailable; font lookup may fail"
+          sed -e 's/❌/✗/g' -e 's/✅/✓/g' -e 's/𝕋/T/g' \
+            UNIQUENESS_PROOF_MAP.md > UNIQUENESS_PROOF_MAP.build.md
+          if docker run --rm -v "$PWD:/data" -v /usr/share/fonts:/usr/share/fonts:ro \
+               -w /data pandoc/extra:latest UNIQUENESS_PROOF_MAP.build.md \
+               -o UNIQUENESS_PROOF_MAP.pdf --pdf-engine=xelatex \
+               -V geometry:a4paper -V geometry:landscape -V geometry:margin=1.5cm \
+               -V fontsize=9pt \
+               -V mainfont="DejaVu Sans" -V monofont="DejaVu Sans Mono" \
+               -V colorlinks=true -V linkcolor=blue \
+               2>&1 | tee UNIQUENESS_PROOF_MAP-typeset.log; then
+            echo "[UNIQUENESS_PROOF_MAP] built with DejaVu"
+          else
+            echo "[UNIQUENESS_PROOF_MAP] DejaVu not available; retrying with the image defaults"
+            docker run --rm -v "$PWD:/data" -w /data pandoc/extra:latest \
+              UNIQUENESS_PROOF_MAP.build.md -o UNIQUENESS_PROOF_MAP.pdf \
+              --pdf-engine=xelatex \
+              -V geometry:a4paper -V geometry:landscape -V geometry:margin=1.5cm \
+              -V fontsize=9pt -V colorlinks=true -V linkcolor=blue \
+              2>&1 | tee UNIQUENESS_PROOF_MAP-typeset.log
+          fi
+          rm -f UNIQUENESS_PROOF_MAP.build.md
+          ls -l UNIQUENESS_PROOF_MAP.pdf
+
       - name: Report pages and glyph coverage
         if: always()
         run: |
-          python3 tools/pdfpages.py CAVEMAN.pdf LAYMAN.pdf 2>/dev/null || true
-          for f in CAVEMAN-typeset.log LAYMAN-typeset.log; do
+          python3 tools/pdfpages.py CAVEMAN.pdf LAYMAN.pdf UNIQUENESS_PROOF_MAP.pdf 2>/dev/null || true
+          for f in CAVEMAN-typeset.log LAYMAN-typeset.log UNIQUENESS_PROOF_MAP-typeset.log; do
             [ -f "$f" ] || continue
             echo "== $f: $(grep -c 'Missing character' "$f" || true) missing-glyph warnings"
             grep -o "Missing character: There is no .* in font .*" "$f" | sort | uniq -c | head -20 || true
           done
-          shasum -a 256 CAVEMAN.pdf LAYMAN.pdf 2>/dev/null || true
+          shasum -a 256 CAVEMAN.pdf LAYMAN.pdf UNIQUENESS_PROOF_MAP.pdf 2>/dev/null || true
 
       - name: Upload the reader PDFs
         if: always()
@@ -116,6 +144,8 @@ jobs:
           path: |
             CAVEMAN.pdf
             LAYMAN.pdf
+            UNIQUENESS_PROOF_MAP.pdf
             CAVEMAN-typeset.log
             LAYMAN-typeset.log
+            UNIQUENESS_PROOF_MAP-typeset.log
           if-no-files-found: warn
