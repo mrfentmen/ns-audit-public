@@ -25,8 +25,10 @@ This script fails if
     `PROOF_STEPS.md`, or its quoted partial-unread total disagrees with the
     ledger (the "six" beside a 32 was exactly this drift);
   * the committed front-door PDF predates the Markdown it was built from, or
-    either file carries uncommitted edits (the PDF is a CI artifact committed
-    by hand, so nothing regenerates it when the map is corrected).
+    either file carries uncommitted edits, or the source hash recorded beside
+    the PDF does not match the Markdown now (the PDF is a CI artifact committed
+    by hand, so nothing regenerates it when the map is corrected; commit order
+    only approximates freshness, the recorded hash decides it).
 
 History is not checked: `AUDIT_LOG.md` is append-only and quotes counts as they
 stood at the time, so it is deliberately absent from DOCS.
@@ -34,6 +36,7 @@ stood at the time, so it is deliberately absent from DOCS.
 
 from __future__ import annotations
 
+import hashlib
 import pathlib
 import re
 import subprocess
@@ -86,7 +89,13 @@ COUNTED = ("placed", "weaker", "partial_unread", "partial_inexpressible", "unpla
 # edit, so a corrected row can leave a stale PDF beside a fresh source. Compare
 # commit order in the repository's own history (the ledger-check workflow checks
 # out full history for this) and refuse a source edit that was never rebuilt.
-PDF_SOURCES = [("UNIQUENESS_PROOF_MAP_SHORT.md", "UNIQUENESS_PROOF_MAP_SHORT.pdf")]
+PDF_SOURCES = [
+    (
+        "UNIQUENESS_PROOF_MAP_SHORT.md",
+        "UNIQUENESS_PROOF_MAP_SHORT.pdf",
+        "UNIQUENESS_PROOF_MAP_SHORT.pdf.source-sha256",
+    )
+]
 
 NAME = re.compile(r"^(?:Theorem|Lemma|Proposition|Corollary)\s+(?:[0-9]+|[A-Z])\.(?:[0-9]+)$")
 SENTINEL = re.compile(
@@ -351,7 +360,7 @@ def main() -> int:
             "row is stale"
         )
 
-    for source, pdf in PDF_SOURCES:
+    for source, pdf, sidecar in PDF_SOURCES:
         if not (ROOT / pdf).exists():
             problems.append(f"{pdf}: missing; reviewers are given this link")
             continue
@@ -365,11 +374,24 @@ def main() -> int:
                 f"{pdf}: no commit history to compare with {source} "
                 "(checkout the full history)"
             )
-            continue
-        if source_commit > pdf_commit:
+        elif source_commit > pdf_commit:
             problems.append(
                 f"{pdf}: committed before the last change to {source}; run the "
                 "typeset workflow and commit the rebuilt PDF beside the source"
+            )
+        digest = hashlib.sha256((ROOT / source).read_bytes()).hexdigest()
+        stated = (ROOT / sidecar)
+        if not stated.exists():
+            problems.append(
+                f"{sidecar}: missing; it must record the hash the PDF was built from"
+            )
+            continue
+        fields = stated.read_text(encoding="utf-8").split()
+        if not fields or fields[0] != digest:
+            problems.append(
+                f"{pdf}: recorded source hash "
+                f"{fields[0] if fields else '(empty)'} != {source} now ({digest}); "
+                "rebuild before anyone reviews it"
             )
 
     if problems:

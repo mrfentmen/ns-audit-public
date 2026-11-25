@@ -151,6 +151,12 @@ jobs:
           fi
           rm -f UNIQUENESS_PROOF_MAP_SHORT.build.md
           ls -l UNIQUENESS_PROOF_MAP_SHORT.pdf
+          # The PDF is committed by hand, so record the exact Markdown it came
+          # from. ledger_check.py refuses a PDF whose recorded hash no longer
+          # matches the source, which commit order alone cannot detect.
+          shasum -a 256 UNIQUENESS_PROOF_MAP_SHORT.md \
+            > UNIQUENESS_PROOF_MAP_SHORT.pdf.source-sha256
+          cat UNIQUENESS_PROOF_MAP_SHORT.pdf.source-sha256
 
       - name: Report pages and glyph coverage
         if: always()
@@ -173,6 +179,7 @@ jobs:
             LAYMAN.pdf
             UNIQUENESS_PROOF_MAP.pdf
             UNIQUENESS_PROOF_MAP_SHORT.pdf
+            UNIQUENESS_PROOF_MAP_SHORT.pdf.source-sha256
             CAVEMAN-typeset.log
             LAYMAN-typeset.log
             UNIQUENESS_PROOF_MAP-typeset.log
