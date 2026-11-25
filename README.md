@@ -20,7 +20,7 @@ The audit's two findings:
 | `MANUSCRIPT.tex` | The audit paper. LuaLaTeX or XeLaTeX. |
 | `MANUSCRIPT.pdf` | The typeset paper: 28 pages, LuaLaTeX, built by `typeset.yml` (E78). |
 | `CAVEMAN.pdf`, `LAYMAN.pdf` | The two standalone reader editions: 23 and 17 pages, pandoc and XeLaTeX in the same workflow, 0 missing glyphs in either edition. |
-| `AUDIT_LOG.md` | The working log: entries E0–E165, every `path:line` citation behind the paper. |
+| `AUDIT_LOG.md` | The working log: entries E0–E166, every `path:line` citation behind the paper. |
 | `CROSSWALK.md` | The published paper against the Lean tree: sections labelled `cited`, `object` or `family` (E89), the twenty paper labels the source cites verbatim (E90), and the per-result ledger — 74 numbered results, 33 exact placements, 1 weaker-but-sufficient, 5 partial-unread, 1 partial-inexpressible, 0 cited-unchecked (E91–E165). |
 | `NEXT.md` | The work order for the remaining 34 unplaced results: page, statement line, candidate modules, and the order the chain consumes them, at the settled denominator of 74 (E165). |
 | `PHASE2-FINDINGS.md` | Second-pass findings: the anisotropic weights, the three "free doors", the packets. |

@@ -11,7 +11,9 @@ in `CROSSWALK.md` carries the same **74** as its denominator and the same six co
 This file is a work order, not a finding. Nothing here has been read yet, and no row below
 carries any audit conclusion.
 
-## The denominator, settledThe ledger and this file now agree on **74** numbered results: 33 exact placements, 1
+## The denominator, settled
+
+The ledger and this file now agree on **74** numbered results: 33 exact placements, 1
 weaker-but-sufficient, 5 partial-unread, 1 partial-inexpressible, 34 unplaced. E135 cut the
 denominator to 73 by counting 37 lemmas, but the paper has 38: `Lemma 6.3 (Number of relevant
 labels)` (`.setup/paper/ns.txt:3507`) is a titled statement, and the `Lemma N.M.` pattern behind

@@ -579,14 +579,19 @@ impossibilities.
    weights, the Euler clause drift) are unchanged by the table, and the table does not
    support any claim that the paper's argument is wrong.
 
-E163 and E164 open §6, and they split the same way §7 did. Lemma 6.1 is placed and is the
-cleanest structure-level match in the paper so far: `SlotSystem` carries `radius` as a field
+E163 and E164 open §6, and they split the same way §7 did. Lemma 6.1 is placed and is one of
+the cleanest structure-level matches in the paper: `SlotSystem` carries `radius` as a field
 before `∀ L`, so "one radius for every label and band" is quantifier order rather than a
-claim, `injective` is (6.10)'s parametrization clause, and `disjoint` is (6.13), with
-`masks_force_adjacency` deriving the paper's support-intersection hypothesis into the tree's
-combinatorial `Adj`. The palette is 2250 colours (`SlotColoring.palette_card`) where the paper
-prints no number, and `Δmax` is `nativeGap h`, obtained through `log 5` instead of `8/ℓ0`;
-both remain band-independent, which is all (6.13) needs.
+claim, `injective` is (6.10)'s parametrization clause, and `disjoint` is (6.13). The bridge from
+the paper's support-intersection hypothesis to the tree's combinatorial `Adj` is a composition,
+not a declaration, and it is provisional: E166 corrects E163's first version, which cited
+`masks_force_adjacency` although that theorem needs both masks nonzero at a common point, and a
+point of a closed support need not satisfy that. The valid route is
+`physicalSlowMask_tsupport_subset_physicalBox` for the box overlap plus the closed
+`lineMask_tsupport` for the level gap. The palette is 2250 colours
+(`SlotColoring.palette_card`) where the paper prints no number, and `Δmax` is `nativeGap h`,
+obtained through `log 5` instead of `8/ℓ0`; both remain band-independent, which is all (6.13)
+needs.
 
 Lemma 6.2 is partial, and the reason is worth keeping: its first three clauses are exact —
 `bandGeometry_argumentCost_le` for the derivative factors, `card_liftedRectangles` for

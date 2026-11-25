@@ -17,7 +17,10 @@ This script fails if
   * the queue and the unplaced row name different results, the queue repeats
     one, or it names a result the ledger has already placed (the E165 defect:
     a stale `Lemma 8.8` row survived while the counts still added up);
-  * a document's sentinel is missing, duplicated or disagrees with the table.
+  * a document's sentinel is missing, duplicated or disagrees with the table;
+  * the zero-count `cited in a docstring, unchecked` row is missing or non-empty;
+  * a reader edition omits one of the awkward partials from its narrative, or
+    contains a phrase that was true only before E165 (a narrative-drift guard).
 
 History is not checked: `AUDIT_LOG.md` is append-only and quotes counts as they
 stood at the time, so it is deliberately absent from DOCS.
@@ -49,9 +52,22 @@ STATUS_LABELS = {
     "placed, weaker but sufficient": "weaker",
     "partial, unread": "partial_unread",
     "partial, inexpressible": "partial_inexpressible",
+    "cited in a docstring, unchecked": "cited",
     "unplaced": "unplaced",
     "total": "total",
 }
+
+# Narrative checks are deliberately narrow: they guard the three partials that
+# were dropped from a summary once already, and the phrases that quoted the
+# pre-E165 counts. AUDIT_LOG is excluded because it quotes history.
+NARRATIVE_DOCS = ["MANUSCRIPT.tex", "CAVEMAN.md", "CAVEMAN_1TO1.md", "LAYMAN.md"]
+REQUIRED_NARRATIVE = ["Lemma 9.7", "Lemma 10.2", "Lemma 6.2"]
+STALE_PHRASES = [
+    "forty-four numbered results",
+    "The four partial rows",
+    "five are partial, and thirty-four are unplaced",
+    "## The denominator, settledThe",
+]
 COUNTED = ("placed", "weaker", "partial_unread", "partial_inexpressible", "unplaced")
 
 NAME = re.compile(r"^(?:Theorem|Lemma|Proposition|Corollary)\s+(?:[0-9]+|[A-Z])\.(?:[0-9]+)$")
@@ -136,7 +152,7 @@ def main() -> int:
 
     crosswalk = (ROOT / "CROSSWALK.md").read_text(encoding="utf-8")
     rows = ledger_table(crosswalk)
-    for key in (*COUNTED, "total"):
+    for key in (*COUNTED, "cited", "total"):
         if key not in rows:
             problems.append(f"CROSSWALK.md: ledger row {key!r} not found")
     if problems:
@@ -146,6 +162,9 @@ def main() -> int:
     counts = {key: rows[key][0] for key in COUNTED}
     names = {key: rows[key][1] for key in COUNTED}
     total = rows["total"][0]
+
+    if rows["cited"][0] != 0 or rows["cited"][1]:
+        problems.append("CROSSWALK.md: the cited row must be 0 and name no results")
 
     if sum(counts.values()) != total:
         problems.append(
@@ -227,6 +246,17 @@ def main() -> int:
                     f"{doc}: sentinel {hit} != table {expected} "
                     "(placed, weaker, partial_unread, partial_inexpressible, unplaced, total)"
                 )
+
+    for doc in NARRATIVE_DOCS:
+        text = (ROOT / doc).read_text(encoding="utf-8").replace("~", " ")
+        for name in REQUIRED_NARRATIVE:
+            if name not in text:
+                problems.append(f"{doc}: narrative omits {name}")
+
+    for phrase in STALE_PHRASES:
+        for doc in DOCS:
+            if phrase in (ROOT / doc).read_text(encoding="utf-8"):
+                problems.append(f"{doc}: stale phrase {phrase!r}")
 
     if problems:
         print("ledger check failed:")

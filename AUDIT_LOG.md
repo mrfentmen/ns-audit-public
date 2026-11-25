@@ -8198,21 +8198,16 @@ The radius is existentially chosen **before** `∀ level`, and `D` is `SlotColor
 
 ### 5. The one place the match is a composition: "supports meet" becomes `Adj`
 
-The paper's hypothesis is geometric (`K_γ ∩ K_γ′ ≠ ∅`); the tree's is combinatorial (`SlotColoring.Adj`). The direction the lemma needs is proved, in two steps:
-
-* `PartitionedCovariance.masks_force_adjacency` — two distinct labels whose physical masks are both nonzero at a point are `Adj`.
-* `PositiveTimeSignedData.mask_pullback` (`:42`) — the physical mask equals the slow-coordinate mask `PhysicalWaveSum.physicalMask (CoordinateAlgebra.D h)` under the lift.
-
-So a point of `K_γ ∩ K_γ′` makes both masks nonzero, hence `Adj`, hence `SlotSystem.disjoint` applies. The paper's implication is *derived*, not assumed; the reverse implication is neither proved nor used.
+The paper's hypothesis is geometric (`K_γ ∩ K_γ′ ≠ ∅`); the tree's is combinatorial (`SlotColoring.Adj`). The direction the lemma needs is a composition, and E166 corrects the route first recorded here. `masks_force_adjacency` is **not** applicable: it takes `physicalMask D L q x ≠ 0` and `physicalMask D M q x ≠ 0` as hypotheses, and a point of a closed support need not have a nonzero mask — a smooth cutoff can vanish at its own boundary. The valid route is `physicalSlowMask_tsupport_subset_physicalBox` for the box overlap and the closed `lineMask_tsupport` for the level gap; E166 gives the two steps and the one modelling identification they still need. `SlotSystem.disjoint` then applies. The paper's implication is derived, not assumed; the reverse is neither proved nor used. Provisional in one respect: the tree has the ingredients, but no single declaration composes them.
 
 ### 6. Shape differences
 
-* `Adj` is combinatorial (mesh boxes, level gap ≤ 4, opposite signs) rather than support-geometric; `masks_force_adjacency` is the only direction consumed.
+* `Adj` is combinatorial (mesh boxes, level gap ≤ 4, opposite signs) rather than support-geometric; the tsupport-containment route of E166 is the direction consumed.
 * The palette's size is 2250 in the tree and unspecified in the paper.
 * `Δmax` is `nativeGap h`, derived through `log 5` rather than `8/ℓ0`.
 * `injective` is quotient-injectivity on the enlarged rectangle at the base torus; injectivity of each individual lift is the sheet count of `TorusCoverDegree` (E164 clause 2), not an extra hypothesis here.
 
-No clause is unmatched. Statement-level: the composition points were read, and nothing was compiled.
+No clause is unmatched on paper; one bridge is a composition rather than a declaration (E166). Statement-level: the composition points were read, and nothing was compiled.
 
 ### 7. The ledger move
 
@@ -8223,7 +8218,7 @@ No clause is unmatched. Statement-level: the composition points were read, and n
 | unplaced | 36 | 35 |
 | **total** | **73** | **73** |
 
-*Evidence: `.setup/paper/ns.txt:3364–3430` (Lemma 6.1, (6.10)–(6.14)); `PartitionedCovariance.lean:196–258,283–296`; `SlotGeometry.lean:387–388,410–418`; `SlotColoring.lean:158–191,276–305,337–408`; `PositiveTimeSignedData.lean:42–47`; `PhysicalWaveSum.lean:295–308`. Reading only — nothing compiled; "placed" is statement-level.*
+*Evidence: `.setup/paper/ns.txt:3364–3430` (Lemma 6.1, (6.10)–(6.14)); `PartitionedCovariance.lean:196–258,283–296`; `SlotGeometry.lean:387–388,410–418`; `SlotColoring.lean:112–122,158–191,276–305,337–408`; `SquaredPartition.lean:132–134,669–683`; `PositiveTimeSignedData.lean:42–47`; `PhysicalWaveSum.lean:295–308`. Reading only — nothing compiled; "placed" is statement-level.*
 
 ## E164 — Lemma 6.2 is partial: three of its four clauses are separate theorems, and the radial-integration half is not stated as a preservation result (2026-11-24)
 
@@ -8335,3 +8330,55 @@ The queue in `NEXT.md` had 34 rows with `Lemma 8.8` still on it (placed by E151)
 | **total** | **74** | |
 
 *Evidence: `.setup/paper/ns.txt:3507–3521` (Lemma 6.3 and its proof), `:5997–6030` (Lemma 10.2); E91, E135, E136, E150, E151, E159, E161, E164. Bookkeeping and statement-level counting only; nothing compiled.*
+
+## E166 — Lemma 6.1's bridge, corrected: a closed support does not give a nonzero mask (2026-11-24)
+
+E163 placed Lemma 6.1 on the step "a point of `K_γ ∩ K_γ′` makes both masks nonzero". That step is invalid. This entry records the correction, the valid route, and the one gap that remains.
+
+### 1. Why the cited theorem does not apply
+
+`PartitionedCovariance.masks_force_adjacency` (`:297–321`) has hypotheses
+
+```
+hmL : physicalMask D L q x ≠ 0
+hmM : physicalMask D M q x ≠ 0
+```
+
+and concludes `SlotColoring.Adj D L M`. It is a sufficient condition, not the definition. The paper's `K_γ` is the **closed** support (6.9) of `η_γ ∘ C_ℓ`; the tree's counterpart is a `tsupport`. A smooth cutoff vanishes at the boundary of its own support, so `x ∈ K_L ∩ K_M` does not imply `physicalMask D L q x ≠ 0`. At a shared face, edge or corner of two mesh boxes both masks can be zero while the point lies in both closed supports. E163's sentence therefore does not follow.
+
+### 2. What `Adj` actually requires
+
+`SlotColoring.Adj` (`:116–122`) is five fields: `1 ≤ L.1`, `1 ≤ M.1`, `L ≠ M`, `L.1 ≤ M.1 + 4`, `M.1 ≤ L.1 + 4`, and `(physicalBox D L ∩ physicalBox D M).Nonempty`. `physicalBox` (`:112–113`) is the closed enlarged box in the three slow coordinates. **No field mentions a mask value.** A support-intersection bridge must produce box membership and the level gap, and nothing else.
+
+### 3. The valid bridge
+
+Take `x ∈ K_L ∩ K_M`.
+
+* **Box overlap.** `K_L` is the closure of the set where the composed product `χ_{L.1}(q(·)) · physicalSlowMask D L.1 L.2.1` is nonzero. A neighbourhood of `x` therefore meets `{physicalSlowMask ≠ 0}`, so `x ∈ tsupport (physicalSlowMask D L.1 L.2.1)`. Then `SquaredPartition.physicalSlowMask_tsupport_subset_physicalBox` (`:669–677`) gives `x ∈ physicalBox D L`; the same argument gives `x ∈ physicalBox D M`. This is the `overlap` field.
+* **Level gap.** The same neighbourhood meets `{dyadicMask L.1 ≠ 0}`, so `q(x) ∈ tsupport (dyadicMask L.1)`, and likewise for `M.1`. `dyadicMask_eq_line` identifies these with `lineMask` at `logCoordinate q`, and `lineMask_tsupport` (`:132–134`) is the **closed** interval `Icc ((n : ℝ) − 1) ((n : ℝ) + 1)`. Two such intervals meeting force `|L.1 − M.1| ≤ 2`, hence both `≤ +4` fields. This is the same `linarith` as `masks_force_adjacency:307–316`, with `lineMask_support` replaced by `lineMask_tsupport`; the open-interval version was the only reason the nonzero hypothesis was needed.
+
+So `Adj D L M` follows from the paper's hypothesis, and `SlotSystem.disjoint` gives (6.13). No nonzero mask is used.
+
+### 4. What remains, stated exactly
+
+The bridge is a composition, not a declaration. Three pieces are not bundled by the tree:
+
+1. `K_γ` is never formed as a set: the tree splits the mask into a band factor and a slow factor and evaluates them at separate arguments `(q, x)`, while the paper composes them at `q = q(z,t)`. The identification of the paper's support with a subset of the two factor tsupports is elementary but unstated.
+2. `tsupport (f · g) ⊆ tsupport f ∩ tsupport g` is used twice; no named lemma in the audit's citation list states this instance.
+3. No theorem concludes `Adj` from a support intersection. A single declaration would close it (schematic — the tree has no `q(y)` function, so the real statement would take `q` as the point's radial coordinate):
+
+```
+theorem adj_of_tsupport_inter {D q : ℝ} {L M : SlotColoring.Label}
+    (hL : 1 ≤ L.1) (hM : 1 ≤ M.1) (hne : L ≠ M) {x : SlotColoring.Position}
+    (hxL : x ∈ tsupport (fun y => physicalMask D L q y))
+    (hxM : x ∈ tsupport (fun y => physicalMask D M q y)) :
+    SlotColoring.Adj D L M
+```
+
+A search for `Adj` together with `tsupport` returns only `masks_force_adjacency`, whose hypotheses are the nonzero ones. The tree proves the *stronger-hypothesis* version, not the paper's.
+
+### 5. Status
+
+Lemma 6.1 stays in the placed column, provisionally on this clause: the implication is established on paper by §3, using declarations that exist, but it is a composition rather than one declaration, and the modelling identification in §4.1 is the auditor's, not the tree's. If the standard for "placed" required a single declaration whose statement is (6.13), this row would be `partial-unread`. The count is unchanged at 33 exact, 1 weaker, 5 partial-unread, 1 partial-inexpressible, 34 unplaced, 74 total.
+
+*Evidence: `.setup/paper/ns.txt:3392–3430` (Lemma 6.1, (6.10)–(6.14)); `SlotColoring.lean:112–122`; `PartitionedCovariance.lean:294–321`; `SquaredPartition.lean:132–134,617–683`; E163. Reading only — nothing compiled.*
