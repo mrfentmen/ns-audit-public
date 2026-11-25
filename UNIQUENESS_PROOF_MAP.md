@@ -48,7 +48,7 @@ This is the answer to the narrower question Claude posed: does any step in this 
 | `G` | gradient bound on the compactly supported reference | No. It sets `K = 2G`; any finite `G` works. |
 | `C` in `E(t) ≤ C/R` | `ComparisonGronwall.le_div_radius_of_deriv_le` (`R3/ComparisonGronwall.lean:105`) | No. `C = D · T · exp(2G·T)`; finite for each fixed `T` and grows with `T`. That growth is why the theorem fixes `T`; it is not a smallness condition. |
 
-No inequality here requires a constant to be less than one, greater than a threshold, or dimensionally matched to another constant. The only quantitative *scaling identity* used is the explicit `R^(-n)` behaviour of the cutoff derivatives, and that is *derived* in `cutoff_iteratedFDeriv_le`, not assumed.
+**The conclusion** uses only that each constant is finite, has the required sign, and is independent of `R` and `t`. No inequality asks for a constant to be less than one, greater than a threshold, or chosen for a numerical value. The only quantitative *scaling identity* used is the explicit `R^(-n)` behaviour of the cutoff derivatives, and that is *derived* in `cutoff_iteratedFDeriv_le`, not assumed.
 
 ## Source anchors for the row names
 
