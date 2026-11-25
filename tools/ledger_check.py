@@ -23,7 +23,10 @@ This script fails if
     contains a phrase that was true only before E165 (a narrative-drift guard);
   * the README's inference-level partial count disagrees with the table in
     `PROOF_STEPS.md`, or its quoted partial-unread total disagrees with the
-    ledger (the "six" beside a 32 was exactly this drift).
+    ledger (the "six" beside a 32 was exactly this drift);
+  * the committed front-door PDF predates the Markdown it was built from, or
+    either file carries uncommitted edits (the PDF is a CI artifact committed
+    by hand, so nothing regenerates it when the map is corrected).
 
 History is not checked: `AUDIT_LOG.md` is append-only and quotes counts as they
 stood at the time, so it is deliberately absent from DOCS.
@@ -33,6 +36,7 @@ from __future__ import annotations
 
 import pathlib
 import re
+import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -76,6 +80,13 @@ STALE_PHRASES = [
     "## The denominator, settledThe",
 ]
 COUNTED = ("placed", "weaker", "partial_unread", "partial_inexpressible", "unplaced")
+
+# The front door's PDF is built by the typeset workflow and committed by hand so
+# that a reviewer gets a link that renders. Nothing rebuilds it on a Markdown
+# edit, so a corrected row can leave a stale PDF beside a fresh source. Compare
+# commit order in the repository's own history (the ledger-check workflow checks
+# out full history for this) and refuse a source edit that was never rebuilt.
+PDF_SOURCES = [("UNIQUENESS_PROOF_MAP_SHORT.md", "UNIQUENESS_PROOF_MAP_SHORT.pdf")]
 
 NAME = re.compile(r"^(?:Theorem|Lemma|Proposition|Corollary)\s+(?:[0-9]+|[A-Z])\.(?:[0-9]+)$")
 SENTINEL = re.compile(
@@ -169,6 +180,23 @@ def proof_steps_results(text: str) -> list[str]:
         if NAME.match(name):
             names.append(name)
     return names
+
+
+def git(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(ROOT), *args], capture_output=True, text=True
+    )
+
+
+def commit_time(path: str) -> int | None:
+    proc = git("log", "-1", "--format=%ct", "--", path)
+    text = proc.stdout.strip() if proc.returncode == 0 else ""
+    return int(text) if text.isdigit() else None
+
+
+def uncommitted_changes(path: str) -> bool:
+    proc = git("status", "--porcelain", "--", path)
+    return proc.returncode == 0 and bool(proc.stdout.strip())
 
 
 def main() -> int:
@@ -322,6 +350,27 @@ def main() -> int:
             "README.md: the sentence naming Lemma 9.7 as the partial-inexpressible "
             "row is stale"
         )
+
+    for source, pdf in PDF_SOURCES:
+        if not (ROOT / pdf).exists():
+            problems.append(f"{pdf}: missing; reviewers are given this link")
+            continue
+        if uncommitted_changes(source):
+            problems.append(
+                f"{source}: uncommitted edits; rebuild and commit {pdf} from them"
+            )
+        source_commit, pdf_commit = commit_time(source), commit_time(pdf)
+        if source_commit is None or pdf_commit is None:
+            problems.append(
+                f"{pdf}: no commit history to compare with {source} "
+                "(checkout the full history)"
+            )
+            continue
+        if source_commit > pdf_commit:
+            problems.append(
+                f"{pdf}: committed before the last change to {source}; run the "
+                "typeset workflow and commit the rebuilt PDF beside the source"
+            )
 
     if problems:
         print("ledger check failed:")

@@ -17,7 +17,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
+      # Full history: the PDF-freshness check compares commit times of the
+      # front-door Markdown and its committed PDF, and a shallow clone cannot
+      # see when either file last changed.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check the ledger counts against every document
         run: python3 tools/ledger_check.py
