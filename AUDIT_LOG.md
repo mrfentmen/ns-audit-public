@@ -8137,3 +8137,158 @@ theorem linearizedAmplitude_spec : B(W₀, linearizedAmplitude …) = Σ
 with the `1/(2a_σ)`. `SmoothCovariance.inverse_formula` already gives `H⁻¹T = weights H T`, so `dΣ` is one line; the missing piece is the block-level `B` and the `2a ⊙` cancellation, which `signedTensorRemainder_exact`'s `C` term shows the machinery can express.
 
 *Evidence: `.setup/paper/ns.txt:4317–4345` (Proposition 7.6, (7.31)–(7.34)); `CorrectionStep.lean:2296–2322,2366–2410,3242–3252`; `SmoothCovariance.lean:75–95`; `SignedWaveUpdate.lean` (0 matches for `bilinearCovariance|two_mul|crossCovariance|deltaAmplitude|linearized`); `PartitionedCovariance.lean` (0 matches); `PrimaryPulseBounds.lean:968,1536`; E154, E157. Reading only — nothing compiled.*
+
+## E163 — Lemma 6.1 is placed: the slot system is a structure with one radius field chosen before the label quantifier (2026-11-24)
+
+Lemma 6.1 is the geometric lemma the oscillatory layer rests on: there are centers `c_γ` and one radius `r0 > 0`, chosen once for every label and every band, such that the enlarged rectangles of (6.10) are injectively parametrized on their band torus, and such that two labels whose slow supports meet have disjoint lifted enlarged rectangles. The tree does not merely contain the ingredients; it contains the object, and the lemma is its inhabitation.
+
+### 1. The paper's statement
+
+(6.10) defines `R_γ`, `R⁺_γ` and their preimages `R^abs_γ`, `R^abs,+_γ`; (6.13) is
+
+```
+γ ≠ γ′,  K_γ ∩ K_γ′ ≠ ∅   ⟹   R^abs,+_γ ∩ R^abs,+_γ′ = ∅
+```
+
+with `K_γ` the slow support of the cutoff `η_γ = χ_ℓ(q)χ_{ℓ,a}`. The paper proves it in three steps: a bounded-degree interaction graph with finitely many colours, centers chosen per colour subject to the ordered constraints (6.15), and one rectangle size small enough to keep the separation after a fixed enlargement.
+
+### 2. The Lean statement is that object
+
+`PartitionedCovariance.SlotSystem` (`PartitionedCovariance.lean`, immediately above `exists_slotSystem`):
+
+```
+structure SlotSystem (D h : ℝ) (vr vt : Plane) where
+  radius     : ℝ
+  radius_pos : 0 < radius
+  injective  : ∀ L, InjOn quotientPoint (slotSet h radius vr vt L)
+  disjoint   : ∀ L M, SlotColoring.Adj D L M →
+    Disjoint (liftedSupport (nativeIndex h L.1) (slotSet h radius vr vt L))
+             (liftedSupport (nativeIndex h M.1) (slotSet h radius vr vt M))
+```
+
+and
+
+```
+theorem exists_slotSystem (D h : ℝ) (hh : 0 ≤ h) (vr vt : Plane) :
+    Nonempty (SlotSystem D h vr vt)      -- :233
+```
+
+The quantifier order is the paper's: `radius` is a field, fixed before `∀ L`, and `slotSet h r vr vt L = orientedRectangle (slotCenter h L) vr vt (2 * r)` (`SlotGeometry.lean:387`), so the tree's `radius` is the paper's `r0` and the `2r0` enlargement lives inside the definition of the set rather than in a separate object. `injective` is "the enlarged rectangles are injectively parametrized" and `disjoint` is (6.13), both as fields of one structure.
+
+### 3. Where the radius comes from, and why it is band-independent
+
+`SlotGeometry.exists_oriented_slots` (`SlotGeometry.lean:410–418`):
+
+```
+∃ r, 0 < r ∧
+  (∀ level n, n ≤ D → ∀ i j : Fin m, 0 < n ∨ i ≠ j →
+     Disjoint (liftedSupport level (orientedRectangle (center m D i) a b (2*r)))
+              (liftedSupport (level+n) (orientedRectangle (center m D j) a b (2*r)))) ∧
+  (∀ n ≤ D, ∀ i, ∀ x y ∈ orientedRectangle (center m D i) a b (2*r),
+     torusEq ((cover^n) x) ((cover^n) y) → x = y)
+```
+
+The radius is existentially chosen **before** `∀ level`, and `D` is `SlotColoring.nativeGap h`, a function of `h` alone. That is "common to all labels and independent of the band" as a quantifier order, not as a claim. The centers are `slotCenter h L = SlotGeometry.center 2250 (nativeGap h) (color L)` — a finite family indexed by the colour, which is what the paper's greedy colouring produces.
+
+### 4. Step 1: bounded degree, a finite palette, and (6.14)
+
+* **The palette is explicit.** `SlotColoring.Palette = Fin 9 × ((Fin 3 → Fin 5) × Bool)` with `palette_card : Fintype.card Palette = 2250` (`SlotColoring.lean:158–165`), and `colorData_proper` (`:167`) proves it is a proper colouring of `Adj`. The paper says "finitely many colours" and prints no number; the tree prints 2250.
+* **Bounded degree, with a bound.** `neighbors_card_le` and `degreeBound D = 18 * (2 * indexRadius D + 1)^3` (`:276–305`). `Adj` is a `Prop`-valued structure over mesh boxes and level gaps, so "bounded degree" is a `Finset.card` inequality rather than a graph-theoretic assertion.
+* **(6.14) is `nativeIndex_gap`.** `SlotColoring.lean:400` gives `|nativeIndex h n − nativeIndex h m| ≤ nativeGap h` for levels within four, with `nativeGap h = ⌈nativeGapBudget h⌉₊ + 1` and `nativeGapBudget h = (4(1+h)log 2 + 2 log 5)/log Tg` (`:337–340`). The paper's printed bound carries `8/ℓ0` where the tree carries `2 log 5`: the tree bounds `|log n − log m| ≤ log 5` from `|n − m| ≤ 4` (`log_level_gap`, `:342`), while the paper's term comes from the `2 log ℓ` inside the level formula. Both are independent of the band, which is the only property the lemma uses; the tree's `nativeGap` is the paper's `Δmax` with a different but fully explicit derivation.
+
+### 5. The one place the match is a composition: "supports meet" becomes `Adj`
+
+The paper's hypothesis is geometric (`K_γ ∩ K_γ′ ≠ ∅`); the tree's is combinatorial (`SlotColoring.Adj`). The direction the lemma needs is proved, in two steps:
+
+* `PartitionedCovariance.masks_force_adjacency` — two distinct labels whose physical masks are both nonzero at a point are `Adj`.
+* `PositiveTimeSignedData.mask_pullback` (`:42`) — the physical mask equals the slow-coordinate mask `PhysicalWaveSum.physicalMask (CoordinateAlgebra.D h)` under the lift.
+
+So a point of `K_γ ∩ K_γ′` makes both masks nonzero, hence `Adj`, hence `SlotSystem.disjoint` applies. The paper's implication is *derived*, not assumed; the reverse implication is neither proved nor used.
+
+### 6. Shape differences
+
+* `Adj` is combinatorial (mesh boxes, level gap ≤ 4, opposite signs) rather than support-geometric; `masks_force_adjacency` is the only direction consumed.
+* The palette's size is 2250 in the tree and unspecified in the paper.
+* `Δmax` is `nativeGap h`, derived through `log 5` rather than `8/ℓ0`.
+* `injective` is quotient-injectivity on the enlarged rectangle at the base torus; injectivity of each individual lift is the sheet count of `TorusCoverDegree` (E164 clause 2), not an extra hypothesis here.
+
+No clause is unmatched. Statement-level: the composition points were read, and nothing was compiled.
+
+### 7. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 33 | 34 |
+| partial | 4 | 4 |
+| unplaced | 36 | 35 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:3364–3430` (Lemma 6.1, (6.10)–(6.14)); `PartitionedCovariance.lean:196–258,283–296`; `SlotGeometry.lean:387–388,410–418`; `SlotColoring.lean:158–191,276–305,337–408`; `PositiveTimeSignedData.lean:42–47`; `PhysicalWaveSum.lean:295–308`. Reading only — nothing compiled; "placed" is statement-level.*
+
+## E164 — Lemma 6.2 is partial: three of its four clauses are separate theorems, and the radial-integration half is not stated as a preservation result (2026-11-24)
+
+Lemma 6.2 is §6.3's common-torus lemma. It asserts four things: the change `H ↦ Y_i` has uniformly bounded derivative factors; `R^H_γ` is `14^{Δ_ℓ}` disjoint lifts of `R_γ`; Haar averages agree on the absolute, common and band tori for pullbacks; and radial integration at fixed `(z,t)`, torus translation, averaging and directional Fourier inversion on zero-mean functions preserve common-torus descent without introducing a new dyadic band. The first three clauses are declarations. The fourth is a conjunction of four operations, and the tree proves three of them — separately, and never as one property.
+
+### 1. Clause 1 — the derivative factors are bounded, with printed constants
+
+* `ActualSignedGeometry.slowChangeCost h = 1 + powerBound (1/2) + powerBound (D h) + powerBound 1` and `norm_slowChange_le` (`ActualSignedGeometry.lean:516–545`): `‖slowChange h (Q n) (Q m)‖ ≤ slowChangeCost h` for `|n − m| ≤ 4`, uniformly in the two levels.
+* `CommonCoverClass.argumentCost g = 1 + ‖g.coordinateLinear‖ + ‖g.pointLinear‖(1 + ‖g.coordinateLinear‖)` (`:171`), with `norm_nativeLinear_le`; `bandGeometry_argumentCost_le` (`:354`) bounds it by `bandArgumentCost B D * S n` uniformly in the center and in `gap ≤ D`.
+* `ActualSignedGeometry.slotGeometry_argumentCost` / `slotGeometry_common_cost` (`:437–453`) compose the two into `25 * bandArgumentCost … * S n`.
+
+That is "uniformly bounded derivative factors": the constants do not depend on the band, the chart, or the lattice copy. The paper states one constant; the tree states `slowChangeCost h` and `bandArgumentCost B D`, which is stronger information, not weaker.
+
+### 2. Clause 2 — `14^{Δ_ℓ}` disjoint lifts
+
+* `TorusAverages.covering` is the paper's matrix `[[3,1],[1,5]]` (`:39`), so `|det| = 14`.
+* `TorusCoverDegree.card_liftedRectangles` (`:296–302`): `Nat.card (Set.range (sheetRectangle g r)) = 14 ^ g.gap` for `0 < r` and `‖basis‖ * r < 1/2`.
+* `pairwise_disjoint_sheetRectangles` (`:247`), `preimage_nativeRectangle_sheets` (`:221`), `covering_bijOn_sheetRectangle` (`:259–274`): the sheets are disjoint, their union is the preimage, and each maps bijectively onto the native rectangle.
+
+`g.gap` is the paper's `Δ_ℓ`, and `SlotColoring.nativeIndex_gap` (E163) is what bounds it by `Δmax`. Clause 2 is exact, and slightly more general: it is proved for any gap, not only for gaps arising from two band indices.
+
+### 3. Clause 3 — the Haar averages agree
+
+* `TorusAverages.squareAverage_covering_iterate` (`:108`), `_smooth` (`:123`) and `_real` (`:129`): for a continuous unit-periodic `f`, `squareAverage (f ∘ covering^[n]) = squareAverage f`, for every `n`.
+* `squareAverage_torusLift` (`:103`) identifies the plane average with the Haar integral on `Torus`.
+
+Three tori, three powers of the same covering: instantiate at `0`, `Δ_ℓ`, `i(ℓ)`. The paper's clause is this identity; the tree states it once at arbitrary `n`, which covers all three.
+
+### 4. Clause 4 — three operations declared, one not, and no name for the property
+
+The sentence's four operations, and what the tree has for each:
+
+| Operation | Declaration |
+|---|---|
+| torus translation | `TorusAverages.periodize_periodic` (`:317`), `quotientPoint_lattice_add` (`:156`) |
+| averaging | `TemporalMeanUpdate.centered_periodic`, `centered_zeroMean` (used at `MeanChartCompatibility.lean:461`) |
+| directional Fourier inversion, zero mean | `SmoothFourierData.inverse_solves_smooth_periodic` (`:565–571`), `inverse_zero_mean` (`TorusInverse.lean:574`), `directionalInverse_periodic` (`:578`); lifted to fields by `ParametricTorusInverse.inverse_periodic` (`:504`) and `inverse_zeroMean` (`:509`) |
+| radial integration at fixed `(z,t)` | **not found as a preservation statement** |
+
+The radial integrals the tree actually uses (`MeanIncrementBounds`, `RadialPullback`, `SignedStressPrimitive.angular_divergence`) do fix `(z,t)` and do leave the band index untouched — the level `n` is a parameter no radial integral rebinds. But no declaration states *that*, and "no new dyadic band" has no proposition to be true of either: the strongest related statement is `CommonCoverWithin.commonSolve_contDiffOn_within`'s docstring, "The source need only descend to the common torus; no band descent is added". A docstring is not a theorem (E90, E94, E127).
+
+So the fourth clause half-matches: three of its four operations are declared, the fourth is implicit in the assembly, and the property the sentence is *about* — common-torus descent — has no name in the tree. That is the E162 finding at one remove: the §6 construction is also written in terms of the fields it produces, not the property it preserves.
+
+### 5. Why partial rather than placed or unplaced
+
+Placed would claim the conjunction; it is not there. Unplaced would deny the three clauses that are exact. It is partial, with the unmatched part named precisely: `radial integration at fixed (z,t)` and `no new dyadic band`, plus the absence of a `CommonTorusDescent` predicate. The precedent is E129, E131 and E132, which went partial on statement shape while their content was present.
+
+### 6. What would close it
+
+Two declarations:
+
+```
+def CommonTorusDescent (g : Geometry) (F : P × Plane → V) : Prop
+theorem radialIntegral_descends (h : CommonTorusDescent g F) : CommonTorusDescent g (radialIntegral F)
+```
+
+and the three existing closure lemmas restated against the predicate. The mathematics is already there; what is missing is the name, which is exactly the kind of obligation a kernel cannot notice.
+
+### 7. The ledger move
+
+| Status | Before | After |
+|---|---|---|
+| placed | 34 | 34 |
+| partial | 4 | 5 |
+| unplaced | 35 | 34 |
+| **total** | **73** | **73** |
+
+*Evidence: `.setup/paper/ns.txt:3450–3520` (Lemma 6.2, (6.17)–(6.20)); `TorusAverages.lean:39,103–133,156,317`; `TorusCoverDegree.lean:221,247–274,296–302`; `ActualSignedGeometry.lean:437–453,516–545`; `CommonCoverClass.lean:171–181,354–356`; `SmoothFourierData.lean:565–571`; `TorusInverse.lean:574–581`; `ParametricTorusInverse.lean:504–521`; `CommonCoverWithin.lean:102–107`; `MeanChartCompatibility.lean:461`. Reading only — nothing compiled.*

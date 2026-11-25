@@ -493,10 +493,10 @@ it to keep the compressed field smooth across the new `t = 0` (E107).
 
 | Status | Count | Which |
 |---|---|---|
-| placed, statement read | 33 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153), Corollary 7.8 (E156), Lemma 7.1 (E157), Lemma 7.4 (E160), Proposition 7.5 (E161) |
-| partial — components exist, statement not matched | 4 | Lemma 9.7 (E133), Corollary 7.3 (E154), Proposition 7.2 (E158), Proposition 7.6 (E162) |
+| placed, statement read | 34 | A.4, B.2, B.10, C.2, Lemma 4.7, Theorem 4.6, Corollary 10.6, Proposition 5.3, Proposition 9.1, Proposition 9.5, Proposition 9.6, Proposition 9.9, Proposition 10.1, Lemma 7.7 (E130), Lemma 9.8 (E134), Lemma 10.3 (E137), Lemma 9.2 (E139), Lemma 8.7 (E140), Lemma 8.6 (E141), Lemma 10.4 (E142), Lemma 10.5 (E143), Corollary 8.5 (E145), Proposition 8.1 (E146), Lemma 8.2 (E147), Proposition 6.6 (E148), Proposition 9.3 (E149), Lemma 8.8 (E151), Proposition 8.3 (E152), Proposition 8.4 (E153), Corollary 7.8 (E156), Lemma 7.1 (E157), Lemma 7.4 (E160), Proposition 7.5 (E161), Lemma 6.1 (E163) |
+| partial — components exist, statement not matched | 5 | Lemma 9.7 (E133), Corollary 7.3 (E154), Proposition 7.2 (E158), Proposition 7.6 (E162), Lemma 6.2 (E164) |
 | cited in a docstring, unchecked | 0 | — |
-| unplaced | 36 | the rest |
+| unplaced | 34 | the rest |
 | **total** | **73** | |
 
 Section 8.6, counted in E90 as a placed result, is a section rather than a numbered
@@ -564,4 +564,22 @@ Proposition 7.2(ii)) for the next revision of this table.
    weights, the Euler clause drift) are unchanged by the table, and the table does not
    support any claim that the paper's argument is wrong.
 
-<!-- ledger: placed=33 partial=4 unplaced=36 total=73 -->
+E163 and E164 open §6, and they split the same way §7 did. Lemma 6.1 is placed and is the
+cleanest structure-level match in the paper so far: `SlotSystem` carries `radius` as a field
+before `∀ L`, so "one radius for every label and band" is quantifier order rather than a
+claim, `injective` is (6.10)'s parametrization clause, and `disjoint` is (6.13), with
+`masks_force_adjacency` deriving the paper's support-intersection hypothesis into the tree's
+combinatorial `Adj`. The palette is 2250 colours (`SlotColoring.palette_card`) where the paper
+prints no number, and `Δmax` is `nativeGap h`, obtained through `log 5` instead of `8/ℓ0`;
+both remain band-independent, which is all (6.13) needs.
+
+Lemma 6.2 is partial, and the reason is worth keeping: its first three clauses are exact —
+`bandGeometry_argumentCost_le` for the derivative factors, `card_liftedRectangles` for
+`14^{Δ_ℓ}` (`14 = |det [[3,1],[1,5]]|`), `squareAverage_covering_iterate` for the three-torus
+Haar identity — and its fourth is a conjunction of four operations of which the tree declares
+three (translation, averaging, directional inversion on zero mean) and leaves radial
+integration at fixed `(z,t)` implicit. No declaration names the property the sentence is about,
+so "no new dyadic band" has nothing to be true of. That is E162's field-versus-map distinction
+reappearing as a name-versus-property distinction, and it is recorded rather than smoothed.
+
+<!-- ledger: placed=34 partial=5 unplaced=34 total=73 -->
