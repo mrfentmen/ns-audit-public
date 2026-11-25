@@ -42,9 +42,9 @@ Suppose two smooth divergence-free flows on `ℝ³ × [0,T]` have the same zero 
 | `CP` | `∃ CP ≥ 0` in the pressure-flux bound | No. Any finite value gives the same `1/R` rate. |
 | `derivativeConstant`, `weightSecondDerivativeConstant` | `Classical.choose` of fixed bump/weight derivative bounds (`NavierStokes/R3/ComparisonCutoffs.lean:151`, `NavierStokes/R3/LocalizedFluxEstimates.lean:184`) | No. They are independent of `R` and `t`; only positivity and finiteness are used. |
 | `D` | `∃ D ≥ 0` from the absorption lemma | No. The conclusion needs only `D/R → 0`. |
-| `N = D · T · exp(2G · T)` | derived Gronwall numerator | No. It is finite for each fixed `T` and grows with `T`. It is large but harmless; no smallness condition is imposed. |
+| `N = D · T · exp(2G · T)` (`N`, written `C` in `le_div_radius_of_deriv_le`) | derived Gronwall numerator | No. It is finite for each fixed `T` and grows with `T`. It is large but harmless; no smallness condition is imposed. |
 
-**The conclusion** uses only that each constant is finite, has the required sign, and is independent of `R` and `t`. No hypothesis in this chain requires a constant to be small: the absorption step fixes its Young parameter at `1/2` internally. The only quantitative scaling identity used is the derived `R^(-n)` behavior of the cutoff derivatives.
+**The conclusion** uses only that each constant is finite, has the required sign, and is independent of `R` and `t`. That independence is the content: `CP`, `D`, and `G` may depend on the viscosity `ν`, the reference flow, and the fixed data; the claim is not that they are universal. No hypothesis in this chain requires a constant to be small: the absorption step fixes its Young parameter at `1/2` internally. The only quantitative scaling identity used is the derived `R^(-n)` behavior of the cutoff derivatives.
 
 ## What this is not
 
