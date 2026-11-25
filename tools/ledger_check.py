@@ -20,7 +20,10 @@ This script fails if
   * a document's sentinel is missing, duplicated or disagrees with the table;
   * the zero-count `cited in a docstring, unchecked` row is missing or non-empty;
   * a reader edition omits one of the awkward partials from its narrative, or
-    contains a phrase that was true only before E165 (a narrative-drift guard).
+    contains a phrase that was true only before E165 (a narrative-drift guard);
+  * the README's inference-level partial count disagrees with the table in
+    `PROOF_STEPS.md`, or its quoted partial-unread total disagrees with the
+    ledger (the "six" beside a 32 was exactly this drift).
 
 History is not checked: `AUDIT_LOG.md` is append-only and quotes counts as they
 stood at the time, so it is deliberately absent from DOCS.
@@ -62,6 +65,10 @@ STATUS_LABELS = {
 # pre-E165 counts. AUDIT_LOG is excluded because it quotes history.
 NARRATIVE_DOCS = ["MANUSCRIPT.tex", "CAVEMAN.md", "CAVEMAN_1TO1.md", "LAYMAN.md"]
 REQUIRED_NARRATIVE = ["Lemma 9.7", "Lemma 10.2", "Lemma 6.2"]
+PROOF_STEPS_HEADING = "## The seven partials, in one table"
+README_COUNTS = re.compile(
+    r"all\s+(\d+)\s+are among the ledger's\s+(\d+)\s+partial-unread paper results"
+)
 STALE_PHRASES = [
     "forty-four numbered results",
     "The four partial rows",
@@ -142,6 +149,23 @@ def queue_names(text: str) -> list[str]:
         if len(cells) != 4:
             continue
         name = clean_name(cells[0])
+        if NAME.match(name):
+            names.append(name)
+    return names
+
+
+def proof_steps_results(text: str) -> list[str]:
+    """The result names in `PROOF_STEPS.md`'s partial table."""
+    names: list[str] = []
+    inside = False
+    for line in text.splitlines():
+        if line.startswith("## "):
+            inside = line.strip() == PROOF_STEPS_HEADING
+            continue
+        if not inside or not line.startswith("|"):
+            continue
+        cells = cells_of(line)
+        name = clean_name(cells[0]) if cells else ""
         if NAME.match(name):
             names.append(name)
     return names
@@ -257,6 +281,47 @@ def main() -> int:
         for doc in DOCS:
             if phrase in (ROOT / doc).read_text(encoding="utf-8"):
                 problems.append(f"{doc}: stale phrase {phrase!r}")
+
+    # The README quotes two counts that are not ledger rows: the number of
+    # inference-level partial rows in PROOF_STEPS.md, and the ledger's
+    # partial-unread total. Tie the sentence to both sources so the two cannot
+    # drift apart again.
+    steps_names = proof_steps_results(
+        (ROOT / "PROOF_STEPS.md").read_text(encoding="utf-8")
+    )
+    if not steps_names:
+        problems.append("PROOF_STEPS.md: the partial table names no results")
+    readme_hits = README_COUNTS.findall(
+        (ROOT / "README.md").read_text(encoding="utf-8")
+    )
+    if len(readme_hits) != 1:
+        problems.append(
+            "README.md: expected one 'all N are among the ledger's M "
+            f"partial-unread paper results' sentence, found {len(readme_hits)}"
+        )
+    else:
+        claimed_steps, claimed_ledger = (int(x) for x in readme_hits[0])
+        if claimed_steps != len(steps_names):
+            problems.append(
+                f"README.md: claims {claimed_steps} inference-level partials, "
+                f"PROOF_STEPS.md table names {len(steps_names)}"
+            )
+        if claimed_ledger != counts["partial_unread"]:
+            problems.append(
+                f"README.md: claims {claimed_ledger} partial-unread paper "
+                f"results, ledger has {counts['partial_unread']}"
+            )
+    absent = [n for n in steps_names if n not in names["partial_unread"]]
+    if absent:
+        problems.append(
+            "PROOF_STEPS.md: inference-level partials absent from the ledger's "
+            "partial-unread row: " + ", ".join(absent)
+        )
+    if names["partial_inexpressible"] != ["Lemma 9.7"]:
+        problems.append(
+            "README.md: the sentence naming Lemma 9.7 as the partial-inexpressible "
+            "row is stale"
+        )
 
     if problems:
         print("ledger check failed:")
